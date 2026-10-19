@@ -1113,7 +1113,7 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='pdend')ui.pde=null;
  if(a==='sdel'){if(!ask('sdel:'+p,t))return;const ids=[p,...S.subjects.filter(s=>s.of===p).map(s=>s.id)];S.subjects=S.subjects.filter(s=>!ids.includes(s.id));ids.forEach(id=>{delete S.progress[id];if(S.paused)delete S.paused[id]})}
  if(a==='edclose'){ui.ed=null;ui.addm=null}
- if(a==='pickrow'&&!S.edit&&S.subjects.some(x=>x.id===p)){if(typeof matchMedia==='function'&&matchMedia('(max-width:600px)').matches){ui.more=null;if(p===S.sel.subj&&S.timer.running){S.timer.acc=el();S.timer.running=false}else if(!gDone(S.subjects.find(x=>x.id===p)))reqSwitch(p,'rplay');else reqSwitch(p)}else reqSwitch(p);ui.dd=null}
+ if(a==='pickrow'&&!S.edit&&S.subjects.some(x=>x.id===p)){ui.more=null;reqSwitch(p);ui.dd=null}
  if(a==='rplay'&&!S.edit){const ps=S.subjects.find(x=>x.id===p);if(ps&&gDone(ps)&&!(p===S.sel.subj&&S.timer.running)){render();return}}
  if((a==='rplay'||a==='rreg')&&!S.edit&&S.subjects.some(x=>x.id===p)){
   if(p===S.sel.subj&&a==='rplay'&&S.timer.running){S.timer.acc=el();S.timer.running=false}
