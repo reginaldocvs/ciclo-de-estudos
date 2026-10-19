@@ -395,7 +395,7 @@ const fmt=m=>{m=Math.round(m);return m>=60?Math.floor(m/60)+'h'+(m%60?String(m%6
 const uniq=a=>[...new Set(a)];
 const load=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
 const seed=()=>({subjects:['01','02','03','04'].map(n=>({id:uid(),name:'Disciplina '+n,goal:90,topics:[]})),cycle:1,type:'regular',progress:{},sessions:[],checked:{},reviewEvery:5,sinceReview:0,regDone:[],reviewSrc:[],completed:0,sel:{subj:null,topic:''},timer:{running:false,start:0,acc:0}});
-let S=load(KEY),tab='ciclo';if(tab==='mat')tab='ciclo';const ui={open:new Set()};
+let S=load(KEY),tab='ciclo';const ui={open:new Set()};
 if(!S||!S.subjects){const o=load('ciclo-estudos-v1');S=seed();if(o&&o.subjects){S.subjects=o.subjects.map(s=>({id:s.id,name:s.name,goal:s.goal,topics:[]}));S.cycle=o.cycle||1;S.progress=o.progress||{};S.completed=Math.max(S.cycle-1,0)}}
 const save=()=>{if(window.__ro)return;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}try{if(typeof syMark==='function'&&JSON.stringify(S)!==SY.lastJson)syMark()}catch(e){}};
 const CTX=['progress','timer','paused','sx','draft','type','reviewSrc'],SELK=['subj','topic','groups','mt','mtAuto','mtMs'];
@@ -796,76 +796,6 @@ function viewMat(){
  return `<h2 class="sec" style="margin-top:4px">Em ciclo</h2><div class="mlist">${ons.map(card).join('')||'<div class="ozone mut">Arraste disciplinas para cá para colocá-las no ciclo.</div>'}<h2 class="sec" data-div>Fora do ciclo</h2>${offs.map(card).join('')||'<div class="ozone mut">Arraste disciplinas para cá para tirá-las do ciclo.</div>'}</div><div class="addrow"><button class="fab" data-act="addopen" title="Adicionar disciplina" aria-label="Adicionar disciplina">${PLUSB}</button></div>`;
 }
 const editHtml=()=>`<div class="ov" data-act="edclose"></div><div class="dlg medit" role="dialog" aria-modal="true" aria-label="Editar ciclo"><div class="mhead"><h2>${S.type==='review'?'Editar revisão':'Editar ciclo'}</h2><button class="x" data-act="edclose" title="Fechar" aria-label="Fechar">✕</button></div><div class="mscroll">${viewMat()}</div></div>`;
-/* ===== Edital: repositório de disciplinas e tópicos ===== */
-const SMALLW=new Set(['a','à','ao','aos','as','às','com','da','das','de','do','dos','e','em','na','nas','no','nos','o','os','ou','para','pela','pelo','por','sem','sob','um','uma']);
-const tCase=s=>{s=s.replace(/\s+/g,' ').trim();if(s!==s.toUpperCase())return s;return s.toLowerCase().split(' ').map((w,i)=>i>0&&SMALLW.has(w)?w:(/^(i|ii|iii|iv|v|vi|vii|viii|ix|x)$/.test(w)?w.toUpperCase():w.charAt(0).toUpperCase()+w.slice(1))).join(' ')};
-const cleanTopic=t=>t.replace(/\s+/g,' ').replace(/[.;]?\s\d{1,2}(\.\d{1,2})+\s*[.)\-–]?\s+/g,'; ').replace(/^[\s\-–•·*▪◦>]+/,'').replace(/^\d{1,2}(\.\d{1,2})*\s*[.)\-–]?\s+/,'').replace(/^[a-z]\)\s+/,'').replace(/[\s;,.:]+$/,'').trim();
-function splitTopics(c){
- c=' '+c.replace(/\s+/g,' ')+' ';
- let parts=c.split(/\s(?=\d{1,2}\s*[.)\-–]?\s+[A-ZÀ-Ý])/);
- if(parts.filter(p=>/^\d/.test(p)).length>=2)parts=parts.filter(p=>/^\d/.test(p));
- else parts=c.split(/;\s+|\.\s+(?=[A-ZÀ-Ý])/);
- const out=[];parts.map(cleanTopic).forEach(t=>{if(t.length>=3&&/[A-Za-zÀ-ÿ]{3}/.test(t)&&!out.some(o=>o.toLowerCase()===t.toLowerCase()))out.push(t.length>300?t.slice(0,297)+'…':t)});return out}
-const ANCH=/CONTE[ÚU]DOS?\s+PROGRAM[ÁA]TICOS?|OBJETOS\s+DE\s+AVALIA[ÇC][ÃA]O/gi;
-const BADH=/^(CONTE[ÚU]DOS?\s+PROGRAM|OBJETOS\s+DE\s+AVALIA|ANEXO|CONHECIMENTOS\s+(B[ÁA]SICOS|GERAIS|ESPEC[ÍI]FICOS|COMPLEMENTARES)$|CARGO|N[ÍI]VEL|EDITAL)/;
-function byHeaders(flat){
- const re=/([A-ZÀ-Ý][A-ZÀ-Ý0-9ºª ,\-–\/()]{2,90}?)\s*:\s/g,hs=[];let m;
- while((m=re.exec(flat))){const n=m[1].trim();if(/[A-ZÀ-Ý]{4,}/.test(n))hs.push({n,at:m.index,end:re.lastIndex})}
- const subs=[];hs.forEach((h,i)=>{const body=flat.slice(h.end,i+1<hs.length?hs[i+1].at:flat.length);if(BADH.test(h.n))return;const tp=splitTopics(body);if(tp.length)subs.push({name:tCase(h.n.replace(/[:\-–\s]+$/,'')),topics:tp})});
- return subs}
-function byLines(text){
- const subs=[];let cur=null;
- text.split(/\n/).map(l=>l.replace(/\s+/g,' ').trim()).filter(Boolean).forEach(l=>{
-  const letters=l.replace(/[^A-Za-zÀ-ÿ]/g,''),up=letters.replace(/[^A-ZÀ-Ý]/g,'').length;
-  const isH=!/^\d/.test(l)&&l.length<=90&&letters.length>=4&&(/:$/.test(l)||up/letters.length>0.85);
-  if(isH&&!BADH.test(l.toUpperCase())){cur={name:tCase(l.replace(/[:\-–\s]+$/,'')),topics:[]};subs.push(cur)}
-  else if(cur){const tp=/\s\d{1,2}\s*[.)\-–]?\s+[A-ZÀ-Ý]/.test(' '+l+' ')&&l.length>80?splitTopics(l):[cleanTopic(l)];tp.forEach(t=>{if(t.length>=3&&!cur.topics.some(o=>o.toLowerCase()===t.toLowerCase()))cur.topics.push(t)})}});
- return subs.filter(s=>s.topics.length)}
-function parseRaw(text){
- text=String(text||'').replace(/\r/g,'');const flat=text.replace(/\s+/g,' ');
- const starts=[0];let m;ANCH.lastIndex=0;while((m=ANCH.exec(flat)))starts.push(m.index+m[0].length);
- let best=[];for(let i=starts.length-1;i>=0;i--){let seg=flat.slice(starts[i]);const nx=seg.slice(200).search(/\bANEXO\s+[IVX]+\b/);if(i>0&&nx>=0)seg=seg.slice(0,nx+200);const r=byHeaders(seg);if(r.length>=2){best=r;break}if(r.length>best.length)best=r}
- if(best.length<2){const l=byLines(text);if(l.length>best.length)best=l}
- return best}
-const toOutline=subs=>subs.map(s=>'# '+s.name+'\n'+s.topics.join('\n')).join('\n\n');
-function parseOutline(text){const subs=[];let cur=null;String(text||'').split(/\n/).forEach(l=>{const t=l.trim();if(!t)return;if(t.startsWith('#')){const n=t.replace(/^#+\s*/,'').trim();if(n){cur={name:n,topics:[]};subs.push(cur)}}else if(cur){const c=cleanTopic(t);if(c&&!cur.topics.some(o=>o.toLowerCase()===c.toLowerCase()))cur.topics.push(c)}});return subs}
-function importInto(edId,subs){let ns=0,nt=0;
- subs.forEach(p=>{let s=S.subjects.find(x=>!x.of&&x.ed===edId&&x.name.toLowerCase()===p.name.toLowerCase());
-  if(!s){s={id:uid(),name:p.name,goal:90,topics:[],ed:edId};s.ci=nextCi();S.subjects.push(s);ns++}
-  p.topics.forEach(t=>{if(!s.topics.some(o=>o.name.toLowerCase()===t.toLowerCase())){s.topics.push({id:uid(),name:t,done:false,links:[]});nt++}})});
- return {ns,nt}}
-const JSL={};
-const loadJs=src=>JSL[src]||(JSL[src]=new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=()=>ok();s.onerror=()=>{delete JSL[src];no(new Error('Não foi possível carregar o leitor de arquivos.'))};document.head.appendChild(s)}));
-const PDFJS='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/';
-async function pdfText(buf){
- await loadJs(PDFJS+'pdf.min.js');await loadJs(PDFJS+'pdf.worker.min.js');
- const lib=window.pdfjsLib;lib.GlobalWorkerOptions.workerSrc=PDFJS+'pdf.worker.min.js';
- const doc=await lib.getDocument({data:buf}).promise,out=[];
- for(let i=1;i<=doc.numPages;i++){const pg=await doc.getPage(i),tc=await pg.getTextContent();let y0=null,xe=null,line='';
-  tc.items.forEach(it=>{if(!('str' in it))return;const y=it.transform[5],x=it.transform[4];
-   if(y0!==null&&Math.abs(y-y0)>2){out.push(line);line='';xe=null}
-   if(line&&xe!==null&&x>xe+1&&!line.endsWith(' ')&&!it.str.startsWith(' '))line+=' ';
-   line+=it.str;y0=y;xe=x+(it.width||0);if(it.hasEOL){out.push(line);line='';y0=null;xe=null}});
-  if(line)out.push(line)}
- return out.join('\n')}
-async function docxText(buf){await loadJs('https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js');const r=await window.mammoth.extractRawText({arrayBuffer:buf});return r.value}
-async function readEditalFile(edId,file){
- ui.edmsg=ui.edmsg||{};ui.imp=ui.imp||{};ui.edmsg[edId]='Lendo '+file.name+'…';render();
- try{const n=file.name.toLowerCase();let txt;
-  if(n.endsWith('.pdf'))txt=await pdfText(await file.arrayBuffer());
-  else if(n.endsWith('.docx'))txt=await docxText(await file.arrayBuffer());
-  else txt=await file.text();
-  const subs=parseRaw(txt);
-  if(!subs.length){ui.imp[edId]=txt.slice(0,20000);ui.edmsg[edId]='Não encontrei disciplinas automaticamente. O texto do arquivo foi colado abaixo: marque as disciplinas com # no início da linha e clique em Importar.'}
-  else{ui.imp[edId]=toOutline(subs);ui.edmsg[edId]='Encontrei '+subs.length+' disciplina(s) e '+subs.reduce((a,s)=>a+s.topics.length,0)+' tópico(s). Revise a lista abaixo e clique em Importar.'}
- }catch(err){ui.edmsg[edId]='Erro ao ler o arquivo: '+(err&&err.message||err)+' Você pode copiar o texto do edital e colar abaixo.'}
- render()}
-const LPEN='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
-function lkForm(s,t,l){const E=ui.lked||{};return `<form autocomplete="off" data-f="lked" class="lkf"><input type="hidden" name="s" value="${s.id}"><input type="hidden" name="t" value="${t.id}"><input type="hidden" name="l" value="${l?l.id:''}"><label class="aname"><span class="atag">Aula</span><input class="t" name="n" data-lkf="n" value="${esc(E.n!=null?E.n:l?l.title||'':'')}" placeholder="Nome" aria-label="Nome da aula" id="lkn" required></label><button type="button" class="x clip ${(E.u||'').trim()||(E.q||'').trim()?'on':''}" data-act="lkclip" title="Links da aula e das questões" aria-label="Links da aula e das questões">${CLIP}</button><button class="btn s">Salvar</button><button type="button" class="btn g s" data-act="lkcancel">Cancelar</button>${E.lo?`<div class="lkr lkfr lk2"><label class="lkl" for="lku">Aula</label><input id="lku" class="full" data-lkf="u" value="${esc(E.u||'')}" placeholder="Link da aula" aria-label="Link da aula"><label class="lkl" for="lkq">Questões</label><input id="lkq" class="full" data-lkf="q" value="${esc(E.q||'')}" placeholder="Link ou local (ex.: Apostila p. 32)" aria-label="Questões: link ou local"></div>`:''}</form>`}
-function etopic(s,t){const k='et:'+s.id+'-'+t.id,E=ui.lked,op=ui.open.has(k),L=[];
- const body=L.map(l=>E&&E.l===l.id?lkForm(s,t,l):`<div class="elk"><div class="rvit">${itemLine(l,t.id,1)}</div><span class="grow"></span><button class="x" data-act="lkedit" data-id="${s.id}:${t.id}:${l.id}" title="Renomear" aria-label="Renomear">${LPEN}</button></div>`).join('');
- return `<div class="etp"><div class="trow">${L.length?`<button class="x mtog${op?' on':''}" data-act="etog" data-id="${k}" aria-expanded="${op}" aria-label="Expandir ou recolher">${CHEV}</button>`:'<span class="etsp"></span>'}${ui.tren===t.id?`<div class="grow"><input class="edname" id="tren-${t.id}" data-tren="${s.id}:${t.id}" value="${esc(ui.trenv!=null?ui.trenv:t.name)}" aria-label="Nome do tópico">${ui.trenmsg?`<div class="dtw">${esc(ui.trenmsg)}</div>`:''}</div>`:`<div class="grow etnm"${L.length?` data-act="etog" data-id="${k}" style="cursor:pointer"`:''}><span class="etnt" title="${esc(t.name)}">${esc(t.name)}</span>${L.length?`<span class="etn">${L.length}</span>`:''}</div>`}<button class="x" data-act="tren" data-id="${s.id}:${t.id}" title="Renomear tópico" aria-label="Renomear tópico">${LPEN}</button><button class="x" data-act="dt" data-id="${s.id}:${t.id}" title="Remover tópico" aria-label="Remover tópico">✕</button></div>${op&&L.length?`<div class="etb rvits">${body}</div>`:''}</div>`}
-
 /* ===== Editar plano: disciplinas e tópicos ===== */
 const EYEP='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
 const parseTopics=t=>{const seen=new Set(),o=[];String(t||'').split(/\r?\n/).forEach(l=>{const n=l.replace(/^\s*(?:[-*•]\s+)/,'').trim();if(n&&!seen.has(n.toLowerCase())){seen.add(n.toLowerCase());o.push(n)}});return o};
@@ -887,30 +817,6 @@ function viewPlanEd(){
   return `<div class="card pdb" style="--sc:${c}"><div class="pdh"><span class="dot" style="background:${c}"></span><b class="pdt" title="${esc(s.name)}">${esc(s.name)}</b><button class="x${ed?'':' on'}${op&&!ed?' on':''}" data-act="pdtog" data-id="${s.id}" title="${op?'Recolher tópicos':'Ver tópicos'}" aria-label="Ver tópicos" aria-expanded="${op}">${EYEP}</button><button class="x${ed?' on':''}" data-act="pdedit" data-id="${s.id}" title="Editar disciplina" aria-label="Editar disciplina">${PEN}</button><button class="x" data-act="sdel" data-id="${s.id}" title="Excluir disciplina" aria-label="Excluir disciplina">${TRASH}</button></div><div class="pdst"><div><b>${nd}</b><span>Tópicos estudados</span></div><div><b>${s.topics.length}</b><span>Tópicos totais</span></div></div>${list}</div>`};
  const pl0=S.plans.find(x=>x.id===S.plan)||{name:''},nm=`<div class="card pdb"><label class="mut" style="font-size:.8rem;font-weight:600" for="ppn">Nome do plano</label><input id="ppn" class="t" data-ppn="1" value="${esc(pl0.name)}" aria-label="Nome do plano" style="width:100%;margin-top:4px" maxlength="80"></div>`;
  return nm+rodCard()+nb+(subs.map(blk).join('')||(ui.pdn?'':'<div class="card empty">Este plano ainda não tem disciplinas. Toque em “Nova disciplina” para começar.</div>'))}
-function viewEdital(pm){
- ui.imp=ui.imp||{};ui.edmsg=ui.edmsg||{};
- const subsOf=e=>S.subjects.filter(s=>!s.of&&s.ed===e.id);
- const stud=new Set(S.sessions.filter(x=>x.topic&&!x.tdel).map(x=>x.topic)),pg=(d,t)=>`<div class="eprog"><span class="mut">${d} de ${t} tópico${t===1?'':'s'} estudado${t===1?'':'s'} (${t?Math.round(d/t*100):0}%)</span><div class="bar"><i style="width:${t?d/t*100:0}%;background:var(--ac)"></i></div></div>`;
- const subj=s=>{const sd=s.topics.filter(t=>stud.has(t.id)).length,k='es:'+s.id,op=ui.open.has(k),inC=!s.off||S.subjects.some(d=>d.of===s.id&&!d.off);
-  return `<div class="esub"><div class="row" style="padding:6px 0"><button class="x mtog${op?' on':''}" data-act="etog" data-id="${k}" aria-expanded="${op}" aria-label="Expandir ou recolher">${CHEV}</button><div class="grow"><b class="mname${inC?'':' outc'}" data-act="etog" data-id="${k}" title="Expandir ou recolher"><span class="dot${inC?'':' dout'}" style="--dc:${col(s)};background:${inC?col(s):'transparent'}" title="${inC?'No ciclo':'Fora do ciclo'}"></span><span class="mnt">${esc(s.name)}${inC?'':'<span class="srt"> (fora do ciclo)</span>'}</span></b>${s.topics.length?pg(sd,s.topics.length):''}</div><button class="x" data-act="sdel" data-id="${s.id}" title="Excluir disciplina" aria-label="Excluir disciplina">${TRASH}</button></div>
-  <div class="mbody"${op?'':' hidden'}>${s.topics.map(t=>etopic(s,t)).join('')||'<div class="empty">Sem tópicos.</div>'}
-  <form autocomplete="off" data-f="top" style="margin-top:6px"><input type="hidden" name="s" value="${s.id}"><textarea name="t" rows="2" placeholder="Novos tópicos, um por linha" required aria-label="Tópicos"></textarea><button class="btn s" style="margin-top:6px">Adicionar tópicos</button></form></div></div>`};
- const card=e=>{const k='e:'+e.id,op=pm||ui.open.has(k),L=subsOf(e),nt=L.reduce((a,s)=>a+s.topics.length,0),nc=L.filter(s=>!s.off).length;
-  return `<div class="${pm?'':'card'}">${pm?'':`<div class="row" style="padding-top:0"><button class="x mtog${op?' on':''}" data-act="etog" data-id="${k}" aria-expanded="${op}" aria-label="Expandir ou recolher">${CHEV}</button><div class="grow">${ui.edren===e.id?`<input class="edname" id="edn-${e.id}" data-edn="${e.id}" value="${esc(e.name)}" aria-label="Nome do edital">`:`<b class="plname mname" data-act="etog" data-id="${k}" title="Expandir ou recolher">${esc(e.name)}</b>`}<div class="mut" style="font-size:.85rem">${L.length} disciplina${L.length===1?'':'s'} · ${nc} no ciclo</div>${nt?pg(L.reduce((a,s)=>a+s.topics.filter(t=>stud.has(t.id)).length,0),nt):''}</div><button class="x" data-act="edren" data-id="${e.id}" title="Renomear" aria-label="Renomear">${PEN}</button><button class="x" data-act="eddel" data-id="${e.id}" title="Excluir edital" aria-label="Excluir edital">${TRASH}</button></div>`}
-  <div class="mbody"${op?'':' hidden'}>
-   <div class="ebox"><b>Importar do edital</b><div class="mut" style="margin:4px 0 8px">Envie o edital em PDF, Word (.docx) ou texto, ou cole o conteúdo programático abaixo. A lista gerada fica editável antes de importar.</div>
-    <label class="btn g s fbtn">Escolher arquivo<input type="file" accept=".pdf,.docx,.txt,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" data-edfile="${e.id}" hidden></label>
-    <textarea rows="8" data-imp="${e.id}" placeholder="# Língua Portuguesa&#10;Compreensão e interpretação de textos&#10;Ortografia oficial&#10;&#10;# Direito Constitucional&#10;Princípios fundamentais&#10;&#10;Ou cole o texto do edital e clique em Organizar." style="margin-top:8px" aria-label="Lista de disciplinas e tópicos">${esc(ui.imp[e.id]||'')}</textarea>
-    <div class="mut" style="font-size:.85rem;margin-top:4px">Linhas com <b>#</b> no início são disciplinas; as linhas abaixo delas são os tópicos.</div>
-    <div class="fl" style="margin-top:8px"><button class="btn g s" data-act="edorg" data-id="${e.id}">Organizar texto</button><button class="btn s" data-act="edimp" data-id="${e.id}">Importar</button></div>
-    ${ui.edmsg[e.id]?`<div class="mut" style="margin-top:8px">${esc(ui.edmsg[e.id])}</div>`:''}</div>
-   <h3 class="eh">Disciplinas</h3>${L.map(subj).join('')||'<div class="empty">Nenhuma disciplina ainda. Importe o edital ou adicione abaixo.</div>'}
-   <form autocomplete="off" data-f="snew" class="fl" style="margin-top:10px"><input type="hidden" name="e" value="${e.id}"><input class="t" name="n" placeholder="Nova disciplina" required aria-label="Nome da disciplina"><button class="btn g">Adicionar</button></form>
-  </div></div>`};
- if(pm)return myEds().map(card).join('')||'<div class="card empty">Este plano ainda não tem disciplinas.</div>';
- return `<div class="card"><h2>Novo edital</h2><form autocomplete="off" data-f="ednew" class="fl"><input class="t" name="n" placeholder="Nome do concurso, ex.: TRF 1ª Região – Técnico" required aria-label="Nome do edital"><button class="btn">Criar</button></form></div>`+(myEds().map(card).join('')||'<div class="card empty">Nenhum edital ainda. Crie um acima para organizar disciplinas e tópicos.</div>');
-}
-
 /* ===== Novo visual: resumo, sequência, cabeçalho e configurações ===== */
 const TARGETI='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></svg>';
 const FLAMEI='<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>';
@@ -924,13 +830,12 @@ function kpisHtml(){const st=dayStats(),A=actives(),T=total()||1,d=A.reduce((a,s
  return '<div class="kpis">'+(PAST?t('Tempo estudado',fmt(pr.reduce((a,x)=>a+x.min,0)),'neste ciclo',CLOCKI)+t('Período',per,pd2.length?'primeiro ao último estudo':'sem registros',CALI):t('Hoje',fmt(st.today),st.today?'estudados hoje':'nenhum estudo ainda',CLOCKI)+t('Esta semana',fmt(st.week),'desde segunda',CALI))+t('Ciclo '+S.cycle,Math.round(d/T*100)+'%',fmt(d)+' de '+fmt(T),TARGETI)+t('Disciplinas',nd+' de '+A.length,nd===1?'sessão concluída':'sessões concluídas',DONEI,'ok')+'</div>'}
 function streakHtml(){if(PAST)return '';const n=dayStats().streak,hj=dayStats().today>0;
  return `<div class="streak"><span class="flame">${FLAMEI}</span><div><div class="sl">Sequência atual</div><b>${n} ${n===1?'dia':'dias'}</b><div class="ss">${n?(hj?'Você já estudou hoje. Continue assim!':'Estude hoje para manter a sequência.'):'Estude hoje para começar uma sequência.'}</div></div></div>`}
-const TTL={ciclo:'Ciclo',rev:'Revisão',ed:'Edital',reg:'Histórico',st:'Estatísticas',bk:'Configurações'};
+const TTL={ciclo:'Ciclo',rev:'Revisão',reg:'Histórico',st:'Estatísticas',bk:'Configurações'};
 const greet=()=>{const h=new Date().getHours();return h<5?'Boa madrugada':h<12?'Bom dia':h<18?'Boa tarde':'Boa noite'};
 function applyTheme(){const r=document.documentElement,t=S.theme||'auto';try{if(t==='light'||t==='dark'){r.setAttribute('data-theme',t);r.dataset.ownTheme='1'}else if(r.dataset.ownTheme){r.removeAttribute('data-theme');delete r.dataset.ownTheme}}catch(e){}}
 function chrome(){const mt=$('mtt'),ms=$('msub');if(!mt||!ms)return;let t=TTL[tab]||'',s='';
  if(tab==='ciclo'){const st=dayStats();t=greet();s=(st.today?'Hoje você já estudou '+fmt(st.today)+'.':'Hoje você ainda não estudou.')+' '+((S.set||1)>1?'Rodada '+S.set+' · ':'')+'Ciclo '+S.cycle+' em andamento.'}
  else if(tab==='rev')s=S.rv?'Revisando '+(S.rv.lbl||('o ciclo '+S.rv.src.join(', ')))+'.':'Revise cada grupo de estudo '+rvWait()+' dia'+(rvWait()===1?'':'s')+' corrido'+(rvWait()===1?'':'s')+' depois do último dia dele. A revisão corre em paralelo ao ciclo.';
- else if(tab==='ed')s='';
  else if(tab==='reg')s='Tudo o que você já registrou, do mais recente ao mais antigo.';
  else if(tab==='st')s='Veja como o seu tempo de estudo evolui.';
  else if(tab==='bk')s='Aparência e preferências do app.';
@@ -959,7 +864,7 @@ function switchPlan(id){if(id===S.plan||!S.plans.some(x=>x.id===id))return;setMo
 const planInfo=pl=>{if(pl.id===S.plan)return {s:S.set||1,c:S.cycle,n:S.subjects.filter(s=>!s.off).length};const d=S.planData[pl.id]||{};return {s:d.set||1,c:d.cycle||1,n:(d.layout||[]).filter(l=>!l.off).length}};
 const plansHtml=()=>{const pe=ui.ple&&S.plans.find(x=>x.id===ui.ple&&x.id===S.plan);
  const head=pe?`<div class="mhead"><button class="x" data-act="plback" title="Voltar aos planos" aria-label="Voltar aos planos">←</button><h2 style="flex:1;min-width:0;margin:0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(pe.name)}</h2><button class="x" data-act="pldel" data-id="${pe.id}" title="Excluir plano" aria-label="Excluir plano">${TRASH}</button><button class="x" data-act="plclose" title="Fechar" aria-label="Fechar">✕</button></div>`:`<div class="mhead"><h2>Planos de estudo</h2><button class="x" data-act="plclose" title="Fechar" aria-label="Fechar">✕</button></div>`;
- const rows=S.plans.map(pl=>{const cur=pl.id===S.plan,i=planInfo(pl);return `<div class="card plrow${cur?' cur':''}"${cur?'':` data-act="plsw" data-id="${pl.id}" title="Abrir este plano"`}><div class="row" style="padding:0"><span class="pldot${cur?' on':''}"></span><div class="grow" style="min-width:0">${ui.plren===pl.id?`<input class="edname" id="pln-${pl.id}" data-pln="${pl.id}" value="${esc(pl.name)}" aria-label="Nome do plano">`:`<b class="plname">${esc(pl.name)}</b>`}<div class="mut" style="font-size:.8rem">${i.s>1?'Rodada '+i.s+' · ':''}Ciclo ${i.c} · ${i.n} disciplina${i.n===1?'':'s'}${cur?' · aberto':''}</div></div><button class="btn g s" data-act="pled" data-id="${pl.id}" title="Editar disciplinas e tópicos deste plano" aria-label="Editar plano">Editar</button><button class="btn g s" data-act="plset" data-id="${pl.id}" title="Zera o progresso e recomeça este plano no Ciclo 1. Seu histórico é mantido." aria-label="Começar nova rodada de ciclos">Nova rodada</button><button class="x" data-act="pldel" data-id="${pl.id}" title="Excluir plano" aria-label="Excluir plano">${TRASH}</button></div></div>`}).join('');
+ const rows=S.plans.map(pl=>{const cur=pl.id===S.plan,i=planInfo(pl);return `<div class="card plrow${cur?' cur':''}"${cur?'':` data-act="plsw" data-id="${pl.id}" title="Abrir este plano"`}><div class="row" style="padding:0"><span class="pldot${cur?' on':''}"></span><div class="grow" style="min-width:0"><b class="plname">${esc(pl.name)}</b><div class="mut" style="font-size:.8rem">${i.s>1?'Rodada '+i.s+' · ':''}Ciclo ${i.c} · ${i.n} disciplina${i.n===1?'':'s'}${cur?' · aberto':''}</div></div><button class="btn g s" data-act="pled" data-id="${pl.id}" title="Editar disciplinas e tópicos deste plano" aria-label="Editar plano">Editar</button><button class="btn g s" data-act="plset" data-id="${pl.id}" title="Zera o progresso e recomeça este plano no Ciclo 1. Seu histórico é mantido." aria-label="Começar nova rodada de ciclos">Nova rodada</button><button class="x" data-act="pldel" data-id="${pl.id}" title="Excluir plano" aria-label="Excluir plano">${TRASH}</button></div></div>`}).join('');
  const body=pe?viewPlanEd():`${rows}<h2 class="sec">Novo plano</h2><div class="card"><form autocomplete="off" data-f="plnew" class="fl"><input class="t" name="n" placeholder="Nome do plano, ex.: TRF 1ª Região" required aria-label="Nome do plano"><button class="btn">Criar plano</button></form></div>`;
  return `<div class="ov" data-act="plclose"></div><div class="dlg medit plans" role="dialog" aria-modal="true" aria-label="Planos de estudo">${head}<div class="mscroll">${body}</div></div>`};
 function posDD(){if(!document.querySelectorAll)return;document.querySelectorAll('.dlg .dd').forEach(d=>{const a=d.parentElement.getBoundingClientRect(),vh=innerHeight,lim=vh*0.7;
@@ -978,13 +883,13 @@ function render(){const pre=focSig(),pix=focIdx(),had=!!document.querySelector('
  if(!dlg&&had){const o=FOC.op;FOC.op=null;if(lost&&FOC.kb&&focTo(o))return}
  if(lost&&FOC.kb&&!focTo(pre)&&pix&&pix.i>=0){const box=pix.inDlg?dlg:document;if(box){const L=[...box.querySelectorAll(FQ)].filter(x=>x.getClientRects().length);const el=L[Math.min(pix.i,L.length-1)];el&&el.focus({preventScroll:true})}}}catch(e){}}
 function render0(){
- applyTheme();try{syncRg()}catch(e){}if(tab==='ed')tab='ciclo';
+ applyTheme();try{syncRg()}catch(e){}
  if(!S.edit&&ui.edPrev){if(S.subjects.some(x=>x.id===ui.edPrev.subj))S.sel.subj=ui.edPrev.subj;ui.edPrev=null}
  norm();
  if(tab==='rev')setMode(S.rv?'review':'study');else if(tab==='ciclo')setMode('study');
  document.querySelectorAll('nav button[data-tab]').forEach(b=>{if(b.dataset.tab===tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
  {const pl=S.plans.find(x=>x.id===S.plan)||{};const SUBH=`<button class="plansw${ui.pl?' on':''}" data-act="plopen" title="Trocar ou criar plano de estudos" aria-label="Trocar ou criar plano de estudos"><b>${esc(pl.name||'')}</b><span class="mut">${(S.set||1)>1?'Rodada '+S.set+' · ':''}Ciclo ${S.cycle}${S.rv?' · revisão':''}</span>${CHEV}</button><button class="x gear${tab==='bk'?' on':''}" data-tab="bk" title="Configurações" aria-label="Configurações">${GEAR}</button>`;[$('sub'),$('sub2')].forEach(e=>{if(e)e.innerHTML=SUBH})}
- document.body.classList.toggle('wide',tab==='ciclo'||(tab==='reg'&&!!ui.hcal&&isDesk()&&!S.edit));$('app').innerHTML=tab==='ciclo'?viewCiclo():tab==='rev'?viewRev():tab==='reg'?viewReg():tab==='st'?viewStats():tab==='ed'?viewEdital():viewConfig();
+ document.body.classList.toggle('wide',tab==='ciclo'||(tab==='reg'&&!!ui.hcal&&isDesk()&&!S.edit));$('app').innerHTML=tab==='ciclo'?viewCiclo():tab==='rev'?viewRev():tab==='reg'?viewReg():tab==='st'?viewStats():viewConfig();
  $('modal').innerHTML=(ui.pl?plansHtml():'')+(ui.ed&&(tab==='ciclo'||(tab==='rev'&&S.rv))?editHtml()+(ui.addm?newMatCard():''):'')+(S.sx&&!S.edit?sessCard():'')+(edPop()?sessCard():'')+(ui.rview?regViewHtml():'')+(ui.sw?modalHtml():'');if(tipEl)tipEl.style.display='none';
  [$('app'),$('modal')].forEach(c=>{if(c&&c.querySelectorAll)c.querySelectorAll('button[aria-label]:not([title])').forEach(b=>{b.title=b.getAttribute('aria-label')})});
  [$('app'),$('modal')].forEach(c=>{if(c&&c.querySelectorAll)c.querySelectorAll('form,input:not([type=checkbox]):not([type=file]):not([type=hidden]),textarea').forEach(x=>x.setAttribute('autocomplete','off'))});
@@ -995,7 +900,7 @@ function render0(){
 
 const GEAR='<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
 const TRASH='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>';
-const UNDO_MSG={rreopen:'Meta reiniciada',rundo:'Nova rodada desfeita',delreg:'Registro excluído',reopen:'Ciclo reaberto',rvcancel:'Revisão cancelada',pldel:'Plano excluído',plset:'Nova rodada iniciada',eddel:'Edital excluído',sdel:'Disciplina excluída',del:'Bloco removido',hide:'Disciplina removida do ciclo',dt:'Tópico excluído',dl:'Aula/link excluída',delgrp:'Tópico removido',delrow:'Aula/link removida',bkrestore:'Backup restaurado',reset:'Dados apagados',next:'Novo ciclo iniciado',tplset:'Padrão definido',tplupd:'Padrão atualizado',tpldel:'Padrão removido',rzero:'Cronômetro reiniciado'};
+const UNDO_MSG={rreopen:'Meta reiniciada',rundo:'Nova rodada desfeita',delreg:'Registro excluído',reopen:'Ciclo reaberto',rvcancel:'Revisão cancelada',pldel:'Plano excluído',plset:'Nova rodada iniciada',sdel:'Disciplina excluída',del:'Bloco removido',hide:'Disciplina removida do ciclo',dt:'Tópico excluído',dl:'Aula/link excluída',delgrp:'Tópico removido',delrow:'Aula/link removida',bkrestore:'Backup restaurado',reset:'Dados apagados',next:'Novo ciclo iniciado',tplset:'Padrão definido',tplupd:'Padrão atualizado',tpldel:'Padrão removido',rzero:'Cronômetro reiniciado'};
 function hideUndo(){clearTimeout(ui.undoT);ui.undo=null;const t=document.getElementById('undo');if(t)t.remove()}
 const UST=[],RST=[];
 function pushU(msg,snap){UST.push({snap:snap||JSON.stringify(S),msg});if(UST.length>10)UST.shift();RST.length=0}
@@ -1251,7 +1156,6 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='hclr'){ui.hq='';ui.hd1='';ui.hd2='';ui.hfs='';ui.hfc='';ui.hn=30;render();const q=$('hq');if(q)q.focus({preventScroll:true});return}
  if(a==='rvatog'){S.rvaClosed=!S.rvaClosed;save();render();return}
  if(a==='rmore'){ui.more=ui.more===p?null:p;render();return}
- if(a==='spick'&&p==='lkk'){ui.lked&&(ui.lked.kind=q==='questoes'?'questoes':'aula');ui.dd=null;save();render();return}
  if(a==='spick'){if(p==='af'){ui.nmph=null;S.sel.nnnew=false;S.sel.af=q;S.sel.nn='';S.sel.nnid=null;S.sel.nnall=false}else if(p==='ne'){S.sel.ne=q}else if(p==='ss'){reqSwitch(q)}else if(p.startsWith('k-')){const [,gi,ri]=p.split('-'),g=grps().find(x=>x.id===gi),r=g&&g.rows.find(x=>x.id===ri);if(r)r.kind=q==='questoes'?'questoes':'aula'}ui.dd=null}
  if(a==='tdd')ui.dd=ui.dd==='t:'+p?null:'t:'+p;
  if(a==='tpick'){if(p.startsWith('goal-')){const s=S.subjects.find(x=>x.id===p.slice(5));if(s)s.goal=+q}else if(p==='man')S.sel.mt=tmFmt(+q);else if(p==='ng')S.sel.ng=tmFmt(+q);else if(p==='edit'&&S.edit)S.edit.min=String(+q);ui.dd=null;ui.focus='tf-'+p}
@@ -1261,8 +1165,6 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='addgrp'){const g=newG();grps().push(g);ui.focus='n-'+g.id}
  if(a==='delgrp'){const g0=grps().find(x=>x.id===p);if(g0&&(g0.nt.trim()||g0.rows.some(r=>(r.name||'').trim()||(r.link||'').trim()))&&!ask('delgrp:'+p,t))return}
  if(a==='delgrp')S.sel.groups=grps().filter(x=>x.id!==p);
- if(a==='edren'){ui.edren=p;ui.focus='edn-'+p}
- if(a==='plren'){ui.plren=p;ui.focus='pln-'+p}
  if(a==='plopen')ui.pl=!ui.pl;
  if(a==='plclose'){ui.pl=null;ui.ple=null}
  if(a==='plback')ui.ple=null;
@@ -1278,7 +1180,7 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
   S.subjects=S.subjects.filter(x=>!bs.includes(x.id)&&!bs.includes(x.of));S.editais=S.editais.filter(e=>e.plan!==p);
   bs.forEach(id=>{delete S.progress[id];if(S.paused)delete S.paused[id]});
   Object.values(S.planData).forEach(d=>{if(d&&d.layout)d.layout=d.layout.filter(l=>!bs.includes(l.id)&&!bs.includes(l.of))});
-  ui.ple=null;ui.pl=true;ui.plren=null}
+  ui.ple=null;ui.pl=true}
  if(a==='edopen')ui.ed=true;
  if(a==='addopen'){ui.addm=true;S.sel.nnnew=false;ui.nmph=null;S.sel.af=(myEds()[0]||{}).id||'';S.sel.nnall=false;S.sel.nn='';S.sel.nnid=null;S.sel.ng='1h30';ui.dd=null}
  if(a==='addclose'){ui.addm=null;ui.dd=null}
@@ -1288,10 +1190,6 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='pdedit'){ui.pde=ui.pde===p?null:p;ui.pdn=null;ui.open.add('pd:'+p)}
  if(a==='pdend')ui.pde=null;
  if(a==='etog'){ui.open.has(p+':'+q)?ui.open.delete(p+':'+q):ui.open.add(p+':'+q)}
- if(a==='edorg'||a==='edimp'){ui.edmsg=ui.edmsg||{};ui.imp=ui.imp||{}}
- if(a==='edorg'){const tx=(ui.imp||{})[p]||'';if(/^\s*#/m.test(tx))ui.edmsg[p]='O texto já está organizado. Revise e clique em Importar.';else{const r=parseRaw(tx);if(r.length){ui.imp[p]=toOutline(r);ui.edmsg[p]='Encontrei '+r.length+' disciplina(s). Revise e clique em Importar.'}else ui.edmsg[p]='Não encontrei disciplinas automaticamente. Marque cada disciplina com # no início da linha.'}}
- if(a==='edimp'){let tx=(ui.imp||{})[p]||'';if(!/^\s*#/m.test(tx)){const r=parseRaw(tx);tx=r.length?toOutline(r):''}const subs=parseOutline(tx);if(!subs.length)ui.edmsg[p]='Nada para importar. Use # antes do nome de cada disciplina.';else{const r=importInto(p,subs);ui.imp[p]='';ui.edmsg[p]='Importado: '+r.ns+' disciplina(s) nova(s) e '+r.nt+' tópico(s) novo(s). Elas já estão no ciclo.'}}
- if(a==='eddel'){if(!ask('eddel:'+p,t))return;const ids=S.subjects.filter(s=>s.ed===p).map(s=>s.id);S.subjects=S.subjects.filter(s=>!ids.includes(s.id)&&!ids.includes(s.of));ids.forEach(id=>{delete S.progress[id];if(S.paused)delete S.paused[id]});S.editais=S.editais.filter(e=>e.id!==p);if(!S.editais.length)S.editais.push({id:uid(),name:'Meu edital'});}
  if(a==='sdel'){if(!ask('sdel:'+p,t))return;const ids=[p,...S.subjects.filter(s=>s.of===p).map(s=>s.id)];S.subjects=S.subjects.filter(s=>!ids.includes(s.id));ids.forEach(id=>{delete S.progress[id];if(S.paused)delete S.paused[id]})}
  if(a==='edclose'){ui.ed=null;ui.addm=null}
  if(a==='pickrow'&&!S.edit&&S.subjects.some(x=>x.id===p)){if(typeof matchMedia==='function'&&matchMedia('(max-width:600px)').matches){ui.more=null;if(p===S.sel.subj&&S.timer.running){S.timer.acc=el();S.timer.running=false}else if(!gDone(S.subjects.find(x=>x.id===p)))reqSwitch(p,'rplay');else reqSwitch(p)}else reqSwitch(p);ui.dd=null}
@@ -1326,17 +1224,11 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
   const baseOf=id=>{const o=S.subjects.find(x=>x.id===id);if(o)return o.of||o.id;const l=((S.alt&&S.alt.lay)||[]).concat(S.rvLayout||[]).find(x=>x.id===id);return l?(l.of||l.id):id};
   [[S.sel,S.paused],[S.alt&&S.alt.sel,S.alt&&S.alt.paused]].forEach(([sl,pzz])=>{if(sl&&sl.subj&&baseOf(sl.subj)===bs.id&&sl.groups)sl.groups=strip(sl.groups);if(pzz)Object.keys(pzz).forEach(k=>{if(baseOf(k)===bs.id&&pzz[k].groups)pzz[k].groups=strip(pzz[k].groups)})});
   Object.keys(S.checked||{}).forEach(k=>{if(k.indexOf(':'+bs.id+':'+q+':')>0)delete S.checked[k]})}
- if(a==='lkclip'&&ui.lked){ui.lked.lo=!ui.lked.lo;if(ui.lked.lo)ui.focus='lku'}
- if(a==='lkedit'&&sub){const tp=topicOf(sub,q),l=tp&&tp.links.find(x=>x.id===r);if(l){ui.lked={s:p,t:q,l:r,kind:'aula',u:l.url||'',q:l.q||''};ui.focus='lkn'}}
- if(a==='tren'&&sub){ui.tren=q;ui.trenmsg=null;ui.trenv=null;ui.focus='tren-'+q}
- if(a==='lkcancel'){ui.lked=null;ui.dd=null}
  save();render();if(a==='edit'&&!edPop())scrollTo(0,0);if(ui.undoNext){showUndo(ui.undoNext);ui.undoNext=null}
 });
 document.addEventListener('change',e=>{if('snd' in (e.target.dataset||{})){S.snd=e.target.checked;save();render();return}if(e.target.classList&&e.target.classList.contains('regdate')){S.sel.md=e.target.value;save();return}
  const d=e.target.dataset,v=e.target.value;
- if(d.edfile){const f=e.target.files&&e.target.files[0];if(f)readEditalFile(d.edfile,f);e.target.value='';return}
  if(d.pln)return;
- if(d.edn)return;
  if('tm' in d){const mn=tmParse(v);if(d.goal){const s=S.subjects.find(x=>x.id===d.goal);if(s&&mn>=1){s.goal=mn;save()}e.target.value=tmFmt(s?s.goal:mn)}else{e.target.value=mn?tmFmt(mn):'';const k=d.tf;if(k==='man')S.sel.mt=e.target.value;else if(k==='ng')S.sel.ng=e.target.value}return}
  if(e.target.id==='ss'){S.sel.subj=v;S.sel.topic=''}
  else if(e.target.id==='st')S.sel.topic=v;
@@ -1361,10 +1253,10 @@ document.addEventListener('keydown',e=>{const t=e.target;if(!t.dataset||!('tm' i
 },true);
 document.addEventListener('focusout',e=>{const t=e.target;if(t.dataset&&'tm' in t.dataset&&t.dataset.dirty){delete t.dataset.dirty;t.dispatchEvent(new Event('change',{bubbles:true}))}});
 document.addEventListener('focusin',e=>{const t=e.target;if(t.dataset&&'tm' in t.dataset)t.dataset.v=parseInt(t.value.replace(/\D/g,''),10)||0});
-document.addEventListener('input',e=>{if(e.target.dataset&&e.target.dataset.lkf&&ui.lked){ui.lked[e.target.dataset.lkf]=e.target.value;return}if(e.target.dataset&&'nmi' in e.target.dataset){e.target.setCustomValidity('');S.sel.nn=e.target.value;S.sel.nnid=null;S.sel.nnall=false;if(ui.nmnote){ui.nmnote=null;const n=document.querySelector&&document.querySelector('.nmnote');if(n)n.remove()}return}if(e.target.dataset&&e.target.dataset.imp){ui.imp=ui.imp||{};ui.imp[e.target.dataset.imp]=e.target.value;return}if(e.target.dataset&&'rvn' in e.target.dataset)ui.revN=e.target.value;const t=e.target;if(t.dataset&&'tm' in t.dataset){const prev=+(t.dataset.v||0),del=e.inputType&&e.inputType.indexOf('delete')===0;let v=parseInt(t.value.replace(/\D/g,''),10)||0;if(del&&v===prev)v=Math.floor(prev/10);if(v>99999)v=prev;t.dataset.v=v;t.value=del&&v===0?'':Math.floor(v/100)+'h'+String(v%100).padStart(2,'0');if('em' in t.dataset&&S.edit)S.edit.min=String(Math.floor(v/100)*60+v%100);const k=t.dataset.tf;if(k==='man')S.sel.mt=t.value;else if(k==='ng')S.sel.ng=t.value;return}
+document.addEventListener('input',e=>{if(e.target.dataset&&'nmi' in e.target.dataset){e.target.setCustomValidity('');S.sel.nn=e.target.value;S.sel.nnid=null;S.sel.nnall=false;if(ui.nmnote){ui.nmnote=null;const n=document.querySelector&&document.querySelector('.nmnote');if(n)n.remove()}return}const t=e.target;if(t.dataset&&'tm' in t.dataset){const prev=+(t.dataset.v||0),del=e.inputType&&e.inputType.indexOf('delete')===0;let v=parseInt(t.value.replace(/\D/g,''),10)||0;if(del&&v===prev)v=Math.floor(prev/10);if(v>99999)v=prev;t.dataset.v=v;t.value=del&&v===0?'':Math.floor(v/100)+'h'+String(v%100).padStart(2,'0');if('em' in t.dataset&&S.edit)S.edit.min=String(Math.floor(v/100)*60+v%100);const k=t.dataset.tf;if(k==='man')S.sel.mt=t.value;else if(k==='ng')S.sel.ng=t.value;return}
  const d=e.target.dataset;if(S.edit&&'ed' in d)S.edit.date=e.target.value;if(d.gn){const g=grps().find(x=>x.id===d.gn);if(g){g.nt=e.target.value;if(g.err&&g.nt.trim()){g.err=false;const w=e.target.closest('.cb');if(w)w.classList.remove('err')}}}if(d.rac||d.rtq){const g=grps().find(x=>x.id===d.g),r=g&&g.rows.find(x=>x.id===(d.rac||d.rtq));const v=e.target.value.replace(/\D/g,'').slice(0,4);e.target.value=v;if(r){if(d.rac)r.ac=v;else r.tq=v;const qp=document.getElementById('qp-'+r.id);if(qp)qp.textContent=qPct(r)}}if(d.rq){const g=grps().find(x=>x.id===d.g),r=g&&g.rows.find(x=>x.id===d.rq);if(r){const was=!!(r.q||'').trim();r.q=e.target.value;const now=!!r.q.trim();const cb=document.querySelector('[data-act=clip][data-id="'+d.g+':'+d.rq+'"]');if(cb)cb.classList.toggle('on',!!(now||(r.link||'').trim()));if(was!==now){ui.focus='q-'+r.id;ui.caret=e.target.selectionStart;render()}}}if(d.rnt){const g=grps().find(x=>x.id===d.g),r=g&&g.rows.find(x=>x.id===d.rnt);if(r)r.note=e.target.value;const nb=document.querySelector('[data-act=rnote][data-id="'+d.g+':'+d.rnt+'"]');if(nb)nb.classList.toggle('on',!!e.target.value.trim())}if(d.rn){const g0=grps().find(x=>x.id===d.g),r0=g0&&g0.rows.find(x=>x.id===d.rn);if(r0&&r0.err&&e.target.value.trim()){r0.err=false;const lb=e.target.closest('.aname');if(lb)lb.classList.remove('err')}}if(d.rn||d.rl){const g=grps().find(x=>x.id===d.g),r=g&&g.rows.find(x=>x.id===(d.rn||d.rl));if(r){if(d.rn)r.name=e.target.value;else r.link=e.target.value}}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(ui.rview){ui.rview=null;render()}else if(ui.sw){ui.sw=null;ui.swmsg='';render()}else if(ui.dd){ui.dd=null;render()}else if(ui.addm){ui.addm=null;render()}else if(ui.pl){ui.pl=null;render()}else if(ui.ed){ui.ed=null;render()}else if(S.sx&&!S.edit){S.sx=false;S.sel.mt='';render()}else if(edPop()){const w=S.edit.rvg;S.edit=null;if(!w)S.sel.groups=null;ui.msg='';save();render()}}const gd=e.target.dataset&&e.target.dataset.gn;if(e.key==='ArrowDown'&&gd&&ui.dd!==gd){e.preventDefault();ui.dd=gd;ui.focus='n-'+gd;ui.caret=e.target.selectionStart;render()}});
-document.addEventListener('paste',e=>{const t=e.target,d=t.dataset;if(d&&d.lkf==='u'&&ui.lked){setTimeout(()=>{ui.lked.u=t.value},0);return}if(!d||!d.rl)return;
+document.addEventListener('paste',e=>{const t=e.target,d=t.dataset;if(!d||!d.rl)return;
  setTimeout(()=>{const g=grps().find(x=>x.id===d.g),r=g&&g.rows.find(x=>x.id===d.rl);if(r){r.link=t.value;save()}},0)});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.target.dataset.rn||e.target.dataset.rl)){e.preventDefault();const d=e.target.dataset;if(d.rl){const g=grps().find(x=>x.id===d.g),r=g&&g.rows.find(x=>x.id===d.rl);if(r)r.open=false}addRow(d.g);save();render()}});
 const GRIP='<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.8"/><circle cx="15" cy="6" r="1.8"/><circle cx="9" cy="12" r="1.8"/><circle cx="15" cy="12" r="1.8"/><circle cx="9" cy="18" r="1.8"/><circle cx="15" cy="18" r="1.8"/></svg>';
@@ -1411,26 +1303,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset&&'r
 document.addEventListener('invalid',e=>{const t=e.target;if(t&&t.id==='nm-in'&&!t.value.trim())t.setCustomValidity(nmAvail()?'Preencha esse campo ou selecione um item.':'Preencha esse campo.')},true);
 document.addEventListener('focusin',e=>{if(e.target.id==='nm-in')e.target.placeholder='Crie uma nova disciplina'});
 document.addEventListener('focusout',e=>{if(e.target.id==='nm-in')e.target.placeholder=S.sel.nnnew?'Crie uma nova disciplina':'Disciplina'});
-document.addEventListener('focusout',e=>{const d=e.target.dataset;if(!d||!d.edn||ui.edren!==d.edn)return;const ed=S.editais.find(x=>x.id===d.edn),v=e.target.value.trim();if(ed&&v&&!ui.plcancel)ed.name=v;ui.edren=null;ui.plcancel=null;save();setTimeout(render,0)});
-document.addEventListener('focusout',e=>{const d=e.target.dataset;if(!d||!d.pln||ui.plren!==d.pln)return;const pl=S.plans.find(x=>x.id===d.pln),v=e.target.value.trim();if(pl&&v&&!ui.plcancel)pl.name=v;ui.plren=null;ui.plcancel=null;save();setTimeout(render,0)});
-document.addEventListener('keydown',e=>{const d=e.target.dataset;if(d&&d.lkf==='u'&&e.key==='Enter'&&ui.lked){e.preventDefault();ui.lked.u=e.target.value;ui.lked.lo=false;render();return}if(!d||!(d.pln||d.edn||d.tren))return;if(e.key==='Enter'){e.preventDefault();e.target.blur()}else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();ui.plcancel=true;e.target.blur()}},true);
-document.addEventListener('focusout',e=>{const d=e.target.dataset;if(!d||!d.tren)return;const [sid,tid]=d.tren.split(':');if(ui.tren!==tid)return;
- if(ui.plcancel){ui.tren=null;ui.trenmsg=null;ui.trenv=null;ui.plcancel=null;setTimeout(render,0);return}
- const s0=S.subjects.find(x=>x.id===sid),bs=s0&&(s0.of?S.subjects.find(x=>x.id===s0.of)||s0:s0),tp=bs&&topicOf(bs,tid),v=e.target.value.trim();
- if(tp&&v&&v!==tp.name){if(bs.topics.some(x=>x.id!==tid&&x.name.trim().toLowerCase()===v.toLowerCase())){ui.trenmsg='Já existe um tópico com esse nome nesta disciplina.';ui.trenv=e.target.value;ui.focus='tren-'+tid;setTimeout(render,0);return}
-  const ol=tp.name.trim().toLowerCase(),fix=g=>{(g||[]).forEach(x=>{if(x.nt.trim().toLowerCase()===ol)x.nt=v})};
-  const baseOf=id=>{const o=S.subjects.find(x=>x.id===id);if(o)return o.of||o.id;const l=((S.alt&&S.alt.lay)||[]).concat(S.rvLayout||[]).find(x=>x.id===id);return l?(l.of||l.id):id};
-  [[S.sel,S.paused],[S.alt&&S.alt.sel,S.alt&&S.alt.paused]].forEach(([sl,pzz])=>{if(sl&&sl.subj&&baseOf(sl.subj)===bs.id)fix(sl.groups);if(pzz)Object.keys(pzz).forEach(k=>{if(baseOf(k)===bs.id)fix(pzz[k].groups)})});
-  if(S.edit&&S.edit.rvg&&S.edit.subj&&baseOf(S.edit.subj)===bs.id)fix(S.edit.rvg);
-  tp.name=v}
- ui.tren=null;ui.trenmsg=null;ui.trenv=null;save();setTimeout(render,0)});
-document.addEventListener('toggle',e=>{const k=e.target.dataset&&e.target.dataset.k;if(k)e.target.open?ui.open.add(k):ui.open.delete(k)},true);
 document.addEventListener('submit',e=>{
  e.preventDefault();const f=new FormData(e.target),k=e.target.dataset.f;
  if(k==='man'){S.sel.mt=f.get('m')||S.sel.mt||'';S.sel.md=f.get('d')||'';const mm=regMin(),nn=regErr();if(nn){ui.msg=nn.msg;ui.focus=nn.focus}else if(!canReg(mm)){ui.msg='Informe o tempo estudado.'}else if(mm>0||hasG()){addSession(mm);S.sel.mt='';S.timer={running:false,start:0,acc:0};S.sx=false}else ui.msg='Informe o tempo ou o tópico estudado.'}
  if(k==='plnew'){let n=(f.get('n')||'').trim();if(n){const base=n;for(let i=2;S.plans.some(x=>x.name.trim().toLowerCase()===n.toLowerCase());i++)n=base+' ('+i+')';const pl={id:uid(),name:n};S.plans.push(pl);S.planData[pl.id]=freshPlan();switchPlan(pl.id);S.editais.push({id:uid(),name:n,plan:pl.id});ui.pl=true;ui.ple=pl.id;tab='ciclo'}}
- if(k==='ednew'){const n=(f.get('n')||'').trim();if(n){const ed={id:uid(),name:n,plan:S.plan};S.editais.push(ed);ui.open.add('e:'+ed.id)}}
- if(k==='snew'){const n=(f.get('n')||'').trim(),eid=f.get('e');if(n&&!S.subjects.some(s=>!s.of&&s.ed===eid&&s.name.toLowerCase()===n.toLowerCase())){const o={id:uid(),name:n,goal:90,topics:[],ed:eid};o.ci=nextCi();S.subjects.push(o)}}
  if(k==='mat'){const n=(f.get('n')||S.sel.nn||'').trim(),g=tmParse(f.get('g'))||90,af=myEds().some(e=>e.id===S.sel.af)?S.sel.af:'';
   if(af&&S.sel.nnall){S.subjects.filter(s=>!s.of&&s.hid&&s.ed===af).forEach(s=>{delete s.hid;s.off=true;s.goal=g;S.subjects.push(S.subjects.splice(S.subjects.indexOf(s),1)[0])});S.sel.nn='';S.sel.nnall=false;ui.addm=null;ui.dd=null}
   else if(n&&af){let s0=S.sel.nnid?S.subjects.find(x=>x.id===S.sel.nnid):null;if(!s0||s0.name.toLowerCase()!==n.toLowerCase())s0=S.subjects.find(x=>!x.of&&x.ed===af&&x.name.toLowerCase()===n.toLowerCase());
@@ -1441,14 +1317,6 @@ document.addEventListener('submit',e=>{
  if(k==='pdadd'){const s=S.subjects.find(x=>x.id===f.get('s'));if(s){const have=new Set(s.topics.map(x=>x.name.toLowerCase()));parseTopics(f.get('t')).forEach(n=>{if(!have.has(n.toLowerCase())){have.add(n.toLowerCase());s.topics.push({id:uid(),name:n,done:false,links:[]})}});S.subjects.forEach(x=>{if(x.of===s.id)x.topics=s.topics})}}
  if(k==='rvwait'){const raw=String(f.get('n')||'').trim(),n=Number(raw);if(!/^\d+$/.test(raw)||!(n>=1&&n<=60)){ui.msg='Informe um número inteiro de 1 a 60 dias corridos.'}else if(n===rvWait()){ui.msg='A espera já está em '+n+'.'}else{S.rvwait=n;ui.msg='Espera salva: grupos ficam disponíveis '+n+' dia'+(n===1?'':'s')+' corrido'+(n===1?'':'s')+' após o último dia de estudo.'}}
  if(k==='rvint'){const raw=String(f.get('n')||'').trim(),n=Number(raw);if(!/^\d+$/.test(raw)||!(n>=1&&n<=60)){ui.msg='Informe um número inteiro de 1 a 60 dias válidos de estudo.'}else if(n===rvInt()){ui.msg='O intervalo já está em '+n+'.'}else{const I=rgInfo();S.rvlog=S.rvlog||[];S.rvlog.push({ts:Date.now(),de:rvInt(),para:n,dias:I.total,grupos:S.rgs.length});S.rvint=n;ui.msg='Intervalo salvo: '+n+' dia'+(n===1?'':'s')+' válido'+(n===1?'':'s')+' de estudo. Vale para os próximos grupos; os grupos já formados não mudam.'}}
- if(k==='top'){const s=S.subjects.find(x=>x.id===f.get('s'));if(s)f.get('t').split('\n').map(x=>x.trim()).filter(Boolean).forEach(n=>s.topics.push({id:uid(),name:n,done:false,links:[]}))}
- if(k==='lked'){const s0=S.subjects.find(x=>x.id===f.get('s')),bs=s0&&(s0.of?S.subjects.find(x=>x.id===s0.of)||s0:s0),tp=bs&&topicOf(bs,f.get('t')),kind='aula',it=mk2(kind,(ui.lked||{}).n!=null?ui.lked.n:f.get('n'),(ui.lked||{}).u||''),lid=f.get('l');
-  if(tp&&it&&lid){{const old=tp.links.find(x=>x.id===lid);if(old&&!sameIt(old,it)){const ok=ik(old),G=grp(bs.id);
-    S.sessions.forEach(x=>{if(G.includes(x.subj)&&x.topic===tp.id)(x.items||[]).forEach(i=>{const k0=itKey(i);if(k0&&sameIt(k0,old)){if(i.ref!==undefined)delete i.ref;i.kind=it.kind;i.name=it.title||'';i.link=it.url||''}})});
-    const nk=ik(it);Object.keys(S.checked||{}).forEach(c=>{if(c.indexOf(':'+bs.id+':'+tp.id+':')>0&&c.endsWith(':'+ok)){S.checked[c.slice(0,c.length-ok.length)+nk]=S.checked[c];delete S.checked[c]}});
-    S.sessions.forEach(x=>{if(x.chk)x.chk=x.chk.map(c=>c.indexOf(':'+bs.id+':'+tp.id+':')>0&&c.endsWith(':'+ok)?c.slice(0,c.length-ok.length)+nk:c)});
-    old.kind=it.kind;old.url=it.url;old.title=it.title;if(tp.hide)tp.hide=tp.hide.filter(x=>x!==nk)}if(old){const qv=String((ui.lked||{}).q||'').trim();if(qv)old.q=qv;else delete old.q}}
-   ui.lked=null}}
  save();render();
 });
 try{norm();setMode('study');if(!S.edit&&!S.sx&&!(S.timer&&(S.timer.running||S.timer.acc>0))){const c=current();if(c&&c.id!==S.sel.subj){if(S.sel.subj&&hasG())pz()[S.sel.subj]={acc:0,groups:S.sel.groups};S.sel.subj=c.id;S.sel.topic='';S.sel.groups=null}}}catch(x){}
