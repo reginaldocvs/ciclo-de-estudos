@@ -235,6 +235,8 @@ input[type=checkbox]{border-radius:4px}
 @container (max-width:520px){.kpis .kpi{flex-direction:column-reverse;justify-content:flex-end;align-items:center;text-align:center;gap:8px}}
 .kpi{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;background:var(--card);border:1px solid color-mix(in srgb,var(--line) 55%,transparent);border-radius:20px;box-shadow:var(--sh);padding:16px 18px}
 .kpi .kl{color:var(--mut);font-weight:600;font-size:.85rem}
+/* Título e valor nunca quebram linha; fitKpis() reduz a fonte quando não cabem */
+.kpi>div:first-child{min-width:0;max-width:100%}.kpi .kl,.kpi b{white-space:nowrap}
 .kpi b{display:block;font-size:1.5rem;font-weight:800;letter-spacing:-.02em;line-height:1.2;font-variant-numeric:tabular-nums}
 .kic{flex:none;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:color-mix(in srgb,var(--ac) 12%,var(--card));color:var(--ac)}
 .kic.ok{background:color-mix(in srgb,var(--ok) 14%,var(--card));color:var(--ok)}
@@ -809,12 +811,14 @@ const plansHtml=()=>{const pe=ui.ple&&S.plans.find(x=>x.id===ui.ple&&x.id===S.pl
  const rows=S.plans.map(pl=>{const cur=pl.id===S.plan,i=planInfo(pl);return `<div class="card plrow${cur?' cur':''}"${cur?'':` data-act="plsw" data-id="${pl.id}" title="Abrir este plano"`}><div class="row" style="padding:0"><span class="pldot${cur?' on':''}"></span><div class="grow" style="min-width:0"><b class="plname">${esc(pl.name)}</b><div class="mut" style="font-size:.8rem">${i.s>1?'Rodada '+i.s+' · ':''}Ciclo ${i.c} · ${i.n} disciplina${i.n===1?'':'s'}${cur?' · aberto':''}</div></div><button class="btn g s" data-act="pled" data-id="${pl.id}" title="Editar disciplinas e tópicos deste plano" aria-label="Editar plano">Editar</button><button class="btn g s" data-act="plset" data-id="${pl.id}" title="Zera o progresso e recomeça este plano no Ciclo 1. Seu histórico é mantido." aria-label="Começar nova rodada de ciclos">Nova rodada</button><button class="x" data-act="pldel" data-id="${pl.id}" title="Excluir plano" aria-label="Excluir plano">${TRASH}</button></div></div>`}).join('');
  const body=pe?viewPlanEd():`${rows}<h2 class="sec">Novo plano</h2><div class="card"><form autocomplete="off" data-f="plnew" class="fl"><input class="t" name="n" placeholder="Nome do plano, ex.: TRF 1ª Região" required aria-label="Nome do plano"><button class="btn">Criar plano</button></form></div>`;
  return `<div class="ov" data-act="plclose"></div><div class="dlg medit plans" role="dialog" aria-modal="true" aria-label="Planos de estudo">${head}<div class="mscroll">${body}</div></div>`};
+/* Indicadores: se algum título/valor não cabe numa linha, reduz a fonte (igual nos 3 cartões) até caber. */
+function fitKpis(){document.querySelectorAll('.kpis').forEach(g=>['.kl','b'].forEach(sel=>{const L=[...g.querySelectorAll('.kpi '+sel)];if(!L.length)return;L.forEach(e=>e.style.fontSize='');const over=()=>L.some(e=>e.scrollWidth>e.clientWidth+.5);if(!over())return;let fs=Math.min(...L.map(e=>parseFloat(getComputedStyle(e).fontSize)));while(over()&&fs>8){fs-=.5;L.forEach(e=>e.style.fontSize=fs+'px')}}))}
 function posDD(){document.querySelectorAll('.dlg .dd').forEach(d=>{const a=d.parentElement.getBoundingClientRect(),vh=innerHeight,lim=vh*0.7;
  Object.assign(d.style,{position:'fixed',left:a.left+'px',width:a.width+'px',right:'auto',zIndex:70,maxHeight:''});
  const need=Math.min(d.scrollHeight,lim),below=vh-a.bottom-8,above=a.top-8;
  if(need>below&&above>below)Object.assign(d.style,{top:'auto',bottom:(vh-a.top+4)+'px',marginTop:'0',maxHeight:Math.min(lim,above)+'px'});
  else Object.assign(d.style,{top:(a.bottom+4)+'px',bottom:'auto',marginTop:'0',maxHeight:Math.min(lim,below)+'px'})})}
-addEventListener('resize',()=>posDD());document.addEventListener('scroll',()=>posDD(),true);
+addEventListener('resize',()=>{posDD();fitKpis()});try{document.fonts.ready.then(fitKpis)}catch(e){}document.addEventListener('scroll',()=>posDD(),true);
 try{matchMedia('(max-width:600px)').addEventListener('change',()=>{if(tab==='reg'&&ui.hcal)render()})}catch(e){}
 const FOC={kb:false,op:null};document.addEventListener('keydown',e=>{if(e.key==='Tab'||e.key==='Enter'||e.key==='Escape'||e.key.startsWith('Arrow'))FOC.kb=true},true);document.addEventListener('pointerdown',()=>{FOC.kb=false},true);
 const focSig=()=>{const a=document.activeElement;if(!a||a===document.body||a===document.documentElement)return null;const d=a.dataset||{};if(a.id)return '#'+CSS.escape(a.id);if(d.act)return '[data-act="'+CSS.escape(d.act)+'"]'+(d.id!==undefined?'[data-id="'+CSS.escape(d.id)+'"]':'');if(d.tab)return '[data-tab="'+CSS.escape(d.tab)+'"]';return null};
@@ -842,7 +846,7 @@ function render0(){
  $('modal').innerHTML=(ui.pl?plansHtml()+(ui.pdadd&&ui.pdd?pdAddHtml():''):'')+(ui.ed&&(tab==='ciclo'||(tab==='rev'&&S.rv))?editHtml()+(ui.addm?newMatCard():''):'')+(S.sx&&!S.edit?sessCard():'')+(edPop()?sessCard():'')+(ui.rview?regViewHtml():'')+(ui.sw?modalHtml():'');if(tipEl)tipEl.style.display='none';
  [$('app'),$('modal')].forEach(c=>{if(c&&c.querySelectorAll)c.querySelectorAll('button[aria-label]:not([title])').forEach(b=>{b.title=b.getAttribute('aria-label')})});
  [$('app'),$('modal')].forEach(c=>{if(c&&c.querySelectorAll)c.querySelectorAll('form,input:not([type=checkbox]):not([type=file]):not([type=hidden]),textarea').forEach(x=>x.setAttribute('autocomplete','off'))});
- scrLoad(scr);ui.rtab=tab;
+ scrLoad(scr);ui.rtab=tab;fitKpis();
  if(ui.anc){const A=ui.anc,b=document.querySelector(A.sel),c=b&&b.closest('.card'),box=c&&c.closest('.mscroll');ui.anc=null;if(box)box.scrollTop+=c.getBoundingClientRect().top-A.top}
  posDD();
  try{chrome()}catch(e){}
