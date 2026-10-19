@@ -299,6 +299,8 @@ input[type=checkbox]{border-radius:4px}
 .pdst b{font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
 .pdst span{font-size:.78rem;color:var(--mut);font-weight:600}
 .pdl{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.pdth{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 8px}
+.dlg.pdadd{width:min(94vw,440px)}
 .pdrow{display:flex;align-items:center;gap:6px;min-width:0;padding:3px 0}
 .pdrow.ro{padding:6px 2px;gap:10px}
 .pdtt{min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -736,11 +738,28 @@ function rodCard(){
  const b=S.rodBack,can=b&&b.to===cs&&!S.sessions.some(x=>(x.set||1)===cs);
  const row=i=>`<div class="row" style="align-items:center"><div class="grow"><b>Rodada ${i.r}</b> <span class="mut">· ${i.cur?'em andamento':'concluída'}</span><div class="mut" style="font-size:.84rem">${i.c} ${i.c===1?'ciclo':'ciclos'} · ${fmt(i.min)} estudados${i.d0?' · '+fd2(i.d0)+(i.d1!==i.d0?' a '+fd2(i.d1):''):''}</div></div>${i.cur?'':`<button class="btn g s" data-act="rvgo" data-id="${i.r}">Ver</button>`}</div>`;
  return `<div class="card pdb"><h2 style="margin-bottom:6px">Rodadas</h2><div class="mut" style="font-size:.84rem;margin-bottom:8px">Uma rodada é uma volta completa pelo plano: ao iniciar uma nova, os ciclos recomeçam do 1 e as anteriores ficam guardadas para consulta.</div>${L.map(row).join('')}${can?`<div class="fl" style="margin-top:10px"><button class="btn g s" data-act="rundo">Desfazer nova rodada</button><span class="mut" style="align-self:center;font-size:.8rem">Disponível enquanto a Rodada ${cs} estiver vazia.</span></div>`:''}</div>`}
+/* Edição da disciplina em rascunho (ui.pdd): nome, nomes/ordem dos tópicos, excluídos (del) e novos (nw).
+   Nada vai para S até "Salvar"; "Cancelar" só descarta o rascunho. */
+function pdDraft(s){if(!ui.pdd||ui.pdd.id!==s.id)ui.pdd={id:s.id,name:s.name,topics:s.topics.map(t=>({id:t.id,name:t.name})),del:[]};return ui.pdd}
+function pdClose(){ui.pde=null;ui.pdd=null;ui.pdmsg=null;ui.pdadd=null}
+const pdAddHtml=()=>`<div class="ov top" data-act="pdaddx"></div><div class="dlg top pdadd" role="dialog" aria-modal="true" aria-label="Adicionar tópicos"><div class="chead"><h2>Adicionar tópicos</h2><button class="x" data-act="pdaddx" title="Fechar" aria-label="Fechar">✕</button></div><form autocomplete="off" data-f="pdadd"><textarea id="pdaddt" name="t" rows="7" placeholder="Cole uma lista, um tópico por linha" required aria-label="Novos tópicos"></textarea><div class="mut" style="font-size:.82rem;margin-top:4px">Cada linha vira um tópico. Repetidos são ignorados.</div><button class="btn full" style="margin-top:12px">Adicionar</button></form></div>`;
+function pdSave(){const D=ui.pdd,s0=D&&S.subjects.find(x=>x.id===D.id);if(!s0){pdClose();return}
+ const name=D.name.trim(),names=D.topics.map(t=>t.name.trim()),low=names.map(n=>n.toLowerCase());
+ if(!name){ui.pdmsg='Informe o nome da disciplina.';ui.focus=null;return}
+ if(names.some(n=>!n)){ui.pdmsg='Há tópico sem nome. Preencha ou exclua.';return}
+ const dup=low.find((n,i)=>low.indexOf(n)!==i);if(dup){ui.pdmsg='Tópico repetido: '+names[low.indexOf(dup)]+'.';return}
+ ask('pdsave');
+ D.del.forEach(q=>delTopic(s0,q));
+ S.subjects.forEach(x=>{if(x.id===s0.id||x.of===s0.id)x.name=name});
+ const by=new Map(s0.topics.map(t=>[t.id,t])),nt=D.topics.map((t,i)=>{const o=by.get(t.id);if(o){o.name=names[i];return o}return {id:t.id,name:names[i],done:false,links:[]}});
+ s0.topics.forEach(t=>{if(!nt.includes(t))nt.push(t)});s0.topics.splice(0,s0.topics.length,...nt);S.subjects.forEach(x=>{if(x.of===s0.id)x.topics=s0.topics});
+ pdClose()}
 function viewPlanEd(){
  const eds=myEds().map(e=>e.id),subs=S.subjects.filter(x=>!x.of&&eds.includes(x.ed));
  const nb=ui.pdn?`<div class="card pdb"><h2 style="margin-bottom:10px">Nova disciplina</h2><form autocomplete="off" data-f="pdnew"><input class="t" name="n" placeholder="Nome da disciplina" required aria-label="Nome da disciplina" style="width:100%"><textarea name="t" rows="6" placeholder="Cole aqui a lista de tópicos, um por linha (opcional)" aria-label="Tópicos, um por linha" style="margin-top:8px"></textarea><div class="mut" style="font-size:.82rem;margin-top:4px">Cada linha vira um tópico.</div><div class="fl" style="margin-top:10px"><button class="btn">Salvar disciplina</button><button type="button" class="btn g" data-act="pdcancel">Cancelar</button></div></form></div>`:`<div class="pdnew"><button class="btn" data-act="pdnew">+ Nova disciplina</button></div>`;
  const blk=s=>{const ed=ui.pde===s.id,op=ed||ui.open.has('pd:'+s.id),done=studiedSet(s),nd=s.topics.filter(t=>done.has(t.id)).length,c=col(s);
-  const list=op?(ed?`<div class="pdl"><label class="mut" style="font-size:.8rem">Nome da disciplina</label><input class="edname" style="border-color:var(--line);background:var(--bg);margin:2px 0 10px" data-pdn="${s.id}" value="${esc(s.name)}" aria-label="Nome da disciplina"><div class="pdrows" data-pdrows="${s.id}">${s.topics.map(t=>`<div class="pdrow" data-tid="${t.id}"><button type="button" class="x pdgrip" data-pgrip="${s.id}:${t.id}" title="Arrastar para mudar a ordem" aria-label="Mover tópico">${GRIP}</button><input class="pdtn" data-ptn="${s.id}:${t.id}" value="${esc(t.name)}" title="${esc(t.name)}" aria-label="Nome do tópico"><button class="x" data-act="dt" data-id="${s.id}:${t.id}" title="Excluir tópico" aria-label="Excluir tópico">${TRASH}</button></div>`).join('')||'<div class="empty">Sem tópicos ainda.</div>'}</div><form autocomplete="off" data-f="pdadd" style="margin-top:10px"><input type="hidden" name="s" value="${s.id}"><textarea name="t" rows="3" placeholder="Adicionar tópicos: cole uma lista, um por linha" required aria-label="Novos tópicos"></textarea><div class="fl" style="margin-top:8px"><button class="btn s">Adicionar tópicos</button><button type="button" class="btn g s" data-act="pdend">Concluir edição</button></div></form></div>`:`<div class="pdl">${s.topics.map(t=>`<div class="pdrow ro"><span class="pdck${done.has(t.id)?' on':''}" aria-hidden="true">${done.has(t.id)?'✓':''}</span><span class="pdtt" title="${esc(t.name)}">${esc(t.name)}</span></div>`).join('')||'<div class="empty">Sem tópicos ainda.</div>'}</div>`):'';
+  const D=ed?pdDraft(s):null;
+  const list=op?(ed?`<div class="pdl"><label class="mut" style="font-size:.8rem">Nome da disciplina</label><input class="edname" style="border-color:var(--line);background:var(--bg);margin:2px 0 10px" data-pdn="${s.id}" value="${esc(D.name)}" aria-label="Nome da disciplina"><div class="pdth"><span class="mut">Tópicos (${D.topics.length})</span><button type="button" class="btn g s" data-act="pdaddopen" data-id="${s.id}">+ Adicionar tópicos</button></div><div class="pdrows" data-pdrows="${s.id}">${D.topics.map(t=>`<div class="pdrow" data-tid="${t.id}"><button type="button" class="x pdgrip" data-pgrip="${s.id}:${t.id}" title="Arrastar para mudar a ordem" aria-label="Mover tópico">${GRIP}</button><input class="pdtn" data-ptn="${s.id}:${t.id}" value="${esc(t.name)}" title="${esc(t.name)}" aria-label="Nome do tópico"><button class="x" data-act="pddt" data-id="${s.id}:${t.id}" title="Excluir tópico" aria-label="Excluir tópico">${TRASH}</button></div>`).join('')||'<div class="empty">Sem tópicos ainda.</div>'}</div>${ui.pdmsg?`<div role="alert" style="color:var(--bad);font-size:.85rem;margin-top:8px">${esc(ui.pdmsg)}</div>`:''}<div class="fl" style="margin-top:12px"><button type="button" class="btn s" data-act="pdsave" data-id="${s.id}">Salvar</button><button type="button" class="btn g s" data-act="pdend">Cancelar</button></div></div>`:`<div class="pdl">${s.topics.map(t=>`<div class="pdrow ro"><span class="pdck${done.has(t.id)?' on':''}" aria-hidden="true">${done.has(t.id)?'✓':''}</span><span class="pdtt" title="${esc(t.name)}">${esc(t.name)}</span></div>`).join('')||'<div class="empty">Sem tópicos ainda.</div>'}</div>`):'';
   return `<div class="card pdb" style="--sc:${c}"><div class="pdh"><span class="dot" style="background:${c}"></span><b class="pdt" title="${esc(s.name)}">${esc(s.name)}</b><button class="x${op&&!ed?' on':''}" data-act="pdtog" data-id="${s.id}" title="${op?'Recolher tópicos':'Ver tópicos'}" aria-label="Ver tópicos" aria-expanded="${op}">${EYEP}</button><button class="x${ed?' on':''}" data-act="pdedit" data-id="${s.id}" title="Editar disciplina" aria-label="Editar disciplina">${PEN}</button><button class="x" data-act="sdel" data-id="${s.id}" title="Excluir disciplina" aria-label="Excluir disciplina">${TRASH}</button></div><div class="pdst"><div><b>${nd}</b><span>Tópicos estudados</span></div><div><b>${s.topics.length}</b><span>Tópicos totais</span></div></div>${list}</div>`};
  const pl0=S.plans.find(x=>x.id===S.plan)||{name:''},nm=`<div class="card pdb"><label class="mut" style="font-size:.8rem;font-weight:600" for="ppn">Nome do plano</label><input id="ppn" class="t" data-ppn="1" value="${esc(pl0.name)}" aria-label="Nome do plano" style="width:100%;margin-top:4px" maxlength="80"></div>`;
  return nm+rodCard()+nb+(subs.map(blk).join('')||(ui.pdn?'':'<div class="card empty">Este plano ainda não tem disciplinas. Toque em “Nova disciplina” para começar.</div>'))}
@@ -824,7 +843,7 @@ function render0(){
  document.querySelectorAll('nav button[data-tab]').forEach(b=>{if(b.dataset.tab===tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
  {const pl=S.plans.find(x=>x.id===S.plan)||{};const SUBH=`<button class="plansw${ui.pl?' on':''}" data-act="plopen" title="Trocar ou criar plano de estudos" aria-label="Trocar ou criar plano de estudos"><b>${esc(pl.name||'')}</b><span class="mut">${(S.set||1)>1?'Rodada '+S.set+' · ':''}Ciclo ${S.cycle}${S.rv?' · revisão':''}</span>${CHEV}</button><button class="x gear${tab==='bk'?' on':''}" data-tab="bk" title="Configurações" aria-label="Configurações">${GEAR}</button>`;[$('sub'),$('sub2')].forEach(e=>{if(e)e.innerHTML=SUBH})}
  document.body.classList.toggle('wide',tab==='ciclo'||(tab==='reg'&&!!ui.hcal&&isDesk()&&!S.edit));$('app').innerHTML=tab==='ciclo'?viewCiclo():tab==='rev'?viewRev():tab==='reg'?viewReg():tab==='st'?viewStats():viewConfig();
- $('modal').innerHTML=(ui.pl?plansHtml():'')+(ui.ed&&(tab==='ciclo'||(tab==='rev'&&S.rv))?editHtml()+(ui.addm?newMatCard():''):'')+(S.sx&&!S.edit?sessCard():'')+(edPop()?sessCard():'')+(ui.rview?regViewHtml():'')+(ui.sw?modalHtml():'');if(tipEl)tipEl.style.display='none';
+ $('modal').innerHTML=(ui.pl?plansHtml()+(ui.pdadd&&ui.pdd?pdAddHtml():''):'')+(ui.ed&&(tab==='ciclo'||(tab==='rev'&&S.rv))?editHtml()+(ui.addm?newMatCard():''):'')+(S.sx&&!S.edit?sessCard():'')+(edPop()?sessCard():'')+(ui.rview?regViewHtml():'')+(ui.sw?modalHtml():'');if(tipEl)tipEl.style.display='none';
  [$('app'),$('modal')].forEach(c=>{if(c&&c.querySelectorAll)c.querySelectorAll('button[aria-label]:not([title])').forEach(b=>{b.title=b.getAttribute('aria-label')})});
  [$('app'),$('modal')].forEach(c=>{if(c&&c.querySelectorAll)c.querySelectorAll('form,input:not([type=checkbox]):not([type=file]):not([type=hidden]),textarea').forEach(x=>x.setAttribute('autocomplete','off'))});
  scrLoad(scr);ui.rtab=tab;
@@ -836,7 +855,7 @@ function render0(){
 
 const GEAR='<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
 const TRASH='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>';
-const UNDO_MSG={rreopen:'Meta reiniciada',rundo:'Nova rodada desfeita',delreg:'Registro excluído',reopen:'Ciclo reaberto',rvcancel:'Revisão cancelada',pldel:'Plano excluído',plset:'Nova rodada iniciada',sdel:'Disciplina excluída',del:'Bloco removido',hide:'Disciplina removida do ciclo',dt:'Tópico excluído',dl:'Aula/link excluída',delgrp:'Tópico removido',delrow:'Aula/link removida',next:'Novo ciclo iniciado',rzero:'Cronômetro reiniciado'};
+const UNDO_MSG={rreopen:'Meta reiniciada',rundo:'Nova rodada desfeita',delreg:'Registro excluído',reopen:'Ciclo reaberto',rvcancel:'Revisão cancelada',pldel:'Plano excluído',plset:'Nova rodada iniciada',sdel:'Disciplina excluída',del:'Bloco removido',hide:'Disciplina removida do ciclo',dt:'Tópico excluído',dl:'Aula/link excluída',delgrp:'Tópico removido',delrow:'Aula/link removida',pdsave:'Disciplina editada',next:'Novo ciclo iniciado',rzero:'Cronômetro reiniciado'};
 function hideUndo(){clearTimeout(ui.undoT);ui.undo=null;const t=document.getElementById('undo');if(t)t.remove()}
 const UST=[],RST=[];
 function pushU(msg,snap){UST.push({snap:snap||JSON.stringify(S),msg});if(UST.length>10)UST.shift();RST.length=0}
@@ -1019,6 +1038,15 @@ function advance(){
  S.completed++;S.cycle++;S.progress={};S.bump={};S.sel.topic='';S.sel.groups=null;const c=current();S.sel.subj=c?c.id:null;
 }
 
+/* Exclui um tópico da disciplina (e dos blocos dela); sessões antigas guardam o nome. */
+function delTopic(sub,q){const bs=sub.of?(S.subjects.find(x=>x.id===sub.of)||sub):sub,tp=topicOf(bs,q);if(!tp)return;
+  const G=grp(bs.id),used=S.sessions.filter(x=>G.includes(x.subj)&&x.topic===q);
+  used.forEach(x=>{x.tn=tp.name;x.tdel=true});
+  bs.topics=bs.topics.filter(x=>x.id!==q);sub.topics=bs.topics;S.subjects.forEach(x=>{if(x.of===bs.id)x.topics=bs.topics});
+  const nl=tp.name.trim().toLowerCase(),strip=g=>g?g.filter(x=>x.nt.trim().toLowerCase()!==nl):g;
+  const baseOf=id=>{const o=S.subjects.find(x=>x.id===id);if(o)return o.of||o.id;const l=((S.alt&&S.alt.lay)||[]).concat(S.rvLayout||[]).find(x=>x.id===id);return l?(l.of||l.id):id};
+  [[S.sel,S.paused],[S.alt&&S.alt.sel,S.alt&&S.alt.paused]].forEach(([sl,pzz])=>{if(sl&&sl.subj&&baseOf(sl.subj)===bs.id&&sl.groups)sl.groups=strip(sl.groups);if(pzz)Object.keys(pzz).forEach(k=>{if(baseOf(k)===bs.id&&pzz[k].groups)pzz[k].groups=strip(pzz[k].groups)})});
+  Object.keys(S.checked||{}).forEach(k=>{if(k.indexOf(':'+bs.id+':'+q+':')>0)delete S.checked[k]})}
 document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  {const ua=e.target.closest&&e.target.closest('[data-act]');if(ua&&ua.dataset.act==='undo'){doUndo();return}if(ua&&ua.dataset.act==='redo'){doRedo();return}if(ui.undo&&ua)hideUndo()}
  if(e.target.closest&&e.target.closest('.plrow input'))return;
@@ -1114,13 +1142,17 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='edopen')ui.ed=true;
  if(a==='addopen'){ui.addm=true;S.sel.nnnew=false;ui.nmph=null;S.sel.af=(myEds()[0]||{}).id||'';S.sel.nnall=false;S.sel.nn='';S.sel.nnid=null;S.sel.ng='1h30';ui.dd=null}
  if(a==='addclose'){ui.addm=null;ui.dd=null}
- if(a==='pdnew'){ui.pdn=true;ui.pde=null;ui.focus=null}
+ if(a==='pdnew'){ui.pdn=true;pdClose();ui.focus=null}
  if(a==='pdcancel')ui.pdn=null;
  /* Editar plano: só uma disciplina aberta por vez; o card clicado fica parado na tela (ui.anc). */
- const pdOnly=id=>{[...ui.open].forEach(k=>{if(k.startsWith('pd:')&&k!=='pd:'+id)ui.open.delete(k)});if(ui.pde&&ui.pde!==id)ui.pde=null;const c=t.closest('.card');if(c)ui.anc={sel:'.card [data-act="'+a+'"][data-id="'+id+'"]',top:c.getBoundingClientRect().top}};
- if(a==='pdtog'){const k='pd:'+p;if(ui.pde===p){ui.pde=null}else if(ui.open.has(k))ui.open.delete(k);else{pdOnly(p);ui.open.add(k)}}
- if(a==='pdedit'){if(ui.pde===p)ui.pde=null;else{pdOnly(p);ui.pde=p;ui.open.add('pd:'+p)}ui.pdn=null}
- if(a==='pdend')ui.pde=null;
+ const pdOnly=id=>{[...ui.open].forEach(k=>{if(k.startsWith('pd:')&&k!=='pd:'+id)ui.open.delete(k)});if(ui.pde&&ui.pde!==id)pdClose();const c=t.closest('.card');if(c)ui.anc={sel:'.card [data-act="'+a+'"][data-id="'+id+'"]',top:c.getBoundingClientRect().top}};
+ if(a==='pdtog'){const k='pd:'+p;if(ui.pde===p){pdClose()}else if(ui.open.has(k))ui.open.delete(k);else{pdOnly(p);ui.open.add(k)}}
+ if(a==='pdedit'){if(ui.pde===p)pdClose();else{pdOnly(p);pdClose();ui.pde=p;ui.open.add('pd:'+p)}ui.pdn=null}
+ if(a==='pdend')pdClose();
+ if(a==='pdsave')pdSave();
+ if(a==='pdaddopen'&&ui.pdd){ui.pdadd=true;ui.focus='pdaddt'}
+ if(a==='pdaddx')ui.pdadd=null;
+ if(a==='pddt'&&ui.pdd){const D=ui.pdd;D.topics=D.topics.filter(x=>x.id!==q);if(!D.nw||!D.nw.includes(q))D.del.push(q);ui.pdmsg=null}
  if(a==='sdel'){if(!ask('sdel:'+p,t))return;const ids=[p,...S.subjects.filter(s=>s.of===p).map(s=>s.id)];S.subjects=S.subjects.filter(s=>!ids.includes(s.id));ids.forEach(id=>{delete S.progress[id];if(S.paused)delete S.paused[id]})}
  if(a==='edclose'){ui.ed=null;ui.addm=null}
  if(a==='pickrow'&&!S.edit&&S.subjects.some(x=>x.id===p)){ui.more=null;reqSwitch(p);ui.dd=null}
@@ -1146,15 +1178,6 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
   if(sub&&sub.of)S.sessions.forEach(x=>{if(x.subj===p)x.subj=sub.of});
   else if(sub){const nx=S.subjects.find(s=>s.of===p);if(nx){nx.topics=sub.topics;delete nx.of;nx.ci=sub.ci;S.subjects.forEach(s=>{if(s.of===p)s.of=nx.id});S.sessions.forEach(x=>{if(x.subj===p)x.subj=nx.id})}}
   S.subjects=S.subjects.filter(s=>s.id!==p);delete S.progress[p]}
- if(a==='dt'&&sub){const bs=sub.of?(S.subjects.find(x=>x.id===sub.of)||sub):sub,tp=topicOf(bs,q);if(!tp)return;
-  const G=grp(bs.id),used=S.sessions.filter(x=>G.includes(x.subj)&&x.topic===q);
-  if(!ask('dt:'+p+':'+q,t))return;
-  used.forEach(x=>{x.tn=tp.name;x.tdel=true});
-  bs.topics=bs.topics.filter(x=>x.id!==q);sub.topics=bs.topics;S.subjects.forEach(x=>{if(x.of===bs.id)x.topics=bs.topics});
-  const nl=tp.name.trim().toLowerCase(),strip=g=>g?g.filter(x=>x.nt.trim().toLowerCase()!==nl):g;
-  const baseOf=id=>{const o=S.subjects.find(x=>x.id===id);if(o)return o.of||o.id;const l=((S.alt&&S.alt.lay)||[]).concat(S.rvLayout||[]).find(x=>x.id===id);return l?(l.of||l.id):id};
-  [[S.sel,S.paused],[S.alt&&S.alt.sel,S.alt&&S.alt.paused]].forEach(([sl,pzz])=>{if(sl&&sl.subj&&baseOf(sl.subj)===bs.id&&sl.groups)sl.groups=strip(sl.groups);if(pzz)Object.keys(pzz).forEach(k=>{if(baseOf(k)===bs.id&&pzz[k].groups)pzz[k].groups=strip(pzz[k].groups)})});
-  Object.keys(S.checked||{}).forEach(k=>{if(k.indexOf(':'+bs.id+':'+q+':')>0)delete S.checked[k]})}
  save();render();if(a==='edit'&&!edPop())scrollTo(0,0);if(ui.undoNext){showUndo(ui.undoNext);ui.undoNext=null}
 });
 document.addEventListener('change',e=>{if(e.target.classList&&e.target.classList.contains('regdate')){S.sel.md=e.target.value;save();return}
@@ -1186,9 +1209,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.target.dataset.rn
 const GRIP='<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.8"/><circle cx="15" cy="6" r="1.8"/><circle cx="9" cy="12" r="1.8"/><circle cx="15" cy="12" r="1.8"/><circle cx="9" cy="18" r="1.8"/><circle cx="15" cy="18" r="1.8"/></svg>';
 document.addEventListener('change',e=>{const d=e.target&&e.target.dataset||{};
  if(d.ppn){const pl=S.plans.find(x=>x.id===S.plan),v=e.target.value.trim();if(pl&&v){if(S.plans.some(x=>x!==pl&&x.name.trim().toLowerCase()===v.toLowerCase())){e.target.value=pl.name;toast('Já existe um plano com esse nome.')}else{pl.name=v;save();render()}}else if(pl)e.target.value=pl.name}
- else if(d.pdn){const s0=S.subjects.find(x=>x.id===d.pdn),v=e.target.value.trim();if(s0&&v){S.subjects.forEach(x=>{if(x.id===s0.id||x.of===s0.id)x.name=v});save();render()}else if(s0)e.target.value=s0.name}
- else if(d.ptn){const [sid,tid]=d.ptn.split(':'),s0=S.subjects.find(x=>x.id===sid),t0=s0&&topicOf(s0,tid),v=e.target.value.trim();if(t0&&v&&!s0.topics.some(o=>o!==t0&&o.name.toLowerCase()===v.toLowerCase())){t0.name=v;save();render()}else if(t0)e.target.value=t0.name}});
-function pdApply(list){const sid=list.dataset.pdrows,s0=S.subjects.find(x=>x.id===sid);if(!s0)return;const ids=[...list.querySelectorAll('.pdrow')].map(r=>r.dataset.tid),by=new Map(s0.topics.map(t=>[t.id,t]));const nt=ids.map(i=>by.get(i)).filter(Boolean);s0.topics.forEach(t=>{if(!nt.includes(t))nt.push(t)});s0.topics.splice(0,s0.topics.length,...nt);save();render()}
+});
+document.addEventListener('input',e=>{const d=e.target&&e.target.dataset;if(!d||!ui.pdd)return;if(d.pdn===ui.pdd.id)ui.pdd.name=e.target.value;else if(d.ptn){const [sid,tid]=d.ptn.split(':'),x=sid===ui.pdd.id&&ui.pdd.topics.find(o=>o.id===tid);if(x){x.name=e.target.value;e.target.title=x.name}}});
+function pdApply(list){const D=ui.pdd;if(!D||D.id!==list.dataset.pdrows)return;const ids=[...list.querySelectorAll('.pdrow')].map(r=>r.dataset.tid),by=new Map(D.topics.map(t=>[t.id,t]));const nt=ids.map(i=>by.get(i)).filter(Boolean);D.topics.forEach(t=>{if(!nt.includes(t))nt.push(t)});D.topics=nt;render()}
 document.addEventListener('pointerdown',e=>{const gr=e.target.closest&&e.target.closest('[data-pgrip]');if(!gr||e.button>0)return;e.preventDefault();
  const row=gr.closest('.pdrow'),list=row.parentElement;row.classList.add('drag');try{gr.setPointerCapture(e.pointerId)}catch(x){}
  const mv=ev=>{const sib=[...list.querySelectorAll('.pdrow')].filter(r=>r!==row),y=ev.clientY;const next=sib.find(r=>{const b=r.getBoundingClientRect();return b.top+b.height/2>y});if(next){if(row.nextElementSibling!==next)list.insertBefore(row,next)}else if(sib.length&&list.lastElementChild!==row)list.appendChild(row)};
@@ -1237,7 +1260,7 @@ document.addEventListener('submit',e=>{
    else{const eds=myEds(),eid=eds.some(x=>x.id===S.sel.af)?S.sel.af:eds.some(x=>x.id===S.sel.ne)?S.sel.ne:(eds[0]||(()=>{const d={id:uid(),name:'Meu edital',plan:S.plan};S.editais.push(d);return d})()).id,o={id:uid(),name:n,goal:g,topics:[],ed:eid,off:true};o.ci=nextCi();S.subjects.push(o)}
    S.sel.nn='';S.sel.nnid=null;ui.addm=null;ui.dd=null}}
  if(k==='pdnew'){const n=(f.get('n')||'').trim(),tp=parseTopics(f.get('t'));if(n){const ed=planEd();if(S.subjects.some(x=>!x.of&&ed.id===x.ed&&x.name.toLowerCase()===n.toLowerCase())){ui.msg='Já existe uma disciplina com esse nome neste plano.'}else{const o={id:uid(),name:n,goal:90,topics:tp.map(x=>({id:uid(),name:x,done:false,links:[]})),ed:ed.id};o.ci=nextCi();S.subjects.push(o);ui.pdn=null;ui.open.add('pd:'+o.id)}}}
- if(k==='pdadd'){const s=S.subjects.find(x=>x.id===f.get('s'));if(s){const have=new Set(s.topics.map(x=>x.name.toLowerCase()));parseTopics(f.get('t')).forEach(n=>{if(!have.has(n.toLowerCase())){have.add(n.toLowerCase());s.topics.push({id:uid(),name:n,done:false,links:[]})}});S.subjects.forEach(x=>{if(x.of===s.id)x.topics=s.topics})}}
+ if(k==='pdadd'&&ui.pdd){const D=ui.pdd,have=new Set(D.topics.map(x=>x.name.trim().toLowerCase()));D.nw=D.nw||[];parseTopics(f.get('t')).forEach(n=>{if(!have.has(n.toLowerCase())){have.add(n.toLowerCase());const id=uid();D.nw.push(id);D.topics.push({id,name:n})}});ui.pdadd=null;ui.pdmsg=null}
  if(k==='rvwait'){const raw=String(f.get('n')||'').trim(),n=Number(raw);if(!/^\d+$/.test(raw)||!(n>=1&&n<=60)){ui.msg='Informe um número inteiro de 1 a 60 dias corridos.'}else if(n===rvWait()){ui.msg='A espera já está em '+n+'.'}else{S.rvwait=n;ui.msg='Espera salva: grupos ficam disponíveis '+n+' dia'+(n===1?'':'s')+' corrido'+(n===1?'':'s')+' após o último dia de estudo.'}}
  if(k==='rvint'){const raw=String(f.get('n')||'').trim(),n=Number(raw);if(!/^\d+$/.test(raw)||!(n>=1&&n<=60)){ui.msg='Informe um número inteiro de 1 a 60 dias válidos de estudo.'}else if(n===rvInt()){ui.msg='O intervalo já está em '+n+'.'}else{const I=rgInfo();S.rvlog=S.rvlog||[];S.rvlog.push({ts:Date.now(),de:rvInt(),para:n,dias:I.total,grupos:S.rgs.length});S.rvint=n;const sp=rgApplyInt(n);ui.msg='Intervalo salvo: '+n+' dia'+(n===1?'':'s')+' válido'+(n===1?'':'s')+' de estudo. '+(sp===null?'Vale para os próximos grupos; os grupos já formados não mudam.':sp>0?'O grupo em formação foi fechado com '+n+' dia'+(n===1?'':'s')+' e os '+sp+' dia'+(sp===1?'':'s')+' restante'+(sp===1?'':'s')+' passaram para um novo grupo. Os grupos já formados não mudam.':'Vale também para o grupo em formação; os grupos já formados não mudam.')}}
  save();render();
