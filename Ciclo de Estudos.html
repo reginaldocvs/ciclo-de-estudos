@@ -24,7 +24,7 @@ html{scroll-padding-top:env(safe-area-inset-top,0px)}
 h2{font-size:1.05rem;font-weight:600;margin:0 0 10px}
 .mut{color:var(--mut);font-size:.9rem}
 button:focus-visible,input:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
-.ringwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap}.recent .chead{margin-bottom:6px}.rday{font-size:.82rem;font-weight:700;background:var(--track);color:var(--ink);border-radius:6px;padding:5px 10px;margin:10px 0 2px}.ritem{display:flex;gap:8px;align-items:flex-start;padding:10px 4px 10px 10px;border-bottom:1px solid var(--line)}.ritem:last-child{border-bottom:0}.rsub{font-weight:600;line-height:1.3}.rmeta{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.85rem;margin-top:4px}@media (min-width:1120px){.c2{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,380px);grid-template-areas:'b a' 'c a';grid-template-rows:auto 1fr;column-gap:16px;align-items:start}.c2a{grid-area:a}.c2b{grid-area:b;min-width:0}.c2c{grid-area:c}.c2 .ringwrap{flex-direction:column;text-align:center}.c2 .now{min-width:0}.recent .rlist{max-height:520px;overflow:auto;margin-right:-8px;padding-right:8px}}@media (max-width:1119px){.recent .rlist{max-height:420px;overflow:auto}}
+.ringwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap}.recent .chead{margin-bottom:6px}.rday{font-size:.82rem;font-weight:700;background:var(--track);color:var(--ink);border-radius:6px;padding:5px 10px;margin:10px 0 2px}.ritem{display:flex;gap:8px;align-items:flex-start;padding:10px 4px 10px 10px;border-bottom:1px solid var(--line)}.ritem:last-child{border-bottom:0}.rsub{font-weight:600;line-height:1.3}.rmeta{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.85rem;margin-top:4px}@media (min-width:1120px){.c2{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,380px);grid-template-areas:'k a' 'b a' 'c a';grid-template-rows:auto auto 1fr;column-gap:16px;align-items:start}.c2>.kpis{grid-area:k}.c2a{grid-area:a}.c2b{grid-area:b;min-width:0}.c2c{grid-area:c}.c2 .ringwrap{flex-direction:column;text-align:center}.c2 .now{min-width:0}.recent .rlist{max-height:520px;overflow:auto;margin-right:-8px;padding-right:8px}}@media (max-width:1119px){.recent .rlist{max-height:420px;overflow:auto}}
 .ringwrap svg{width:210px;height:210px;flex:none}
 .now{flex:1;min-width:200px}
 .now b{font-size:1.4rem;display:block;line-height:1.2}.now b.nwn{display:flex;align-items:center;gap:8px}.nwn .dot{width:12px;height:12px}@media (min-width:1120px){.c2 .now b.nwn{justify-content:center}}
@@ -226,11 +226,11 @@ input[type=checkbox]{border-radius:4px}
 .bar{height:8px;border-radius:999px;background:var(--track)}
 .bar i{border-radius:inherit;box-shadow:none}
 /* Resumo do dia */
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
+.kpis{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:14px;margin-bottom:18px;container-type:inline-size}
+@container (max-width:520px){.kpis .kpi{flex-direction:column-reverse;justify-content:flex-end;align-items:flex-start;gap:8px}}
 .kpi{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;background:var(--card);border:1px solid color-mix(in srgb,var(--line) 55%,transparent);border-radius:20px;box-shadow:var(--sh);padding:16px 18px}
 .kpi .kl{color:var(--mut);font-weight:600;font-size:.85rem}
 .kpi b{display:block;font-size:1.5rem;font-weight:800;letter-spacing:-.02em;line-height:1.2;font-variant-numeric:tabular-nums}
-.kpi .ks{color:var(--mut);font-size:.78rem}
 .kic{flex:none;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:color-mix(in srgb,var(--ac) 12%,var(--card));color:var(--ac)}
 .kic.ok{background:color-mix(in srgb,var(--ok) 14%,var(--card));color:var(--ok)}
 .kic svg{width:20px;height:20px}
@@ -262,7 +262,7 @@ input[type=checkbox]{border-radius:4px}
  header .gear{margin-left:0}
  .card{padding:16px;border-radius:20px}
  .kpi{padding:14px}.kpi b{font-size:1.25rem}.kic{width:36px;height:36px}
- .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpis>.kpi:last-child:nth-child(odd){grid-column:1/-1}
+ .kpis{gap:10px}
 }
 .cdn{display:inline-flex;align-items:center;gap:4px;font-size:.75rem;font-weight:700;color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--card));border-radius:999px;padding:2px 9px;margin-left:8px;vertical-align:middle}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -590,7 +590,7 @@ function viewCiclo(){
  h+=`<div class="card"><div class="chead"><h2>${rev?'Revisão':'Disciplinas'}</h2>${S.edit?'':'<button class="btn g s" data-act="edopen">Editar ciclo</button>'}</div>${A.map(s=>{const p=prog(s.id),c=col(s),sl=selId()===s.id;return `<div class="row srow${sl?' cur':''}"><div class="grow"${S.edit?'':` data-act="pickrow" data-id="${s.id}"`}><div class="rtop"><span class="rname"><span class="dot" style="background:${c}"></span><span class="rnt" title="${esc(nm(s))}">${esc(nm(s))}</span></span>${rowCtl(s)}</div><div class="bar"><i id="rbar-${s.id}" style="width:${barW(s)}%;background:${barC(s)}"></i></div></div></div>`}).join('')}</div>`;
  if(rev)h+=`<div class="fl"><button class="btn g" data-act="rvcancel">Cancelar revisão</button></div>`;
  if(rev)return pre+ringC+h;
- return pre+kpisHtml()+`<div class="c2"><div class="c2a">${ringC}</div><div class="c2b">${h}</div><div class="c2c">${recentCard()}</div></div>`;
+ return pre+`<div class="c2">${kpisHtml()}<div class="c2a">${ringC}</div><div class="c2b">${h}</div><div class="c2c">${recentCard()}</div></div>`;
 }
 const WD=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
 function sesRow(k,r,o){o=o||{};const f=r[0],s=subjAny(f.subj),t0=r.reduce((a,x)=>a+x.min,0);
@@ -764,9 +764,9 @@ function dayStats(){const td=today(),by={};S.sessions.forEach(x=>{if(x.date&&x.m
  let streak=0,d0=tot(td)>0?td:addD(td,-1);while(tot(d0)>0){streak++;d0=addD(d0,-1)}
  return {today:tot(td),week,streak}}
 function kpisHtml(){const st=dayStats(),A=actives(),T=total()||1,d=A.reduce((a,s)=>a+Math.min(prog(s.id),s.goal),0),nd=A.filter(s=>gDone(s)).length;
- const t=(l,v,s,ic,c)=>`<div class="kpi"><div><div class="kl">${l}</div><b>${v}</b><div class="ks">${s}</div></div><span class="kic${c?' '+c:''}">${ic}</span></div>`;
+ const t=(l,v,ic,c)=>`<div class="kpi"><div><div class="kl">${l}</div><b>${v}</b></div><span class="kic${c?' '+c:''}">${ic}</span></div>`;
  const pr=PAST?CS().filter(x=>x.cycle===S.cycle&&!x.rid&&!x.review):[],pd2=pr.map(x=>x.date).filter(Boolean).sort(),f2=d=>d.slice(8,10)+'/'+d.slice(5,7),per=pd2.length?(pd2[0]===pd2[pd2.length-1]?f2(pd2[0]):f2(pd2[0])+' a '+f2(pd2[pd2.length-1])):'—';
- return '<div class="kpis">'+(PAST?t('Tempo estudado',fmt(pr.reduce((a,x)=>a+x.min,0)),'neste ciclo',CLOCKI)+t('Período',per,pd2.length?'primeiro ao último estudo':'sem registros',CALI):t('Hoje',fmt(st.today),st.today?'estudados hoje':'nenhum estudo ainda',CLOCKI))+t('Ciclo '+S.cycle,Math.round(d/T*100)+'%',fmt(d)+' de '+fmt(T),TARGETI)+t('Disciplinas',nd+' de '+A.length,nd===1?'sessão concluída':'sessões concluídas',DONEI,'ok')+'</div>'}
+ return '<div class="kpis">'+(PAST?t('Tempo estudado',fmt(pr.reduce((a,x)=>a+x.min,0)),CLOCKI)+t('Período',per,CALI):t('Hoje',fmt(st.today),CLOCKI))+t('Ciclo '+S.cycle,Math.round(d/T*100)+'%',TARGETI)+t('Disciplinas',nd+' de '+A.length,DONEI,'ok')+'</div>'}
 const TTL={ciclo:'Ciclo',rev:'Revisão',reg:'Histórico',st:'Estatísticas',bk:'Configurações'};
 const greet=()=>{const h=new Date().getHours();return h<5?'Boa madrugada':h<12?'Bom dia':h<18?'Boa tarde':'Boa noite'};
 function applyTheme(){const r=document.documentElement,t=S.theme||'auto';try{if(t==='light'||t==='dark'){r.setAttribute('data-theme',t);r.dataset.ownTheme='1'}else if(r.dataset.ownTheme){r.removeAttribute('data-theme');delete r.dataset.ownTheme}}catch(e){}}
