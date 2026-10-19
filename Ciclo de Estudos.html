@@ -290,7 +290,7 @@ input[type=checkbox]{border-radius:4px}
 .rcs{width:10px;height:10px;border-radius:50%;background:var(--c)}
 .rcav{background:color-mix(in srgb,var(--ac) 11%,var(--card));color:var(--ac);font-weight:700;border-radius:8px;padding:6px 10px;margin-bottom:10px;font-size:.88rem}
 .rcnote{font-size:.8rem;line-height:1.4}.rcdet{border-top:1px solid var(--line);margin-top:12px;padding-top:10px;display:flex;flex-direction:column;gap:2px}
-.rgc{padding:14px 16px}.rgh{display:flex;align-items:center;gap:10px;justify-content:space-between}.rgm,.rgw{font-size:.82rem;margin-top:2px}.rgw{margin-bottom:6px}.rgsel{display:flex;gap:12px;align-items:flex-start;cursor:pointer}.rgsel input{margin-top:4px}.rgt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rgc{padding:14px 16px}.rgh{display:flex;align-items:center;gap:10px;justify-content:space-between}.rgm,.rgw{font-size:.82rem;margin-top:2px}.rgw{margin-bottom:6px}.rga{padding:14px 0;border-top:1px solid var(--line)}.rga:first-of-type{border-top:0;padding-top:2px}.rgact{margin-top:10px}.rgt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* Editar plano */
 .pdnew{margin:0 0 14px}
 .pdb{padding:16px 18px}
@@ -701,13 +701,11 @@ function viewRev(){
  const head=o=>`<div class="rgh"><b>${rgLabel(o)}</b><span class="tag">${typeof TAG[o.st]==='function'?TAG[o.st](o):TAG[o.st]}</span></div><div class="mut rgm">Dias válidos de estudo ${o.start}–${o.start+o.g.dates.length-1}${o.closed?'':' de '+o.end}${o.g.len!==N?' · intervalo '+o.g.len:''}${orph(o)?' · '+orph(o)+' dia(s) sem registros':''}</div>`;
  const when=o=>o.st==='disponivel'||o.st==='andamento'?`Disponível desde ${fd(o.availDate)}`:o.st==='concluido'?'Revisado em '+(S.reviewed[o.g.id]==='-'?'—':fd(S.reviewed[o.g.id])):(o.closed?`Disponível em ${fd(o.availDate)} · faltam ${o.missing} dia${o.missing===1?'':'s'}`:`Disponível ${rvWait()} dias corridos após o último dia do grupo · faltam ${o.g.len-o.g.dates.length} dia${o.g.len-o.g.dates.length===1?'':'s'} de estudo para fechar`);
  const av=I.list.filter(o=>o.st==='disponivel'),fu=I.list.filter(o=>o.st==='futuro'),dn=I.list.filter(o=>o.st==='concluido');
- if(!ui.rsel)ui.rsel=new Set(av.filter(hasC).map(o=>o.g.id));
- const sel=[...ui.rsel].filter(id=>av.some(o=>o.g.id===id&&hasC(o)));
  const cfg=`<div class="card"><h2>Revisão por dias de estudo</h2><div class="mut">Plano <b>${esc(pl)}</b> · intervalo de <b>${N} dia${N===1?'':'s'} válido${N===1?'':'s'} de estudo</b> · ${I.total} dia${I.total===1?'':'s'} válido${I.total===1?'':'s'} acumulado${I.total===1?'':'s'}</div><p class="mut" style="margin:8px 0">Cada grupo reúne o que você estudou em ${N} dia${N===1?'':'s'} com estudo. Ele fica disponível para revisar ${rvWait()} dia${rvWait()===1?'':'s'} corrido${rvWait()===1?'':'s'} depois do último dia do grupo. Dias sem estudo e sessões de revisão não entram na formação dos grupos.</p><form autocomplete="off" novalidate data-f="rvint" class="fl"><input type="number" name="n" min="1" max="60" step="1" value="${N}" aria-label="Intervalo em dias válidos de estudo" style="width:90px"><button class="btn g">Salvar intervalo</button></form><div class="mut" style="font-size:.82rem;margin-top:6px">Vale só para este plano: para o grupo em formação e os próximos. Grupos já formados mantêm o intervalo com que foram criados.</div><form autocomplete="off" novalidate data-f="rvwait" class="fl" style="margin-top:10px"><label class="mut" for="rvw">Disponível após</label><input id="rvw" type="number" name="n" min="1" max="60" step="1" value="${rvWait()}" aria-label="Dias corridos até o grupo ficar disponível" style="width:90px"><span class="mut">dias corridos</span><button class="btn g">Salvar espera</button></form><div class="mut" style="font-size:.82rem;margin-top:6px">A espera vale para todos os grupos, inclusive os já formados.</div>${ui.msg?`<div class="mut" style="margin-top:8px">${esc(ui.msg)}</div>`:''}</div>`;
- const avc=av.map(o=>{const ok=hasC(o);return `<div class="card rgc"><label class="rgsel">${ok?`<input type="checkbox" data-rsel="${o.g.id}" ${ui.rsel.has(o.g.id)?'checked':''}>`:''}<span class="grow">${head(o)}</span></label><div class="mut rgw">${when(o)}</div>${body(o)}</div>`}).join('');
+ const avc=av.map(o=>`<div class="rga">${head(o)}<div class="mut rgw">${when(o)}</div>${body(o)}<div class="rgact">${hasC(o)?`<button class="btn s" data-act="rvstart" data-id="${o.g.id}">Iniciar revisão</button>`:'<span class="mut" style="font-size:.82rem">Sem tópicos registrados nestes dias para revisar.</span>'}</div></div>`).join('');
  const fuc=fu.map(o=>`<div class="card rgc"><div>${head(o)}</div><div class="mut rgw">${when(o)}</div>${body(o)}</div>`).join('');
  const dnc=dn.map(o=>`<div class="card rgc"><div>${head(o)}</div><div class="mut rgw">${when(o)}</div></div>`).join('');
- return cfg+rvCal(I)+`<div class="card"><h2>Disponíveis para revisar</h2>${avc?'':'<div class="empty">Nenhum grupo disponível ainda.</div>'}<div class="fl" style="margin-top:8px"><button class="btn" data-act="rvstart" ${sel.length?'':'disabled'}>Iniciar revisão${sel.length?' ('+sel.length+' grupo'+(sel.length>1?'s':'')+')':''}</button></div></div>${avc}${fu.length?`<h2 class="sec">Revisões futuras</h2>${fuc}`:''}${dn.length?`<h2 class="sec">Concluídas</h2>${dnc}`:''}`;
+ return cfg+rvCal(I)+`<div class="card"><h2>Disponíveis para revisar</h2>${avc||'<div class="empty">Nenhum grupo disponível ainda.</div>'}</div>${fu.length?`<h2 class="sec">Revisões futuras</h2>${fuc}`:''}${dn.length?`<h2 class="sec">Concluídas</h2>${dnc}`:''}`;
 }
 const MINUS='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>';
 const nmAvail=()=>S.subjects.filter(s=>!s.of&&s.hid&&s.ed===S.sel.af).length;
@@ -1081,9 +1079,9 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='rnext'){const t=(vset()||S.set||1)+1;ui.vset=t>=(S.set||1)?null:t;ui.view=null}
  if(a==='rvgo'){ui.vset=+p>=(S.set||1)?null:+p;ui.view=null;ui.pl=null;ui.ed=null;ui.ple=null;tab='ciclo'}
  if(a==='next'&&S.type!=='review'){ask('next:',t);advance()}
- if(a==='rvstart'&&!S.rv&&ui.rsel){const I=rgInfo(),src=I.list.filter(o=>o.st==='disponivel'&&ui.rsel.has(o.g.id)&&rgTopics(o.g).size).map(o=>o.g.id);if(src.length){const lbl=(src.length>1?'Grupos ':'Grupo ')+I.list.filter(o=>src.includes(o.g.id)).map(o=>o.g.idx).join(', ');setMode('study');S.rv={id:uid(),src,start:today(),lbl};S.alt={};setMode('review');ui.rsel=null;scrollTo(0,0)}}
- if(a==='rvend'&&S.rv){S.rv.src.forEach(c=>S.reviewed[c]=today());S.reviews.push({id:S.rv.id,src:S.rv.src,lbl:S.rv.lbl,start:S.rv.start,end:today()});endReview();ui.rsel=null;ui.msg='Revisão concluída. Os grupos foram marcados como revisados.'}
- if(a==='rvcancel'&&S.rv){if(!ask('rvcancel:',t))return;endReview();ui.rsel=null}
+ if(a==='rvstart'&&!S.rv&&p){const o=rgInfo().list.find(o=>o.g.id===p&&o.st==='disponivel'&&rgTopics(o.g).size),src=o?[o.g.id]:[];if(src.length){const lbl='Grupo '+o.g.idx;setMode('study');S.rv={id:uid(),src,start:today(),lbl};S.alt={};setMode('review');scrollTo(0,0)}}
+ if(a==='rvend'&&S.rv){S.rv.src.forEach(c=>S.reviewed[c]=today());S.reviews.push({id:S.rv.id,src:S.rv.src,lbl:S.rv.lbl,start:S.rv.start,end:today()});endReview();ui.msg='Revisão concluída. Os grupos foram marcados como revisados.'}
+ if(a==='rvcancel'&&S.rv){if(!ask('rvcancel:',t))return;endReview()}
  if(a==='clip'){const g=grps().find(x=>x.id===p),r=g&&g.rows.find(x=>x.id===q);if(r){r.open=!r.open;if(r.open)ui.focus='l-'+r.id}}
  if(a==='rnote'){const g=grps().find(x=>x.id===p),r=g&&g.rows.find(x=>x.id===q);if(r){if(r.note===undefined){const s0=S.subjects.find(x=>x.id===(S.edit?S.edit.subj:S.sel.subj));r.note=rowNote(s0,g,r)}r.nopen=!r.nopen;if(r.nopen)ui.focus='nt-'+r.id}}
  if(a==='hnote'){ui.hnv=ui.hnv||new Set();ui.hnv.has(p)?ui.hnv.delete(p):ui.hnv.add(p)}
@@ -1186,7 +1184,6 @@ document.addEventListener('change',e=>{if(e.target.classList&&e.target.classList
  const d=e.target.dataset,v=e.target.value;
  if('tm' in d){const mn=tmParse(v);if(d.goal){const s=S.subjects.find(x=>x.id===d.goal);if(s&&mn>=1){s.goal=mn;save()}e.target.value=tmFmt(s?s.goal:mn)}else{e.target.value=mn?tmFmt(mn):'';const k=d.tf;if(k==='man')S.sel.mt=e.target.value;else if(k==='ng')S.sel.ng=e.target.value}return}
  if(d.chk)S.checked[d.chk]=e.target.checked;
- else if(d.rsel){ui.rsel=ui.rsel||new Set();const c=d.rsel;e.target.checked?ui.rsel.add(c):ui.rsel.delete(c)}
  else return;
  save();render();
 });
