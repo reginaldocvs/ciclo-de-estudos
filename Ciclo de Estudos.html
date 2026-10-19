@@ -397,7 +397,7 @@ const load=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return nu
 const seed=()=>({subjects:['01','02','03','04'].map(n=>({id:uid(),name:'Disciplina '+n,goal:90,topics:[]})),cycle:1,type:'regular',progress:{},sessions:[],checked:{},reviewEvery:5,sinceReview:0,regDone:[],reviewSrc:[],completed:0,sel:{subj:null,topic:''},timer:{running:false,start:0,acc:0}});
 let S=load(KEY),tab='ciclo';const ui={open:new Set()};
 if(!S||!S.subjects){const o=load('ciclo-estudos-v1');S=seed();if(o&&o.subjects){S.subjects=o.subjects.map(s=>({id:s.id,name:s.name,goal:s.goal,topics:[]}));S.cycle=o.cycle||1;S.progress=o.progress||{};S.completed=Math.max(S.cycle-1,0)}}
-const save=()=>{if(window.__ro)return;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}try{if(typeof syMark==='function'&&JSON.stringify(S)!==SY.lastJson)syMark()}catch(e){}};
+const save=()=>{if(window.__ro)return;const j=JSON.stringify(S);try{localStorage.setItem(KEY,j)}catch(e){}try{if(typeof syMark==='function'&&j!==SY.lastJson)syMark()}catch(e){}};
 const CTX=['progress','timer','paused','sx','draft','type','reviewSrc'],SELK=['subj','topic','groups','mt','mtAuto','mtMs'];
 const layOf=()=>S.subjects.map(s=>({id:s.id,goal:s.goal,of:s.of||null,...(s.of&&s.off?{off:true}:{})}));
 function applyLay(l){if(!l)return;const bases=S.subjects.filter(s=>!s.of),by={};bases.forEach(b=>by[b.id]=b);const out=[],used=new Set();
@@ -414,7 +414,6 @@ const CS=()=>S.sessions.filter(x=>(x.set||1)===(S.set||1));
 const inCtx=x=>(x.set||1)===(S.set||1)&&(S.type==='review'?!!S.rv&&x.rid===S.rv.id:!x.rid&&x.cycle===S.cycle);
 const pkey=x=>x.blk||x.subj;
 function progTarget(x){if(x.rid){if(!S.rv||S.rv.id!==x.rid)return null;return S.mode==='review'?S.progress:(S.alt&&S.alt.progress)}if((x.set||1)!==(S.set||1))return null;if(x.cycle!==S.cycle){const h=(S.hist||{})[x.cycle];return h&&h.prog&&h.type!=='review'?h.prog:null}return S.mode==='review'?(S.alt&&S.alt.progress):S.progress}
-function cycTypes(){const hs=S.hist||{},o={};for(let k=1;k<=S.cycle;k++)o[k]=hs[k]?hs[k].type:(k<S.cycle&&CS().some(x=>x.cycle===k&&!x.rid&&x.review)&&!CS().some(x=>x.cycle===k&&!x.review)?'review':'regular');return o}
 const col=s=>{const b=s.of?(S.subjects.find(x=>x.id===s.of)||s):s;return COLORS[(b.ci!==undefined?b.ci:Math.max(S.subjects.indexOf(b),0))%COLORS.length]};
 function nextCi(){const u=new Set(S.subjects.filter(x=>x.ci!==undefined).map(x=>x.ci));let i=0;while(u.has(i))i++;return i}
 const prog=id=>S.progress[id]||0;
@@ -423,7 +422,7 @@ const tl=(s,ids)=>ids.map(i=>topicOf(s,i)).filter(Boolean);
 const subjAny=id=>S.subjects.find(x=>x.id===id)||(()=>{const l=((S.alt&&S.alt.lay)||[]).concat(S.rvLayout||[]).find(x=>x.id===id&&x.of);return l?S.subjects.find(x=>x.id===l.of):null})();
 const grp=id=>{const s=S.subjects.find(x=>x.id===id),g=s&&(s.of||s.id);return uniq(S.subjects.filter(x=>x.id===g||x.of===g).map(x=>x.id).concat(((S.alt&&S.alt.lay)||[]).concat(S.rvLayout||[]).filter(x=>x.of===g).map(x=>x.id)))};
 const nm=s=>s.name;
-const sesHasIt=x=>{if(!x.topic||x.tdel)return false;const sb=subjAny(x.subj),b=sb&&(sb.of?S.subjects.find(y=>y.id===sb.of)||sb:sb),t=b&&topicOf(b,x.topic);return !!t&&(x.items||[]).some(i=>{const it=itKey(i);return it&&!hidIt(t,it)})};
+const sesHasIt=x=>{if(!x.topic||x.tdel)return false;const sb=subjAny(x.subj),b=sb&&(sb.of?S.subjects.find(y=>y.id===sb.of)||sb:sb),t=b&&topicOf(b,x.topic);return !!t&&(x.items||[]).some(i=>{const it=itKey(i);return it})};
 const winTopics=sid=>uniq(CS().filter(x=>grp(sid).includes(x.subj)&&!x.review&&inSrc(x)&&sesHasIt(x)).map(x=>x.topic));
 const lastSess=sid=>S.sessions.filter(x=>grp(sid).includes(x.subj)&&!x.review&&x.topic&&!x.tdel).slice(-1)[0];
 const prevTopics=sid=>{const l=lastSess(sid);if(!l)return [];return l.ses?uniq(S.sessions.filter(x=>grp(sid).includes(x.subj)&&x.ses===l.ses&&x.topic&&!x.tdel).map(x=>x.topic)):[l.topic]};
@@ -488,26 +487,21 @@ const tCol=tid=>{const s0=tid&&S.subjects.find(x=>(x.topics||[]).some(t=>t.id===
 const qTag=(q,c)=>q&&q.t?`<span class="qsc qsub" style="--qc:${c||'var(--ac)'}" title="${q.a} acertos de ${q.t} questões">${q.a}/${q.t} · ${Math.round(q.a/q.t*100)}%</span>`:'';
 const topicById=id=>{for(const x of S.subjects){const t=(x.topics||[]).find(y=>y.id===id);if(t)return t}return null};
 const noteOf=(tid,l)=>{const t=tid&&topicById(tid);if(!t||!l)return '';const k=t.links.find(x=>sameIt(x,l));return k&&k.note?k.note:''};
-const noteBtn=(key,note)=>`<button class="x nbtn on" data-act="nview" data-id="${esc(key)}" title="${esc(note)}" aria-label="Ver anotação" aria-expanded="${ui.nv&&ui.nv.has(key)?'true':'false'}">${NOTEI}</button>`+(ui.nv&&ui.nv.has(key)?`<div class="nvw">${esc(note)}</div>`:'');
 const QICO='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3.5" width="14" height="18" rx="2"/><path d="M9 3.5h6v2.5H9z"/><path d="m9 13 2 2 4-4"/></svg>';
 const itemLine=(l,tid,nq)=>{const qk=tid+'|'+ik(l),nm=(l.title||'').trim()||(l.url?host(l.url):'')||(l.kind==='questoes'?'Questões':'Aula'),q=tid&&!nq?qAgg(tid,l):null,c=tCol(tid)||'var(--mut)',qv=String(l.q||'').trim(),nt=noteOf(tid,l),nk=tid+'|'+ik(l),no=!!(nt&&ui.nv&&ui.nv.has(nk)),nb=nt?`<button class="x nbtn on lic" data-act="nview" data-id="${esc(nk)}" title="${esc(nt)}" aria-label="Ver anotação" aria-expanded="${no}">${NOTEI}</button>`:'';
  const qi=qv?(isQLink(qv)?`<a class="lic lq" href="${esc(qHref(qv))}" target="_blank" rel="noopener noreferrer" title="Questões: ${esc(qv)}" aria-label="Abrir questões">${QICO}</a>`:`<button type="button" class="lic lq off${ui.qi&&ui.qi.has(qk)?' on':''}" data-act="qinfo" data-id="${esc(qk)}" title="Questões: ${esc(qv)}" aria-label="Ver onde estão as questões" aria-expanded="${ui.qi&&ui.qi.has(qk)?'true':'false'}">${QICO}</button>`):'';
  const name=l.url?`<a class="lnm" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer" title="${esc(nm)}">${esc(nm)}</a>`:`<span class="lnm" title="${esc(nm)}">${esc(nm)}</span>`;
  const qo=qv&&!isQLink(qv)&&ui.qi&&ui.qi.has(qk);return `<span class="lwrap"><span class="lrow">${name}${l.url?`<a class="lic" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer" title="Abrir aula" aria-label="Abrir aula">${EXT}</a>`:''}${qi}${nb}${q?`<span class="ritl" style="--qc:${c}" aria-hidden="true"></span><span class="ritq">${qTag(q,tCol(tid))}</span>`:''}</span>${qo?`<span class="qbub">${esc(qv)}</span>`:''}${no?`<span class="nvw lnv">${esc(nt)}</span>`:''}</span>`};
-const item=(l,tid,nq)=>{const lb=esc(l.title||host(l.url)||''),k=KIND[l.kind]||'Aula',q=tid&&!nq?qAgg(tid,l):null,qs=q?qTag(q,tCol(tid)).replace('class="qsc','class="qsc qsi'):'',qv=String(l.q||'').trim(),qp=qv?(isQLink(qv)?`<a class="pill ql" href="${esc(qHref(qv))}" target="_blank" rel="noopener noreferrer" title="${esc(qv)}"><span class="k">Questões</span><span class="ar">${EXT}</span></a>`:`<span class="pill ql off" title="${esc(qv)}"><span class="k">Questões</span>${esc(qv)}</span>`):'';const nt=noteOf(tid,l),nb=nt?noteBtn(tid+'|'+ik(l),nt):'';return (l.url?`<a class="pill" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer" title="${esc(l.url)}"><span class="k">${k}</span>${lb}<span class="ar">${EXT}</span></a>`:`<span class="pill off"><span class="k">${k}</span>${lb}</span>`)+qp+qs+nb};
-const links=t=>t.links.map(l=>itemLine(l,t.id)).join('');
 const mkItem=(kind,raw)=>{raw=(raw||'').trim();if(!raw)return null;const kd=kind==='questoes'?'questoes':'aula',m=raw.match(/https?:\/\/\S+/i);
  if(m)return {id:uid(),kind:kd,url:m[0],title:raw.replace(m[0],'').replace(/^[\s|\-–:]+|[\s|\-–:]+$/g,'')};
  const u=!/\s/.test(raw)&&/^[\w-]+(\.[\w-]+)+(\/|$)/.test(raw);return {id:uid(),kind:kd,url:u?normUrl(raw):'',title:u?'':raw}};
 const ik=l=>l.kind+'|'+(l.url||'')+'|'+(l.title||'');
-const hidIt=()=>false;
-const revItems=(s,t)=>{const G=grp(s.id),out=[];CS().filter(x=>G.includes(x.subj)&&!x.review&&x.topic===t.id&&inSrc(x)).forEach(r=>(r.items||[]).forEach(i=>{const it=itKey(i);if(it&&!hidIt(t,it)&&!out.some(o=>sameIt(o,it)))out.push(it)}));return out};
+const revItems=(s,t)=>{const G=grp(s.id),out=[];CS().filter(x=>G.includes(x.subj)&&!x.review&&x.topic===t.id&&inSrc(x)).forEach(r=>(r.items||[]).forEach(i=>{const it=itKey(i);if(it&&!out.some(o=>sameIt(o,it)))out.push(it)}));return out};
 const rvBase=s=>'r'+(S.rv?S.rv.id:'')+':'+(s.of||s.id)+':';
 const rvLocked=s=>{const G=grp(s.id);return new Set(S.rv?S.sessions.filter(x=>x.rid===S.rv.id&&G.includes(x.subj)).flatMap(x=>x.chk||[]):[])};
 const rvRows=s=>tl(s,winTopics(s.id)).map(t=>{const its=revItems(s,t),b=rvBase(s)+t.id+':';return {t,rows:its.map(l=>({l,k:b+(l.self?'self':ik(l))}))}});
 const rvPend=s=>{if(!s||!S.rv)return [];const lk=rvLocked(s);return rvRows(s).map(o=>({t:o.t,rows:o.rows.filter(r=>S.checked[r.k]&&!lk.has(r.k))})).filter(o=>o.rows.length)};
 const rvGroups=s=>rvPend(s).map(o=>({id:'v'+o.t.id,nt:o.t.name,rows:o.rows.filter(r=>!r.l.self).map((r,i)=>({id:'v'+o.t.id+i,kind:r.l.kind||'aula',name:r.l.title||'',link:r.l.url||'',...(r.l.q?{q:r.l.q}:{})}))}));
-const LISTI='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>';
 function regViewHtml(){const s=S.subjects.find(x=>x.id===ui.rview);if(!s)return '';const c=col(s),base=s.of?(S.subjects.find(x=>x.id===s.of)||s):s;
  const pc=ui.rvc,recs=S.sessions.filter(x=>(pc?(x.set||1)===(ui.rvs||S.set||1)&&!x.rid&&x.cycle===pc:inCtx(x))&&pkey(x)===s.id),by=new Map();recs.forEach(x=>{const k=x.ses||x.id;if(!by.has(k))by.set(k,[]);by.get(k).push(x)});
  const tot=recs.reduce((a,x)=>a+x.min,0);
@@ -553,7 +547,7 @@ function ring(){
   const th=(a0+fr/2)*2*Math.PI;out+=`<g class="arc${can?' clk':''}" style="--dx:${(Math.cos(th)*2).toFixed(2)}px;--dy:${(Math.sin(th)*2).toFixed(2)}px" data-col="${c}" data-tip="${esc(s.name)}|${fmt(shown(s.id))} / ${fmt(s.goal)}"${can?` data-act="pickarc" data-id="${s.id}"`:''}>${seg}</g>`;
   a0+=fr});
  const d=A.reduce((a,s)=>a+Math.min(prog(s.id),s.goal),0);
- return `<svg viewBox="-8 -8 206 206" role="img" aria-label="${S.type==='review'?'Revisão':'Ciclo '+S.cycle}, ${Math.round(d/T*100)}% concluído"><g transform="rotate(-90 95 95)">${tr}${out}</g>${(()=>{const ss=!S.edit&&A.find(x=>x.id===selId()),on=ss&&(S.timer.running||el()>0);if(on){const nmx=nm(ss),nn=nmx.length>17?nmx.slice(0,16).trim()+'…':nmx;return `<text x="95" y="76" text-anchor="middle" fill="${col(ss)}" style="font-size:14px;font-weight:400">${S.timer.running?(S.type==='review'?'Revisando':'Estudando'):'Pausado'}</text><text id="rgct" x="95" y="102" text-anchor="middle" fill="var(--ink)" style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">${hms(el()/1000)}</text><text x="95" y="120" text-anchor="middle" fill="var(--mut)" style="font-size:11px">de ${hms(ss.goal*60)}</text>`}return `<text x="95" y="76" text-anchor="middle" fill="var(--mut)" style="font-size:14px;font-weight:400">${S.type==='review'?'Revisei':'Ciclo '+S.cycle}</text><text x="95" y="102" text-anchor="middle" fill="var(--ink)" style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">${hms(A.reduce((a,s)=>a+prog(s.id),0)*60)}</text><text x="95" y="120" text-anchor="middle" fill="var(--mut)" style="font-size:11px">de ${hms(total()*60)}</text>`})()}</svg>`;
+ return `<svg viewBox="-8 -8 206 206" role="img" aria-label="${S.type==='review'?'Revisão':'Ciclo '+S.cycle}, ${Math.round(d/T*100)}% concluído"><g transform="rotate(-90 95 95)">${tr}${out}</g>${(()=>{const ss=!S.edit&&A.find(x=>x.id===selId()),on=ss&&(S.timer.running||el()>0);if(on){return `<text x="95" y="76" text-anchor="middle" fill="${col(ss)}" style="font-size:14px;font-weight:400">${S.timer.running?(S.type==='review'?'Revisando':'Estudando'):'Pausado'}</text><text id="rgct" x="95" y="102" text-anchor="middle" fill="var(--ink)" style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">${hms(el()/1000)}</text><text x="95" y="120" text-anchor="middle" fill="var(--mut)" style="font-size:11px">de ${hms(ss.goal*60)}</text>`}return `<text x="95" y="76" text-anchor="middle" fill="var(--mut)" style="font-size:14px;font-weight:400">${S.type==='review'?'Revisei':'Ciclo '+S.cycle}</text><text x="95" y="102" text-anchor="middle" fill="var(--ink)" style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">${hms(A.reduce((a,s)=>a+prog(s.id),0)*60)}</text><text x="95" y="120" text-anchor="middle" fill="var(--mut)" style="font-size:11px">de ${hms(total()*60)}</text>`})()}</svg>`;
 }
 
 function syncSel(){const A=actives();if(!A.length)return;
@@ -639,16 +633,6 @@ function viewCicloPast(n){
  html=html.replace(/<button[^>]*data-act="(rplay|rzero|rmore|rreopen|edopen|next|rvend)"[^>]*>[\s\S]*?<\/button>/g,'').replace(/<button class="x" data-act="rreg" data-id="([^"]+)"[^>]*>[\s\S]*?<\/button>/g,(m,id)=>`<button class="x" data-act="rview" data-id="${id}" title="Visualizar" aria-label="Visualizar">${EYEI}</button>`).replace(/ data-act="(pickrow|pickarc)"/g,' data-act="ppick"').replace('Você cumpriu todas as metas. Pronto para o próximo?','Você cumpriu todas as metas deste ciclo.').replace(/<div class="dd rmenu">[\s\S]*?<\/div>/g,'');
  return html+`<div class="fl"><button class="btn g" data-act="ccur">${vset()?'Voltar à rodada atual':'Voltar ao ciclo atual'}</button><span class="mut" style="align-self:center">${vset()?'Rodadas anteriores são somente para consulta.':'Para corrigir um registro deste ciclo, use o Histórico.'}</span></div>`;
 }
-function viewPast(n){
- const hs=(S.hist||{})[n],recs=CS().filter(x=>x.cycle===n&&!x.rid),by={};recs.forEach(x=>by[x.subj]=(by[x.subj]||0)+x.min);
- const tot=recs.reduce((a,x)=>a+x.min,0),ds=recs.map(x=>x.date).filter(Boolean).sort(),fd2=d=>d.split('-').reverse().join('/');
- const rows=S.subjects.filter(s=>by[s.id]||(hs&&hs.goals[s.id])).map(s=>{const g=(hs&&hs.goals[s.id])||s.goal,p=by[s.id]||0;return `<div class="row"><span class="dot" style="background:${col(s)}"></span><div class="grow"><div style="display:flex;justify-content:space-between;gap:8px"><span>${esc(s.name)}</span><span class="mut">${fmt(p)} / ${fmt(g)}</span></div><div class="bar"><i style="width:${Math.min(p/g*100,100)}%;background:${col(s)}"></i></div></div></div>`}).join('');
- const det=S.subjects.filter(s=>!s.of).map(s=>{const G=grp(s.id),rr=recs.filter(x=>G.includes(x.subj)&&x.topic);if(!rr.length)return '';
-  const ts=[];rr.forEach(r=>{let o=ts.find(y=>y.id===r.topic);if(!o)ts.push(o={id:r.topic,its:[]});(r.items||[]).forEach(i=>{const it=itKey(i);if(it&&!hidIt(topicOf(s,r.topic),it)&&!o.its.some(z=>sameIt(z,it)))o.its.push(it)})});
-  const k='pv:'+n+'-'+s.id,op=ui.open.has(k);
-  return `<div class="card rvcard pvbox${op?' open':''}"><div class="pvh" data-act="etog" data-id="${k}"><button class="x mtog${op?' on':''}" data-act="etog" data-id="${k}" aria-expanded="${op}" aria-label="Expandir ou recolher">${CHEV}</button><h2 class="rvt" style="--sc:${col(s)};color:var(--sc)">O que foi estudado de <span class="rvm"><span class="dot" style="background:${col(s)}"></span>${esc(s.name)}</span></h2></div>${op?`<div class="rvlist pvb">`+ts.map(o=>{const t=topicOf(s,o.id);if(!t)return '';const pl=o.its.map(l=>`<div class="rvit">${itemLine(l,t.id)}</div>`).join('');return `<div class="rvtp"><div class="rvtn">${esc(t.name)}</div>${pl?`<div class="rvits">${pl}</div>`:''}</div>`}).join('')+`</div>`:''}</div>`}).join('');
- return `<div class="card"><h2>Resumo ${CDN}</h2>${recs.length?`<div class="mut">${fmt(tot)} estudados${ds.length?' · '+fd2(ds[0])+(ds[ds.length-1]!==ds[0]?' a '+fd2(ds[ds.length-1]):''):''}</div>${rows}`:'<div class="empty">Sem registros neste ciclo.</div>'}</div>${det}${ui.note?`<div class="mut" style="color:var(--bad);margin-bottom:8px">${esc(ui.note)}</div>`:''}<div class="fl"><button class="btn g" data-act="ccur">Voltar ao ciclo atual</button><button class="btn g" data-tab="reg">Ver registros</button><span class="mut" style="align-self:center">Para corrigir um registro deste ciclo, use o Histórico.</span></div>`;
-}
 function viewCiclo(){
  const rev=S.type==='review';
  if(vset()){ui.view=Math.min(ui.view||rodMax(vset()),rodMax(vset()));return cnav()+viewCicloPast(ui.view)}
@@ -667,7 +651,7 @@ function viewCiclo(){
  const pre=h;h='';h+=`<div class="card"><div class="ringwrap">${ring()}<div class="now"><div class="mut">${nw&&selId()===nw.id&&(S.timer.running||el()>0)?(S.timer.running?(rev?'Revisando agora':'Estudando agora'):(rev?'Revisão em pausa':'Estudo em pausa')):nw&&prog(nw.id)>=nw.goal?'<span class="metaok mok6">Sessão concluída ✓</span>':rev?'Próxima revisão':'Próxima disciplina'}</div><b class="nwn">${nw?`<span class="dot" style="background:${col(nw)}"></span><span>${esc(nm(nw))}</span>`:'Tudo em dia'}</b>${nwBtn(nw)}${info}${rev?`<div class="mut" style="margin-top:8px">Revisando ${S.reviewSrc.map(k=>{if(typeof k==='number')return 'ciclo '+k;const g=(S.rgs||[]).find(x=>x.id===k);return g?'grupo '+g.idx:''}).filter(Boolean).join(', ')}</div>`:''}</div></div></div>`;
  const ringC=h;h='';const rs=nw;
  if(rs&&!rev&&!PAST){const own=prog(rs.id)>=rs.goal?CS().filter(x=>x.subj===rs.id&&!x.review&&x.topic&&x.cycle===S.cycle).slice(-1)[0]:null,l=own||lastSess(rs.id);if(l){const G=grp(rs.id),recs=CS().filter(x=>G.includes(x.subj)&&!x.review&&x.topic&&(x.ses||x.id)===(l.ses||l.id));
-  const p=recs.map(r=>{const t=topicOf(rs,r.topic);if(!t)return '';const pl=(r.items||[]).map(itKey).filter(Boolean).filter(l=>!hidIt(t,l)).map(l=>`<div class="rvit">${itemLine(l,t.id)}</div>`).join('');return `<div class="rvtp"><div class="rvtn">${esc(t.name)}</div>${pl?`<div class="rvits">${pl}</div>`:''}</div>`}).join('');
+  const p=recs.map(r=>{const t=topicOf(rs,r.topic);if(!t)return '';const pl=(r.items||[]).map(itKey).filter(Boolean).map(l=>`<div class="rvit">${itemLine(l,t.id)}</div>`).join('');return `<div class="rvtp"><div class="rvtn">${esc(t.name)}</div>${pl?`<div class="rvits">${pl}</div>`:''}</div>`}).join('');
   if(p&&prog(rs.id)<rs.goal){const dn=false;h+=`<div class="card rvcard${!dn?' pvbox'+(S.rvaClosed?'':' open'):''}">${dn?`<h2 class="rvt rvtr" style="--sc:${col(rs)};color:var(--sc)"><span class="rvm"><span class="dot" style="background:${col(rs)}"></span>${esc(rs.name)}</span>O que você estudou nessa sessão</h2>`:`<div class="pvh" data-act="rvatog"><button class="x mtog${S.rvaClosed?'':' on'}" data-act="rvatog" aria-expanded="${!S.rvaClosed}" aria-label="Expandir ou recolher">${CHEV}</button><h2 class="rvt" style="--sc:${col(rs)};color:var(--sc)">Revise antes de começar a sessão de <span class="rvm"><span class="dot" style="background:${col(rs)}"></span>${esc(rs.name)}</span></h2></div>`}${dn||!S.rvaClosed?`<div class="rvlist${dn?'':' pvb'}">${p}</div>`:''}</div>`}}}
  if(rev&&rs)h+=`<div class="card rvcard"><h2 class="rvt" style="--sc:${col(rs)};color:var(--sc)">Tópicos para revisar de <span class="rvm"><span class="dot" style="background:${col(rs)}"></span>${esc(rs.name)}</span></h2><div class="rvlist">${revList(rs,winTopics(rs.id))}</div></div>`;
  if(S.edit&&!edPop())h+=sessCard();
@@ -691,8 +675,6 @@ function recentCard(){
  if(!L.length)return `<div class="card recent">${head}<div class="empty">Nenhum estudo registrado ainda. Inicie o cronômetro de uma disciplina para começar.</div></div>`;
  let out='',last=null;
  L.forEach(([k,r])=>{const f=r[0],d=f.date||'';if(d!==last){last=d;const dt=d?new Date(d+'T12:00:00'):null;out+=`<div class="rday">${dt?WD[dt.getDay()]+' '+d.slice(8,10)+'/'+d.slice(5,7)+'/'+d.slice(2,4):'Sem data'}</div>`}
-  const s=subjAny(f.subj),t0=r.reduce((a,x)=>a+x.min,0),kinds=uniq(r.flatMap(x=>(x.items||[]).map(i=>KIND[i.kind]).filter(Boolean)));
-  const tps=s?uniq(r.map(x=>x.topic).filter(Boolean)).map(id=>{const t=topicOf(s,id),x=r.find(y=>y.topic===id),its=uniq(r.filter(y=>y.topic===id).flatMap(y=>(y.items||[]).map(itKey).filter(Boolean).map(z=>(z.title||'').trim()).filter(Boolean)));const n=t?t.name:x&&x.tn?x.tn:'';return n?esc(n)+(its.length?' · '+esc(its.join(', ')):''):''}).filter(Boolean):[];
   out+=sesRow(k,r,{lim:3})});
  return `<div class="card recent">${head}<div class="rlist">${out}</div></div>`;
 }
@@ -867,12 +849,13 @@ const plansHtml=()=>{const pe=ui.ple&&S.plans.find(x=>x.id===ui.ple&&x.id===S.pl
  const rows=S.plans.map(pl=>{const cur=pl.id===S.plan,i=planInfo(pl);return `<div class="card plrow${cur?' cur':''}"${cur?'':` data-act="plsw" data-id="${pl.id}" title="Abrir este plano"`}><div class="row" style="padding:0"><span class="pldot${cur?' on':''}"></span><div class="grow" style="min-width:0"><b class="plname">${esc(pl.name)}</b><div class="mut" style="font-size:.8rem">${i.s>1?'Rodada '+i.s+' · ':''}Ciclo ${i.c} · ${i.n} disciplina${i.n===1?'':'s'}${cur?' · aberto':''}</div></div><button class="btn g s" data-act="pled" data-id="${pl.id}" title="Editar disciplinas e tópicos deste plano" aria-label="Editar plano">Editar</button><button class="btn g s" data-act="plset" data-id="${pl.id}" title="Zera o progresso e recomeça este plano no Ciclo 1. Seu histórico é mantido." aria-label="Começar nova rodada de ciclos">Nova rodada</button><button class="x" data-act="pldel" data-id="${pl.id}" title="Excluir plano" aria-label="Excluir plano">${TRASH}</button></div></div>`}).join('');
  const body=pe?viewPlanEd():`${rows}<h2 class="sec">Novo plano</h2><div class="card"><form autocomplete="off" data-f="plnew" class="fl"><input class="t" name="n" placeholder="Nome do plano, ex.: TRF 1ª Região" required aria-label="Nome do plano"><button class="btn">Criar plano</button></form></div>`;
  return `<div class="ov" data-act="plclose"></div><div class="dlg medit plans" role="dialog" aria-modal="true" aria-label="Planos de estudo">${head}<div class="mscroll">${body}</div></div>`};
-function posDD(){if(!document.querySelectorAll)return;document.querySelectorAll('.dlg .dd').forEach(d=>{const a=d.parentElement.getBoundingClientRect(),vh=innerHeight,lim=vh*0.7;
+function posDD(){document.querySelectorAll('.dlg .dd').forEach(d=>{const a=d.parentElement.getBoundingClientRect(),vh=innerHeight,lim=vh*0.7;
  Object.assign(d.style,{position:'fixed',left:a.left+'px',width:a.width+'px',right:'auto',zIndex:70,maxHeight:''});
  const need=Math.min(d.scrollHeight,lim),below=vh-a.bottom-8,above=a.top-8;
  if(need>below&&above>below)Object.assign(d.style,{top:'auto',bottom:(vh-a.top+4)+'px',marginTop:'0',maxHeight:Math.min(lim,above)+'px'});
  else Object.assign(d.style,{top:(a.bottom+4)+'px',bottom:'auto',marginTop:'0',maxHeight:Math.min(lim,below)+'px'})})}
-if(typeof addEventListener==='function'){addEventListener('resize',()=>posDD());document.addEventListener('scroll',()=>posDD(),true)}
+addEventListener('resize',()=>posDD());document.addEventListener('scroll',()=>posDD(),true);
+try{matchMedia('(max-width:600px)').addEventListener('change',()=>{if(tab==='reg'&&ui.hcal)render()})}catch(e){}
 const FOC={kb:false,op:null};document.addEventListener('keydown',e=>{if(e.key==='Tab'||e.key==='Enter'||e.key==='Escape'||e.key.startsWith('Arrow'))FOC.kb=true},true);document.addEventListener('pointerdown',()=>{FOC.kb=false},true);
 const focSig=()=>{const a=document.activeElement;if(!a||a===document.body||a===document.documentElement)return null;const d=a.dataset||{};if(a.id)return '#'+CSS.escape(a.id);if(d.act)return '[data-act="'+CSS.escape(d.act)+'"]'+(d.id!==undefined?'[data-id="'+CSS.escape(d.id)+'"]':'');if(d.tab)return '[data-tab="'+CSS.escape(d.tab)+'"]';return null};
 const FQ='a[href],button:not([disabled]),input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
@@ -900,7 +883,7 @@ function render0(){
 
 const GEAR='<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
 const TRASH='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>';
-const UNDO_MSG={rreopen:'Meta reiniciada',rundo:'Nova rodada desfeita',delreg:'Registro excluído',reopen:'Ciclo reaberto',rvcancel:'Revisão cancelada',pldel:'Plano excluído',plset:'Nova rodada iniciada',sdel:'Disciplina excluída',del:'Bloco removido',hide:'Disciplina removida do ciclo',dt:'Tópico excluído',dl:'Aula/link excluída',delgrp:'Tópico removido',delrow:'Aula/link removida',bkrestore:'Backup restaurado',reset:'Dados apagados',next:'Novo ciclo iniciado',tplset:'Padrão definido',tplupd:'Padrão atualizado',tpldel:'Padrão removido',rzero:'Cronômetro reiniciado'};
+const UNDO_MSG={rreopen:'Meta reiniciada',rundo:'Nova rodada desfeita',delreg:'Registro excluído',reopen:'Ciclo reaberto',rvcancel:'Revisão cancelada',pldel:'Plano excluído',plset:'Nova rodada iniciada',sdel:'Disciplina excluída',del:'Bloco removido',hide:'Disciplina removida do ciclo',dt:'Tópico excluído',dl:'Aula/link excluída',delgrp:'Tópico removido',delrow:'Aula/link removida',next:'Novo ciclo iniciado',rzero:'Cronômetro reiniciado'};
 function hideUndo(){clearTimeout(ui.undoT);ui.undo=null;const t=document.getElementById('undo');if(t)t.remove()}
 const UST=[],RST=[];
 function pushU(msg,snap){UST.push({snap:snap||JSON.stringify(S),msg});if(UST.length>10)UST.shift();RST.length=0}
@@ -1034,9 +1017,6 @@ const edPop=()=>!!S.edit&&S.sessions.some(x=>(x.ses||x.id)===S.edit.ses);
 function studiedBox(E){const recs=S.sessions.filter(x=>(x.ses||x.id)===E.ses&&x.topic);const s=subjAny(E.subj);if(!s||!recs.length)return '';const c=col(s);
  const p=uniq(recs.map(x=>x.topic)).map(tid=>{const t=topicOf(s,tid);const its=[];recs.filter(x=>x.topic===tid).forEach(x=>(x.items||[]).map(itKey).filter(Boolean).forEach(l=>{if(!its.some(z=>sameIt(z,l)))its.push(l)}));const nm=t?t.name:(recs.find(x=>x.topic===tid)||{}).tn||'';return nm?`<div class="rvtp"><div class="rvtn">${esc(nm)}</div>${its.length?`<div class="rvits">${its.map(l=>`<div class="rvit">${itemLine(l,tid)}</div>`).join('')}</div>`:''}</div>`:''}).join('');
  return p?`<div class="stbox" style="--sc:${c}"><span class="sttab">O que foi estudado</span><div class="stbody rvlist">${p}</div></div>`:''}
-function regEditInfo(){const E=S.edit,recs=S.sessions.filter(x=>(x.ses||x.id)===E.ses&&x.topic);const s=subjAny(E.subj);if(!s||!recs.length)return '';
- const p=recs.map(r=>{const t=topicOf(s,r.topic);if(!t)return '';const pl=(r.items||[]).map(itKey).filter(Boolean).map(l=>`<div class="rvit">${itemLine(l,t.id)}</div>`).join('');return `<div class="rvtp"><div class="rvtn">${esc(t.name)}</div>${pl?`<div class="rvits">${pl}</div>`:''}</div>`}).join('');
- return p?`<div class="card rvcard"><h2 class="rvt rvtr" style="--sc:${col(s)};color:var(--sc)"><span class="rvm"><span class="dot" style="background:${col(s)}"></span>${esc(nm(s))}</span>O que você estudou nessa sessão</h2><div class="rvlist">${p}</div></div>`:''}
 const isDesk=()=>!(typeof matchMedia==='function'&&matchMedia('(max-width:600px)').matches);
 const MESN=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const WDS=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
@@ -1064,7 +1044,6 @@ function regCal(all){
  return `<div class="card hcal"><div class="chead"><h2>Histórico</h2></div>
  <div class="hcwrap"><div class="hcmain"><div class="hct"><button class="x" data-act="hcalw" data-id="-1" aria-label="Semana anterior">‹</button><b>${ttl}, ${y}</b><button class="x" data-act="hcalw" data-id="1" aria-label="Próxima semana"${wk>=monOf(td)?' disabled':''}>›</button><span class="mut">${wkTot?fmt(wkTot)+' na semana':'Nenhum estudo nesta semana'}</span></div><div class="hcg">${days.map(col0).join('')}</div></div>${mini}</div></div>`}
 function viewReg(){
- if(S.edit&&!edPop()&&S.edit.from==='reg'&&S.sessions.some(x=>(x.ses||x.id)===S.edit.ses))return regEditInfo()+sessCard();
  const map=new Map();S.sessions.forEach(x=>{const k=x.ses||x.id;if(!map.has(k))map.set(k,[]);map.get(k).push(x)});
  const baseOf=x=>{const s0=subjAny(x.subj);return s0?(s0.of||s0.id):x.subj},grpKey=f=>f.rid?'r'+f.rid:(f.review?'o':'c')+f.cycle;
  const all=[...map.entries()].reverse();
@@ -1101,11 +1080,9 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(t.dataset.tab){tab=t.dataset.tab;render();save();return}
  const a=t.dataset.act,[p,q,r]=(t.dataset.id||'').split(':'),sub=S.subjects.find(x=>x.id===p);if(a!=='rmore')ui.more=null;
  ui.msg=null;if(a!=='dd')ui.nmnote=null;ui.note=null;
- if(a==='sndtest'){beep();return}
  if(a==='theme'){S.theme=p==='light'||p==='dark'?p:'auto';save();render();return}
  if(a==='rview'){ui.rview=p;const vs=vset();ui.rvs=vs;ui.rvc=vs?(ui.view||rodMax(vs)):(ui.view&&ui.view<S.cycle?ui.view:null);ui.more=null}
  if(a==='rvclose')ui.rview=null;
- if(a==='rvhist'){ui.rview=null;ui.hfs=p;ui.hfc='';tab='reg'}
   if(a==='edit'){ui.rview=null;const old=S.sessions.filter(x=>(x.ses||x.id)===p),s0=old[0]&&S.subjects.find(x=>x.id===old[0].subj);if(!s0)return;
   S.edit={ses:p,subj:s0.id,min:String(Math.round(old.reduce((a,x)=>a+x.min,0)*10)/10),date:old[0].date||today()};
   const fromReg=tab==='reg';if(fromReg)S.edit.from='reg';
@@ -1189,7 +1166,6 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='pdtog'){const k='pd:'+p;if(ui.pde===p){ui.pde=null}else ui.open.has(k)?ui.open.delete(k):ui.open.add(k)}
  if(a==='pdedit'){ui.pde=ui.pde===p?null:p;ui.pdn=null;ui.open.add('pd:'+p)}
  if(a==='pdend')ui.pde=null;
- if(a==='etog'){ui.open.has(p+':'+q)?ui.open.delete(p+':'+q):ui.open.add(p+':'+q)}
  if(a==='sdel'){if(!ask('sdel:'+p,t))return;const ids=[p,...S.subjects.filter(s=>s.of===p).map(s=>s.id)];S.subjects=S.subjects.filter(s=>!ids.includes(s.id));ids.forEach(id=>{delete S.progress[id];if(S.paused)delete S.paused[id]})}
  if(a==='edclose'){ui.ed=null;ui.addm=null}
  if(a==='pickrow'&&!S.edit&&S.subjects.some(x=>x.id===p)){if(typeof matchMedia==='function'&&matchMedia('(max-width:600px)').matches){ui.more=null;if(p===S.sel.subj&&S.timer.running){S.timer.acc=el();S.timer.running=false}else if(!gDone(S.subjects.find(x=>x.id===p)))reqSwitch(p,'rplay');else reqSwitch(p)}else reqSwitch(p);ui.dd=null}
@@ -1226,18 +1202,11 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
   Object.keys(S.checked||{}).forEach(k=>{if(k.indexOf(':'+bs.id+':'+q+':')>0)delete S.checked[k]})}
  save();render();if(a==='edit'&&!edPop())scrollTo(0,0);if(ui.undoNext){showUndo(ui.undoNext);ui.undoNext=null}
 });
-document.addEventListener('change',e=>{if('snd' in (e.target.dataset||{})){S.snd=e.target.checked;save();render();return}if(e.target.classList&&e.target.classList.contains('regdate')){S.sel.md=e.target.value;save();return}
+document.addEventListener('change',e=>{if(e.target.classList&&e.target.classList.contains('regdate')){S.sel.md=e.target.value;save();return}
  const d=e.target.dataset,v=e.target.value;
- if(d.pln)return;
  if('tm' in d){const mn=tmParse(v);if(d.goal){const s=S.subjects.find(x=>x.id===d.goal);if(s&&mn>=1){s.goal=mn;save()}e.target.value=tmFmt(s?s.goal:mn)}else{e.target.value=mn?tmFmt(mn):'';const k=d.tf;if(k==='man')S.sel.mt=e.target.value;else if(k==='ng')S.sel.ng=e.target.value}return}
- if(e.target.id==='ss'){S.sel.subj=v;S.sel.topic=''}
- else if(e.target.id==='st')S.sel.topic=v;
- else if(d.rk){const g=grps().find(x=>x.id===d.g),r=g&&g.rows.find(x=>x.id===d.rk);if(r)r.kind=v}
- else if(d.goal){const s=S.subjects.find(x=>x.id===d.goal),mn=tmParse(v);if(s&&mn>=1)s.goal=mn}
- else if(d.done){const [a,b]=d.done.split(':'),s=S.subjects.find(x=>x.id===a),t=s&&topicOf(s,b);if(t)t.done=e.target.checked}
- else if(d.chk)S.checked[d.chk]=e.target.checked;
+ if(d.chk)S.checked[d.chk]=e.target.checked;
  else if(d.rsel){ui.rsel=ui.rsel||new Set();const c=d.rsel;e.target.checked?ui.rsel.add(c):ui.rsel.delete(c)}
-
  else return;
  save();render();
 });
@@ -1299,7 +1268,6 @@ document.addEventListener('keydown',e=>{const gp=e.target.dataset&&e.target.data
  if(gp&&(e.key==='ArrowUp'||e.key==='ArrowDown')&&S.type==='review'){e.preventDefault();const L=actives(),i=L.findIndex(x=>x.id===gp),j=i+(e.key==='ArrowUp'?-1:1);if(i>=0&&j>=0&&j<L.length){[L[i],L[j]]=[L[j],L[i]];S.subjects=[...L,...S.subjects.filter(x=>!L.includes(x))];ui.focus='g-'+gp;save();render()}return}
  if(gp&&(e.key==='ArrowUp'||e.key==='ArrowDown')){e.preventDefault();const i=S.subjects.findIndex(x=>x.id===gp),j=i+(e.key==='ArrowUp'?-1:1);
   if(i>=0&&j>=0&&j<S.subjects.length&&!!S.subjects[j].off===!!S.subjects[i].off){[S.subjects[i],S.subjects[j]]=[S.subjects[j],S.subjects[i]];ui.focus='g-'+gp;save();render()}}});
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset&&'rvn' in e.target.dataset){e.preventDefault();applyRev();save();render()}});
 document.addEventListener('invalid',e=>{const t=e.target;if(t&&t.id==='nm-in'&&!t.value.trim())t.setCustomValidity(nmAvail()?'Preencha esse campo ou selecione um item.':'Preencha esse campo.')},true);
 document.addEventListener('focusin',e=>{if(e.target.id==='nm-in')e.target.placeholder='Crie uma nova disciplina'});
 document.addEventListener('focusout',e=>{if(e.target.id==='nm-in')e.target.placeholder=S.sel.nnnew?'Crie uma nova disciplina':'Disciplina'});
@@ -1319,27 +1287,28 @@ document.addEventListener('submit',e=>{
  if(k==='rvint'){const raw=String(f.get('n')||'').trim(),n=Number(raw);if(!/^\d+$/.test(raw)||!(n>=1&&n<=60)){ui.msg='Informe um número inteiro de 1 a 60 dias válidos de estudo.'}else if(n===rvInt()){ui.msg='O intervalo já está em '+n+'.'}else{const I=rgInfo();S.rvlog=S.rvlog||[];S.rvlog.push({ts:Date.now(),de:rvInt(),para:n,dias:I.total,grupos:S.rgs.length});S.rvint=n;ui.msg='Intervalo salvo: '+n+' dia'+(n===1?'':'s')+' válido'+(n===1?'':'s')+' de estudo. Vale para os próximos grupos; os grupos já formados não mudam.'}}
  save();render();
 });
-try{norm();setMode('study');if(!S.edit&&!S.sx&&!(S.timer&&(S.timer.running||S.timer.acc>0))){const c=current();if(c&&c.id!==S.sel.subj){if(S.sel.subj&&hasG())pz()[S.sel.subj]={acc:0,groups:S.sel.groups};S.sel.subj=c.id;S.sel.topic='';S.sel.groups=null}}}catch(x){}
-render();
-try{syInit()}catch(x){}
-</script>
-<script>document.addEventListener('click',e=>{const n=e.target.closest&&e.target.closest('.nvw');if(n&&n.closest('label'))e.preventDefault()},true)</script>
-<script>(()=>{let tmr=null;const upd=()=>{if(tab!=='reg')return;const box=document.getElementById('hres');if(!box)return;const t=document.createElement('div');t.innerHTML=viewReg();const n=t.querySelector('#hres');if(n)box.replaceWith(n);const a=document.getElementById('hd1'),b=document.getElementById('hd2');if(a){if(ui.hd2)a.max=ui.hd2;else a.removeAttribute('max')}if(b){if(ui.hd1)b.min=ui.hd1;else b.removeAttribute('min')}['hd1','hd2'].forEach(k=>{const v=document.getElementById(k+'v');if(v){v.innerHTML=(ui[k]?fd(ui[k]):'')+CALI;v.parentNode.classList.toggle('on',!!ui[k])}})};
+/* Anotações dentro de <label> não marcam o checkbox ao clicar */
+document.addEventListener('click',e=>{const n=e.target.closest&&e.target.closest('.nvw');if(n&&n.closest('label'))e.preventDefault()},true);
+/* Histórico: busca e filtro de datas sem redesenhar a página toda */
+(()=>{let tmr=null;const upd=()=>{if(tab!=='reg')return;const box=document.getElementById('hres');if(!box)return;const t=document.createElement('div');t.innerHTML=viewReg();const n=t.querySelector('#hres');if(n)box.replaceWith(n);const a=document.getElementById('hd1'),b=document.getElementById('hd2');if(a){if(ui.hd2)a.max=ui.hd2;else a.removeAttribute('max')}if(b){if(ui.hd1)b.min=ui.hd1;else b.removeAttribute('min')}['hd1','hd2'].forEach(k=>{const v=document.getElementById(k+'v');if(v){v.innerHTML=(ui[k]?fd(ui[k]):'')+CALI;v.parentNode.classList.toggle('on',!!ui[k])}})};
 document.addEventListener('click',e=>{const i=e.target&&(e.target.id==='hd1'||e.target.id==='hd2')?e.target:null;if(i&&typeof i.showPicker==='function'){try{i.showPicker()}catch(x){}}});
 document.addEventListener('input',e=>{const id=e.target&&e.target.id;if(id==='hq'){ui.hq=e.target.value;ui.hn=30;clearTimeout(tmr);tmr=setTimeout(upd,120)}else if(id==='hd1'||id==='hd2'){ui[id]=e.target.value;ui.hn=30;upd()}});
-document.addEventListener('change',e=>{const id=e.target&&e.target.id;if(id==='hd1'||id==='hd2'){ui[id]=e.target.value;ui.hn=30;upd()}});})();</script>
-<script>(()=>{const vis=el=>el&&el.getClientRects().length>0;
+document.addEventListener('change',e=>{const id=e.target&&e.target.id;if((id==='hd1'||id==='hd2')&&ui[id]!==e.target.value){ui[id]=e.target.value;ui.hn=30;upd()}});})();
+/* Espaço inicia/pausa o cronômetro */
+(()=>{const vis=el=>el&&el.getClientRects().length>0;
 document.addEventListener('keydown',e=>{if(e.code!=='Space'&&e.key!==' ')return;if(e.ctrlKey||e.metaKey||e.altKey||e.shiftKey||e.defaultPrevented)return;
  const t=e.target;if(t&&(t.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)))return;
  if(t&&t.closest&&t.closest('button,a,[role=button],summary')&&FOC.kb)return;
- 
  if(e.repeat){e.preventDefault();return}
  const dlg=document.querySelector('#modal .dlg');let b=null;
  if(dlg){if(!dlg.classList.contains('reg')||S.edit)return;b=dlg.querySelector('[data-act=tpause],[data-act=tstart]');if(!vis(b))return}
  else{b=[...document.querySelectorAll('#app .nwplay')].find(vis);
   if(!b){if(S.edit)return;const id=selId(),s=S.subjects.find(x=>x.id===id);if(!s||(gDone(s)&&!(S.timer.running&&S.sel.subj===id)))return;
    b=document.createElement('button');b.type='button';b.hidden=true;b.dataset.act='rplay';b.dataset.id=id;document.getElementById('app').appendChild(b)}}
- e.preventDefault();e.stopPropagation();FOC.kb=false;b.click();if(b.hidden&&b.isConnected)b.remove()},true);})();</script>
-<script>try{matchMedia('(max-width:600px)').addEventListener('change',()=>{if(tab==='reg'&&ui.hcal)render()})}catch(e){}</script>
+ e.preventDefault();e.stopPropagation();FOC.kb=false;b.click();if(b.hidden&&b.isConnected)b.remove()},true);})();
+try{norm();setMode('study');if(!S.edit&&!S.sx&&!(S.timer&&(S.timer.running||S.timer.acc>0))){const c=current();if(c&&c.id!==S.sel.subj){if(S.sel.subj&&hasG())pz()[S.sel.subj]={acc:0,groups:S.sel.groups};S.sel.subj=c.id;S.sel.topic='';S.sel.groups=null}}}catch(x){}
+render();
+try{syInit()}catch(x){}
+</script>
 
 </body></html>
