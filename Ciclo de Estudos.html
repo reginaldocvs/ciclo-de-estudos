@@ -422,7 +422,7 @@ const prevTopics=sid=>{const l=lastSess(sid);if(!l)return [];return l.ses?uniq(S
 
 
 
-const norm=()=>{migAll();migEd();migRg();try{migBump()}catch(e){}(S.sel&&S.sel.groups||[]).forEach(g=>g.rows.forEach(r=>{if(r.name===undefined){const it=mkItem(r.kind,r.ref)||{};r.name=it.title||'';r.link=it.url||''}}));S.sel=S.sel||{subj:null,topic:''};S.draft=(S.draft||[]).filter(e=>e.subj===S.sel.subj);S.sel.split=S.sel.split||{};S.subjects.forEach(s=>s.topics=s.topics||[]);S.subjects.forEach(s=>{if(s.of){const b=S.subjects.find(x=>x.id===s.of);if(b)s.topics=b.topics;else delete s.of}});S.subjects.forEach(s=>{if(!s.of&&s.ci===undefined)s.ci=nextCi()});S.editais=S.editais||[];pruneOrphans();S.mode=S.mode||'study';if(S.mode==='study'&&S.type==='review'){S.type='regular';S.reviewSrc=[]}if(!S.reviewed){S.reviewed={};Object.values(S.hist||{}).forEach(h=>{if(h&&h.type==='review')(h.src||[]).forEach(c=>S.reviewed[c]=S.reviewed[c]||'-')})}S.reviews=S.reviews||[];if(S.rv&&!S.rv.src)S.rv=null;if(!S.rv&&S.mode==='review'){S.mode='study'}if(!S.plans||!S.plans.length){S.plans=[{id:uid(),name:'Meu plano'}];S.plan=S.plans[0].id}if(!S.plans.some(x=>x.id===S.plan))S.plan=S.plans[0].id;S.planData=S.planData||{};const orf=S.subjects.filter(s=>!s.of&&!S.editais.some(e=>e.id===s.ed));if(orf.length){let d=myEds()[0];if(!d){d={id:uid(),name:'Meu edital',plan:S.plan};S.editais.push(d)}orf.forEach(s=>s.ed=d.id)}};
+const norm=()=>{migAll();migEd();migRg();try{migBump()}catch(e){}(S.sel&&S.sel.groups||[]).forEach(g=>g.rows.forEach(r=>{if(r.name===undefined){const it=mkItem(r.kind,r.ref)||{};r.name=it.title||'';r.link=it.url||''}}));S.sel=S.sel||{subj:null,topic:''};S.draft=(S.draft||[]).filter(e=>e.subj===S.sel.subj);S.sel.split=S.sel.split||{};S.subjects.forEach(s=>{s.topics=s.topics||[];if(!(+s.goal>0))s.goal=90});S.subjects.forEach(s=>{if(s.of){const b=S.subjects.find(x=>x.id===s.of);if(b)s.topics=b.topics;else delete s.of}});S.subjects.forEach(s=>{if(!s.of&&s.ci===undefined)s.ci=nextCi()});S.editais=S.editais||[];pruneOrphans();S.mode=S.mode||'study';if(S.mode==='study'&&S.type==='review'){S.type='regular';S.reviewSrc=[]}if(!S.reviewed){S.reviewed={};Object.values(S.hist||{}).forEach(h=>{if(h&&h.type==='review')(h.src||[]).forEach(c=>S.reviewed[c]=S.reviewed[c]||'-')})}S.reviews=S.reviews||[];if(S.rv&&!S.rv.src)S.rv=null;if(!S.rv&&S.mode==='review'){S.mode='study'}if(!S.plans||!S.plans.length){S.plans=[{id:uid(),name:'Meu plano'}];S.plan=S.plans[0].id}if(!S.plans.some(x=>x.id===S.plan))S.plan=S.plans[0].id;S.planData=S.planData||{};const orf=S.subjects.filter(s=>!s.of&&!S.editais.some(e=>e.id===s.ed));if(orf.length){let d=myEds()[0];if(!d){d={id:uid(),name:'Meu edital',plan:S.plan};S.editais.push(d)}orf.forEach(s=>s.ed=d.id)}};
 function pruneOrphans(){const all=(S.sessions||[]).concat(...Object.values(S.planData||{}).map(d=>d&&d.sessions||[])),used={};
  all.forEach(x=>{if(!x.topic)return;(x.items||[]).forEach(i=>{const it=itKey(i);if(it)(used[x.topic]=used[x.topic]||[]).push(it)})});
  S.subjects.forEach(s0=>{if(s0.of)return;(s0.topics||[]).forEach(t=>{const old=t.links||[],out=[];(used[t.id]||[]).forEach(u=>{if(out.some(o=>sameIt(o,u)))return;const ex=old.find(o=>sameIt(o,u));out.push(ex?{id:ex.id,kind:ex.kind,url:ex.url,title:ex.title,...(ex.note?{note:ex.note}:{}),...(ex.q?{q:ex.q}:{})}:u)});t.links=out;delete t.hide})})}
@@ -470,7 +470,7 @@ function migRg(){const f=d=>{if(d&&d.rgStart===undefined)d.rgStart=(d.sessions&&
 function migEd(){const ids=(S.plans||[]).map(x=>x.id);if(!ids.length||!Array.isArray(S.editais))return;
  S.editais.forEach(e=>{if(ids.includes(e.plan))return;
   const mine=S.subjects.filter(x=>!x.of&&x.ed===e.id);let o=mine.some(x=>!x.off)?S.plan:null;
-  if(!o)o=ids.find(id=>id!==S.plan&&((S.planData[id]||{}).layout||[]).some(l=>!l.off&&mine.some(x=>x.id===l.id)))||null;
+  if(!o)o=ids.find(id=>id!==S.plan&&(((S.planData||{})[id]||{}).layout||[]).some(l=>!l.off&&mine.some(x=>x.id===l.id)))||null;
   e.plan=o||S.plan})}
 function migAll(){if(S.mig2)return;migQ(S);if(S.tpl)migQ(S.tpl);if(S.planData)Object.values(S.planData).forEach(d=>migQ(d));S.mig2=1}
 const mk2=(kind,name,link)=>{name=(name||'').trim();link=(link||'').trim();if(!name&&!link)return null;let url='';if(link){const m=link.match(/https?:\/\/\S+/i);url=m?m[0]:(!/\s/.test(link)&&/^[\w-]+(\.[\w-]+)+(\/|$)/.test(link)?normUrl(link):'')}if(link&&!url&&!name)name=link;return {id:uid(),kind:kind==='questoes'?'questoes':'aula',url,title:name}};
@@ -549,7 +549,7 @@ function ring(){
 }
 
 function syncSel(){const A=actives();if(!A.length)return;
- if(!A.find(s=>s.id===S.sel.subj)){S.sel.subj=(current()||A[0]).id;S.sel.groups=null}
+ if(!A.find(s=>s.id===S.sel.subj)){const to=(current()||A[0]).id;stashCur();loadSubj(to)}
 }
 const studyActive=()=>S.timer.running||el()>0||(S.sx&&(hasG()||tmParse(S.sel.mt)>0));
 const pz=()=>S.paused||(S.paused={});
@@ -701,7 +701,8 @@ function syncRg(){
  const have=rgValidDates(),assigned=new Set();S.rgs.forEach(g=>g.dates.forEach(d=>assigned.add(d)));
  const fresh=[...have].filter(d=>!assigned.has(d)).sort(),orphan=[];
  S.rgs.forEach(g=>g.dates.forEach(d=>{if(!have.has(d))orphan.push({g,d})}));
- while(fresh.length&&orphan.length){const o=orphan.shift(),i=o.g.dates.indexOf(o.d);o.g.dates[i]=fresh.shift();o.g.dates.sort()}
+ const lockd=g=>(S.reviewed&&S.reviewed[g.id])||(S.rv&&S.rv.src&&S.rv.src.includes(g.id)),open=orphan.filter(o=>!lockd(o.g));
+ while(fresh.length&&open.length){const o=open.shift(),i=o.g.dates.indexOf(o.d);o.g.dates[i]=fresh.shift();o.g.dates.sort()}
  const last=S.rgs[S.rgs.length-1];
  if(last&&last.dates.length<last.len){orphan.filter(o=>o.g===last).forEach(o=>{const i=last.dates.indexOf(o.d);if(i>=0)last.dates.splice(i,1)});if(!last.dates.length)S.rgs.pop()}
  fresh.forEach(d=>{let g=S.rgs[S.rgs.length-1];if(!g||g.dates.length>=g.len){g={id:'g'+uid(),idx:S.rgs.reduce((a,x)=>Math.max(a,x.idx),0)+1,len:rvInt(),dates:[]};S.rgs.push(g)}g.dates.push(d);g.dates.sort()});
@@ -1010,7 +1011,12 @@ async function syPush(){if(!SY.db||SY.status==='off'||SY.status==='init')return;
  catch(e){SY.status='err';setTimeout(()=>{if(SY.status==='err'){SY.status='on';syPush()}},e&&e.code==='quota_exceeded'?60000:8000)}
  SY.busy=false;if(SY.status==='on'&&(SY.again||SY.dirty)){SY.again=false;clearTimeout(SY.timer);SY.timer=setTimeout(syPush,1500)}}
 async function syFetch(m){const parts=[];for(let i=0;i<m.n;i++){const s=await syCol().doc('c'+i).get();if(!s.exists)return null;const d=s.data();if(d.ts!==m.ts)return null;parts.push(d.d)}return parts.join('')}
-function syApply(json,ts){try{const o=JSON.parse(json);if(!o||!Array.isArray(o.subjects))return false;S=Object.assign(seed(),o);S.subjects.forEach(x=>x.topics=x.topics||[]);try{localStorage.setItem(KEY,json)}catch(x){}SY.lastTs=ts;SY.lastJson=json;SY.dirty=false;syMeta();norm();if(!['ciclo','rev','ed','reg','st','bk'].includes(tab))tab='ciclo';render();return true}catch(x){return false}}
+/* Valida e normaliza a versão da conta antes de trocar S; guarda a versão local em KEY+'-bak'. */
+function syApply(json,ts){const prev=S;let o;try{o=JSON.parse(json)}catch(x){return false}
+ if(!o||!Array.isArray(o.subjects)||!o.subjects.every(x=>x&&typeof x==='object'&&x.id)||(o.sessions!==undefined&&!Array.isArray(o.sessions)))return false;
+ try{S=Object.assign(seed(),o);norm()}catch(x){S=prev;return false}
+ try{localStorage.setItem(KEY+'-bak',JSON.stringify(prev));localStorage.setItem(KEY,JSON.stringify(S))}catch(x){}
+ UST.length=0;RST.length=0;SY.lastTs=ts;SY.lastJson=json;SY.dirty=false;syMeta();if(!['ciclo','rev','reg','st','bk'].includes(tab))tab='ciclo';render();return true}
 const localHasData=()=>S.sessions.length>0||(S.editais||[]).length>1||S.subjects.some(s=>s.topics&&s.topics.length);
 /* Dados diferentes no navegador e na conta: vence a versão mais recente, sem perguntar. */
 async function syOnMeta(snap){
@@ -1018,19 +1024,22 @@ async function syOnMeta(snap){
  const m=snap.data();if(!m||!m.ts)return;
  if(m.dev===SY.dev&&m.ts<=SY.lastTs){if(SY.status==='init'){SY.status='on';if(SY.dirty)syPush()}return}
  if(m.ts<=SY.lastTs&&SY.status!=='init')return;
- const json=await syFetch(m);if(json==null)return;
+ const json=await syFetch(m);if(json==null){syRetry(snap);return}
  const first=SY.status==='init';
  if(json===JSON.stringify(S)){SY.lastTs=m.ts;SY.lastJson=json;SY.dirty=false;syMeta();SY.status='on';return}
  let cloud=true;
  if((first||SY.dirty)&&localHasData()){let cs=0;try{cs=(JSON.parse(json).sessions||[]).length}catch(x){}
   if(SY.localTs>m.ts||(!SY.localTs&&S.sessions.length>cs))cloud=false}
- if(cloud){syApply(json,m.ts);SY.status='on'}
+ if(cloud&&syApply(json,m.ts))SY.status='on';
  else{SY.lastTs=m.ts;SY.status='on';SY.dirty=true;syPush()}}
+/* Falha ao ler a conta: tenta de novo em vez de ficar parado em 'init'. */
+function syRetry(snap){clearTimeout(SY.rtimer);SY.rtimer=setTimeout(()=>{if(SY.lastTs<((snap.data&&snap.data()||{}).ts||Infinity))syOnMeta(snap).catch(()=>syRetry(snap))},8000)}
+function sySub(){try{if(SY.unsub)SY.unsub()}catch(x){}
+ try{SY.unsub=syCol().doc('meta').onSnapshot(s=>{syOnMeta(s).catch(()=>syRetry(s))},()=>{SY.status='err';setTimeout(sySub,15000)})}catch(x){SY.status='off'}}
 async function syInit(){if(OFFLINE){SY.status='off';return}let db=null,uid=null;
  try{db=await claude.use('db');const user=await claude.use('user');uid=user?await user.id():null}catch(x){}
  if(!db||!uid){SY.status='off';return}
- SY.db=db;SY.uid=uid;
- try{SY.unsub=syCol().doc('meta').onSnapshot(s=>{syOnMeta(s).catch(()=>{})},()=>{SY.status='err'})}catch(x){SY.status='off'}}
+ SY.db=db;SY.uid=uid;sySub()}
 if(typeof document!=='undefined'){document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&SY.dirty&&SY.status==='on'){clearTimeout(SY.timer);syPush()}})}
 const ask=(k,b)=>{ui.undoNext={snap:JSON.stringify(S),msg:UNDO_MSG[k.split(':')[0]]||'Ação concluída'};return true};
 const sameIt=(a,b)=>a.kind===b.kind&&a.url===b.url&&a.title===b.title;
@@ -1055,8 +1064,8 @@ function buildRecs(s,rv,keep){const recs=[];
   recs.push({topic:t?t.id:null,kind:rows[0]?rows[0].kind:'aula',items:rows.map(recItem)})});
  if(!recs.length)recs.push({topic:null,kind:'aula',items:[]});return recs}
 const sesDate=()=>{const d=S.sel.md||S.timer.d0||today();return d>today()?today():d};
-function addSession(m){pushU('Sessão registrada');
- const sid=S.sel.subj,s=S.subjects.find(x=>x.id===sid);m=Math.max(0,+m||0);if(!s)return;
+function addSession(m){
+ const sid=S.sel.subj,s=S.subjects.find(x=>x.id===sid);m=Math.max(0,+m||0);if(!s)return;pushU('Sessão registrada');
  const rv=S.type==='review',ro=!rv&&S.reopen&&S.reopen[sid],ses=ro&&ro.cycle===S.cycle&&ro.set===(S.set||1)?ro.ses:uid(),pend=rv?rvPend(s):null,chk=rv?pend.flatMap(o=>o.rows.map(r=>r.k)):null,recs=rv?(pend.length?pend.map(o=>{const its=o.rows.filter(r=>!r.l.self);return {topic:o.t.id,kind:its[0]?its[0].l.kind:'aula',items:its.map(r=>({kind:'aula',name:r.l.title||'',link:r.l.url||'',...(r.l.q?{q:r.l.q}:{})}))}}):[{topic:null,kind:'aula',items:[]}]):buildRecs(s,rv);
  {const p0=prog(sid);S.progress[sid]=rv?p0+m:Math.max(p0+m,s.goal);if(!rv&&S.progress[sid]>p0+m){S.bump=S.bump||{};S.bump[sid]=(S.bump[sid]||0)+S.progress[sid]-p0-m}}if(ro){delete S.reopen[sid]}
  recs.forEach(r=>{const o={id:uid(),ses,subj:rv&&s.of?s.of:sid,topic:r.topic,min:m/recs.length,cycle:S.cycle,set:S.set||1,review:rv,kind:r.kind,items:r.items,date:sesDate()};if(rv&&S.rv){o.rid=S.rv.id;o.chk=chk}if(rv&&s.of)o.blk=sid;S.sessions.push(o)});
@@ -1064,14 +1073,15 @@ function addSession(m){pushU('Sessão registrada');
  const c=current(),cs=S.subjects.find(x=>x.id===S.sel.subj);
  if(c&&(!cs||prog(cs.id)>=cs.goal))S.sel.subj=c.id;
 }
-function saveEdit(){{const nn=regErr();if(nn){ui.msg=nn.msg;ui.focus=nn.focus;return false}}pushU('Registro alterado');
+function saveEdit(){{const nn=regErr();if(nn){ui.msg=nn.msg;ui.focus=nn.focus;return false}}
  const E=S.edit,s=S.subjects.find(x=>x.id===E.subj),old=S.sessions.filter(x=>(x.ses||x.id)===E.ses),m=parseFloat(E.min);
  if(!s||!old.length){S.edit=null;S.sel.groups=null;return}
  if(!(m>0)){ui.msg='Informe os minutos da sessão.';return false}
+ pushU('Registro alterado');
  const keep={};old.forEach(x=>{if(x.tdel&&x.tn)keep[x.tn.toLowerCase()]={topic:x.topic,tn:x.tn}});const rv=!!old[0].review,recs=rv?old.map(r=>({topic:r.topic,kind:r.kind,items:r.items,chk:r.chk,...(r.tdel?{tn:r.tn,tdel:true}:{})})):buildRecs(s,rv,keep),oldMin=old.reduce((a,x)=>a+x.min,0),idx=S.sessions.findIndex(x=>(x.ses||x.id)===E.ses);
  if(!rv)pruneLinks(old,recs,E.ses);
  S.sessions=S.sessions.filter(x=>(x.ses||x.id)!==E.ses);
- S.sessions.splice(idx,0,...recs.map(r=>({...(old[0].rid?{rid:old[0].rid}:{}),...(old[0].blk?{blk:old[0].blk}:{}),id:uid(),ses:E.ses,subj:E.subj,topic:r.topic,min:m/recs.length,cycle:old[0].cycle,review:rv,kind:r.kind,items:r.items,...(r.chk?{chk:r.chk}:{}),...(r.tdel?{tn:r.tn,tdel:true}:{}),date:E.date||old[0].date})));
+ S.sessions.splice(idx,0,...recs.map(r=>({...(old[0].rid?{rid:old[0].rid}:{}),...(old[0].blk?{blk:old[0].blk}:{}),id:uid(),ses:E.ses,subj:E.subj,topic:r.topic,min:m/recs.length,cycle:old[0].cycle,...(old[0].set?{set:old[0].set}:{}),review:rv,kind:r.kind,items:r.items,...(r.chk?{chk:r.chk}:{}),...(r.tdel?{tn:r.tn,tdel:true}:{}),date:E.date||old[0].date})));
  {const P=progTarget(old[0]),k=pkey(old[0]);if(P){const o0=old[0],pc=o0.cycle!==S.cycle,B=o0.rid||o0.review?null:pc?(((S.hist||{})[o0.cycle]||{}).bump||(((S.hist||{})[o0.cycle]||{}).bump={})):(S.bump=S.bump||{}),g=(pc&&((S.hist[o0.cycle]||{}).goals||{})[s.id])||s.goal,was=(P[k]||0)>=g;let np=Math.max(0,(P[k]||0)+m-oldMin);if(B&&was&&np<g){B[k]=(B[k]||0)+g-np;np=g}P[k]=np}}
  const wasRv=!!E.rvg;S.edit=null;if(!wasRv)S.sel.groups=null;
 }
