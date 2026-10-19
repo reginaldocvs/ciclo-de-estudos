@@ -828,6 +828,7 @@ function render0(){
  [$('app'),$('modal')].forEach(c=>{if(c&&c.querySelectorAll)c.querySelectorAll('button[aria-label]:not([title])').forEach(b=>{b.title=b.getAttribute('aria-label')})});
  [$('app'),$('modal')].forEach(c=>{if(c&&c.querySelectorAll)c.querySelectorAll('form,input:not([type=checkbox]):not([type=file]):not([type=hidden]),textarea').forEach(x=>x.setAttribute('autocomplete','off'))});
  scrLoad(scr);ui.rtab=tab;
+ if(ui.anc){const A=ui.anc,b=document.querySelector(A.sel),c=b&&b.closest('.card'),box=c&&c.closest('.mscroll');ui.anc=null;if(box)box.scrollTop+=c.getBoundingClientRect().top-A.top}
  posDD();
  try{chrome()}catch(e){}
  if(ui.focus){const f=$(ui.focus);ui.focus=null;if(f){f.focus();if(f.id&&(f.id.startsWith('pln-')||f.id.startsWith('edn-'))&&f.select)f.select();if(ui.caret!=null&&f.setSelectionRange){try{f.setSelectionRange(ui.caret,ui.caret)}catch(x){}}}ui.caret=null}
@@ -1115,8 +1116,10 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='addclose'){ui.addm=null;ui.dd=null}
  if(a==='pdnew'){ui.pdn=true;ui.pde=null;ui.focus=null}
  if(a==='pdcancel')ui.pdn=null;
- if(a==='pdtog'){const k='pd:'+p;if(ui.pde===p){ui.pde=null}else ui.open.has(k)?ui.open.delete(k):ui.open.add(k)}
- if(a==='pdedit'){ui.pde=ui.pde===p?null:p;ui.pdn=null;ui.open.add('pd:'+p)}
+ /* Editar plano: só uma disciplina aberta por vez; o card clicado fica parado na tela (ui.anc). */
+ const pdOnly=id=>{[...ui.open].forEach(k=>{if(k.startsWith('pd:')&&k!=='pd:'+id)ui.open.delete(k)});if(ui.pde&&ui.pde!==id)ui.pde=null;const c=t.closest('.card');if(c)ui.anc={sel:'.card [data-act="'+a+'"][data-id="'+id+'"]',top:c.getBoundingClientRect().top}};
+ if(a==='pdtog'){const k='pd:'+p;if(ui.pde===p){ui.pde=null}else if(ui.open.has(k))ui.open.delete(k);else{pdOnly(p);ui.open.add(k)}}
+ if(a==='pdedit'){if(ui.pde===p)ui.pde=null;else{pdOnly(p);ui.pde=p;ui.open.add('pd:'+p)}ui.pdn=null}
  if(a==='pdend')ui.pde=null;
  if(a==='sdel'){if(!ask('sdel:'+p,t))return;const ids=[p,...S.subjects.filter(s=>s.of===p).map(s=>s.id)];S.subjects=S.subjects.filter(s=>!ids.includes(s.id));ids.forEach(id=>{delete S.progress[id];if(S.paused)delete S.paused[id]})}
  if(a==='edclose'){ui.ed=null;ui.addm=null}
