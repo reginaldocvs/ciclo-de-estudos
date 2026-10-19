@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .cls-1{fill:url(#linear-gradient-1)}
+      .cls-2{fill:#d9ff6f;stroke:#d9ff6f;stroke-width:14;stroke-linejoin:round}
+      .cls-3{fill:#ffffff}
+      .cls-4{fill:#ffffff;fill-opacity:0.85}
+      .cls-5{fill:none;stroke:#d9ff6f;stroke-width:38;stroke-linecap:round;stroke-miterlimit:10}
+      .cls-6{fill:none;stroke:#ffffff;stroke-width:38;stroke-linecap:round;stroke-miterlimit:10}
+      .cls-7{fill:none;stroke:#ffffff;stroke-width:38;stroke-linecap:round;stroke-miterlimit:10;opacity:0.8}
+      .cls-8{fill:none;stroke:#ffffff;stroke-width:38;stroke-linecap:round;stroke-miterlimit:10;opacity:0.6}
+    </style>
+    <linearGradient id="linear-gradient-1" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#54e1ef"/>
+      <stop offset="1" stop-color="#3fa9bb"/>
+    </linearGradient>
+  </defs>
+  <title>ciclo-de-estudos-icone.svg</title>
+  <g id="Layer_1" data-name="Layer 1">
+    <path d="M112 0 L400 0 C461.856 0 512 50.144 512 112 L512 400 C512 461.856 461.856 512 400 512 L112 512 C50.144 512 0 461.856 0 400 L0 112 C0 50.144 50.144 0 112 0 Z" class="cls-1"/>
+    <path d="M155 91 L228 100 L199 167 Z" class="cls-2"/>
+    <g>
+      <path d="M248 216 C222 200 192 198 170 206 L170 302 C194 294 224 296 248 312 Z" class="cls-3"/>
+      <path d="M264 216 C290 200 320 198 342 206 L342 302 C318 294 288 296 264 312 Z" class="cls-4"/>
+    </g>
+    <g>
+    </g>
+    <path d="M113.561 212.48 C125.732 172.592 154.2 139.812 191.206 121.899" class="cls-5"/>
+    <path d="M299.024 113.41 C346.864 127.825 384.554 165.658 398.771 213.583" class="cls-6"/>
+    <path d="M398.504 299.307 C384.134 346.655 346.813 384.018 299.492 398.448" class="cls-7"/>
+    <path d="M213.623 398.783 C165.243 384.446 127.142 346.189 113.023 297.716" class="cls-8"/>
+  </g>
+</svg>
