@@ -603,54 +603,6 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 /* Celular: a disciplina atual e o cronômetro vêm antes dos indicadores; formulário de novo plano empilhado */
 @media (max-width:600px){.c2{display:flex;flex-direction:column}.c2>.c2a{order:-1}form[data-f=plnew]{flex-direction:column;align-items:stretch}form[data-f=plnew] .btn{align-self:flex-end}}
 @media (max-width:400px){.srow .grow>.bar{margin-left:0}}
-/* ===== Tela Ciclo: painel principal (sessão atual) + painel de apoio (anel, números, fila) ===== */
-.cy{display:grid;gap:16px;grid-template-columns:minmax(0,1fr);grid-template-areas:'stage' 'sup' 'recent'}
-.cy .card{margin:0}
-.cy>.stage{grid-area:stage;padding:32px 36px;min-width:0}
-.cy>.sup{grid-area:sup;display:flex;flex-direction:column;gap:16px;min-width:0}
-.cy>.sup>*{margin:0}
-.cy>.cyr{grid-area:recent;min-width:0}
-.stk{color:var(--mut);font-size:.9375rem}
-.stn{display:flex;align-items:center;gap:12px;font-size:2rem;line-height:2.5rem;font-weight:600;margin:4px 0 0;min-width:0}
-.stn .dot{width:16px;height:16px;border-radius:4px;flex:none}
-.stc{font-size:clamp(3.4rem,17vw,7.5rem);font-weight:500;line-height:1;letter-spacing:-.01em;font-variant-numeric:tabular-nums;font-variation-settings:"ROND" 100;margin:28px 0 8px}
-.stgl{color:var(--mut);font-size:1.125rem;font-variant-numeric:tabular-nums}
-.bar.stb{height:12px;margin:20px 0 28px}
-.sta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-.sta .btn.streg{min-height:56px;padding:0 24px;font-size:.9375rem}
-.stage .nwnext{margin-top:20px;font-size:.9375rem}
-.stage .rvcard{background:none;border-radius:0;padding:20px 0 0;margin:28px 0 0;border-top:1px solid var(--m-ov)}
-.supring{display:grid;place-items:center;padding:20px}
-.supring svg{width:min(240px,100%);height:auto}
-.sup .kpis{gap:8px}
-.sup .kpis .kpi{flex-direction:row;justify-content:flex-start;align-items:center;text-align:left;padding:12px 14px;border-radius:var(--r-l)}
-.sup .kpis .kic{display:none}
-.sup .kpis .kpi b{font-size:1.125rem}
-.sup .row.srow{padding:10px 12px}
-.sup .srow .rtop{flex-wrap:nowrap}
-.sup .srow .rtop>.rtime{margin-left:0;flex:none}
-.sup .srow .rname{flex:1 1 auto}
-.sup .srow .rtime .ctl>svg{display:none}
-.sup .srow .grow>.bar{margin-left:22px;margin-top:6px}
-.supring{padding:16px}
-.supring svg{width:min(210px,100%)}
-@media (min-width:1120px){
- .cy{grid-template-columns:minmax(0,1fr) 400px;grid-template-areas:'stage sup' 'recent sup';align-items:start}
- .cy>.sup{position:sticky;top:24px}
-}
-@media (min-width:600.02px) and (max-width:1119.98px){
- .cy>.sup{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);align-items:start}
- .cy>.sup>:not(.card:last-child){grid-column:1}
- .cy>.sup>.card:last-child{grid-column:2;grid-row:1/span 4}
-}
-@media (max-width:600px){
- .cy>.stage{padding:24px 20px}
- .stn{font-size:1.5rem;line-height:2rem}
- .stc{margin:20px 0 6px}
- .cy>.sup>.card:last-child{order:-1}
- .sup .srow .rtop{flex-wrap:wrap;row-gap:2px}
- .sup .srow .rtop>.rtime{flex:1 1 100%;margin-left:22px;justify-content:space-between}
-}
 @media (prefers-reduced-motion:reduce){.btn,.x,.tbig,.fab,.seg,.row.srow,.sidenav button,.tabbar svg,.navmini .sidenav svg{transition:none}}
 </style>
 </head>
@@ -801,7 +753,7 @@ const revList=(s,ids)=>tl(s,ids).map(t=>{const its=revItems(s,t),rows=its,base=(
  return `<div class="rv rvtp${done?' rvdone':''}"><div class="rvn rvtn">${esc(t.name)}${ds.length?` <span class="rvcy" title="Estudado em ${ds.map(d5).join(', ')}">${dl}</span>`:''}</div><div class="rvits">${rows.map(l=>`<label class="chk${S.checked[kf(l)]?' on':''}${lk.has(kf(l))?' lk':''}"${lk.has(kf(l))?' title="Já registrado em uma sessão desta revisão"':''}><input type="checkbox" data-chk="${esc(kf(l))}" ${S.checked[kf(l)]?'checked':''} ${lk.has(kf(l))?'disabled':''}>${l.self?'<span>Revisar tópico</span>':itemLine(l,t.id)}</label>`).join('')}</div></div>`}).join('');
 const el=()=>S.timer.acc+(S.timer.running?Date.now()-S.timer.start:0);
 const clock=()=>{const t=Math.floor(el()/1000);return [Math.floor(t/3600),Math.floor(t%3600/60),t%60].map(n=>String(n).padStart(2,'0')).join(':')};
-setInterval(()=>{if(capGoal()){save();render();return}if(ui.view&&tab==='ciclo')return;const e=$('tm');if(e)e.textContent=clock();const c=$('ctm');if(c)c.textContent=cyc();actives().forEach(s=>{const r=$('rtm-'+s.id);if(r)r.textContent=rowTime(s);const br=$('rbar-'+s.id);if(br){br.style.width=barW(s)+'%';br.style.background=barC(s)}});{const g=$('rgo-'+(selId()||''));if(g){const s=actives().find(x=>x.id===selId()),p=Math.min(liveMin(s)/s.goal,1);g.setAttribute('stroke-dasharray',(p*+g.dataset.l)+' '+g.dataset.c);if(p>0)g.removeAttribute('visibility')}}{const k=$('stgclk');if(k){const s=actives().find(x=>String(x.id)===k.dataset.id);if(s){const v=stgT(s);if(k.textContent!==v)k.textContent=v;const b=$('stgbar');if(b){b.style.width=barW(s)+'%';b.style.background=barC(s)}}}}{const ct=$('rgct');if(ct){const v=hms(el()/1000);if(ct.textContent!==v)ct.textContent=v}}const b=$('regbtn');if(b&&b.isConnected!==false&&S.sx){const mn=regMin(),ok=canReg(mn),mt=metRem(mn);b.disabled=!ok;const xp=$('xpbtn');if(xp&&xp.dataset){xp.dataset.act=mt?'xpause':'xcont';xp.textContent=mt?'Pausar':'Continuar'}const hn=$('reghint');if(hn){hn.hidden=mt;if(!mt)hn.innerHTML=regHint(mn)}}},500);
+setInterval(()=>{if(capGoal()){save();render();return}if(ui.view&&tab==='ciclo')return;const e=$('tm');if(e)e.textContent=clock();const c=$('ctm');if(c)c.textContent=cyc();actives().forEach(s=>{const r=$('rtm-'+s.id);if(r)r.textContent=rowTime(s);const br=$('rbar-'+s.id);if(br){br.style.width=barW(s)+'%';br.style.background=barC(s)}});{const g=$('rgo-'+(selId()||''));if(g){const s=actives().find(x=>x.id===selId()),p=Math.min(liveMin(s)/s.goal,1);g.setAttribute('stroke-dasharray',(p*+g.dataset.l)+' '+g.dataset.c);if(p>0)g.removeAttribute('visibility')}}{const ct=$('rgct');if(ct){const v=hms(el()/1000);if(ct.textContent!==v)ct.textContent=v}}const b=$('regbtn');if(b&&b.isConnected!==false&&S.sx){const mn=regMin(),ok=canReg(mn),mt=metRem(mn);b.disabled=!ok;const xp=$('xpbtn');if(xp&&xp.dataset){xp.dataset.act=mt?'xpause':'xcont';xp.textContent=mt?'Pausar':'Continuar'}const hn=$('reghint');if(hn){hn.hidden=mt;if(!mt)hn.innerHTML=regHint(mn)}}},500);
 
 const hms=t=>{t=Math.max(0,Math.floor(t));return [Math.floor(t/3600),Math.floor(t%3600/60),t%60].map(n=>String(n).padStart(2,'0')).join(':')};
 const cyc=()=>hms(actives().reduce((a,s)=>a+prog(s.id)*60+(s.id===S.sel.subj?0:pzMs(s.id)/1000),0)+el()/1000)+'/'+hms(total()*60);
@@ -818,11 +770,6 @@ function capGoal(){const s=curS();if(!s||!S.timer.running)return false;const rem
 
 const shown=id=>Math.max(0,prog(id)-((S.bump||{})[id]||0));
 const rowTime=s=>{const lv=selId()===s.id?el():pzMs(s.id);return lv>0?hms(shown(s.id)*60+lv/1000)+' / '+hms(s.goal*60):fmt(shown(s.id))+' de '+fmt(s.goal)};
-/* Painel principal da tela Ciclo: a disciplina atual, o tempo dela em tamanho grande e as ações */
-const stgT=s=>{const lv=selId()===s.id?el():pzMs(s.id);return hms(shown(s.id)*60+lv/1000)};
-function stageHtml(nw,A){if(!nw)return '';const on=selId()===nw.id&&(S.timer.running||el()>0),dn=prog(nw.id)>=nw.goal,c=col(nw),i=A.indexOf(nw),nx=A.length>1?[...A.slice(i+1),...A.slice(0,i)].find(s=>prog(s.id)<s.goal):null;
- const st=on?(S.timer.running?'Estudando agora':'Estudo em pausa'):dn?'Sessão concluída ✓':'Agora',pos=A.length>1&&!dn?` · ${i+1} de ${A.length}`:'',pb=nwBtn(nw).replace('<div class="nwact">','').replace(/<\/div>$/,'');
- return `<div class="stg"><div class="stk"><span${dn?' class="metaok"':''}>${st}</span>${pos}</div><h2 class="stn"><span class="dot" style="background:${c}"></span><span class="snt" title="${esc(nm(nw))}">${esc(nm(nw))}</span></h2><div class="stc" id="stgclk" data-id="${nw.id}">${stgT(nw)}</div><div class="stgl">de ${hms(nw.goal*60)}</div><div class="bar stb"><i id="stgbar" style="width:${barW(nw)}%;background:${barC(nw)}"></i></div>${pb||!dn?`<div class="sta">${pb}${dn?'':`<button class="btn g streg" data-act="rreg" data-id="${nw.id}">Registrar</button>`}</div>`:''}${A.length>1?`<div class="nwnext"><span class="mut">Depois</span>${nx?`<span class="dot" style="background:${col(nx)}"></span><span class="nwnn">${esc(nm(nx))}</span>`:'<span>fim do ciclo</span>'}</div>`:''}</div>`}
 const nwBtn=s=>{if(!s||S.edit||gDone(s))return '';const run=S.timer.running&&selId()===s.id,lb=run?'Pausar':((selId()===s.id&&el())||(selId()!==s.id&&pzMs(s.id))?'Retomar':prog(s.id)>0?'Continuar':'Iniciar');return `<div class="nwact"><button class="btn nwplay${run?' run':lb==='Retomar'?' warn':''}" data-act="rplay" data-id="${s.id}" aria-label="${lb} ${esc(nm(s))}">${run?PAUSE:PLAY}<span>${lb}</span></button></div>`};
 /* Linha da disciplina: uma ação principal (Iniciar/Continuar/Retomar/Pausar, ou ✓ = ver registro quando concluída) + menu ⋯ com o resto, por escrito. */
 const MOREI='<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg>';
@@ -833,7 +780,7 @@ const rowCtl=s=>{const run=S.timer.running&&selId()===s.id,paused=(selId()===s.i
 const CLOCKI='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>';
 /* Anel do ciclo no estilo Material 3 Expressive: trilho reto e progresso ondulado (pathLength = circunferência, então as contas de traço continuam as mesmas) */
 const WAVY=(()=>{const R=87,A=3,N=20,K=360;let d='';for(let i=0;i<=K;i++){const t=2*Math.PI*i/K,r=R+A*Math.sin(N*t);d+=(i?'L':'M')+(95+r*Math.cos(t)).toFixed(2)+' '+(95+r*Math.sin(t)).toFixed(2)}return d})();
-function ring(cy){
+function ring(){
  const A=actives(),can=!S.edit,T=total()||1,R1=64.5,W1=19,R2=87,W2=24,TW=10,C1=2*Math.PI*R1,C2=2*Math.PI*R2,gp=3,here=S.edit?null:selId();let a0=0,out='',lab='';
  const tr=`<circle r="${R2}" cx="95" cy="95" fill="none" stroke="var(--rbg)" stroke-width="${TW}"/>`;
  A.forEach(s=>{const fr=s.goal/T,c=col(s),p=Math.min(liveMin(s)/s.goal,1),l1=Math.max(fr*C1-gp,1),l2=Math.max(fr*C2-gp,1),o1=a0*C1,o2=a0*C2;
@@ -843,7 +790,7 @@ function ring(cy){
   if(A.length>1&&(fr*C1>=14||s.id===here)){const tm=th-Math.PI/2;lab+=`<text class="rpos${s.id===here?' on':''}" x="${(95+R1*Math.cos(tm)).toFixed(1)}" y="${(95+R1*Math.sin(tm)+3.6).toFixed(1)}" text-anchor="middle" aria-hidden="true">${A.indexOf(s)+1}</text>`}
   a0+=fr});
  const d=A.reduce((a,s)=>a+Math.min(prog(s.id),s.goal),0);
- return `<svg viewBox="-8 -8 206 206" role="img" aria-label="${S.type==='review'?'Revisão':'Ciclo '+S.cycle}, ${Math.round(d/T*100)}% concluído"><g transform="rotate(-90 95 95)">${tr}${out}</g>${lab}${(()=>{const ss=!S.edit&&!cy&&A.find(x=>x.id===selId()),on=ss&&(S.timer.running||el()>0);if(on){return `<text x="95" y="76" text-anchor="middle" fill="${col(ss)}" style="font-size:14px;font-weight:400">${S.timer.running?(S.type==='review'?'Revisando':'Estudando'):'Pausado'}</text><text id="rgct" x="95" y="102" text-anchor="middle" fill="var(--ink)" style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">${hms(el()/1000)}</text><text x="95" y="120" text-anchor="middle" fill="var(--mut)" style="font-size:11px">de ${hms(ss.goal*60)}</text>`}return `<text x="95" y="76" text-anchor="middle" fill="var(--mut)" style="font-size:14px;font-weight:400">${S.type==='review'?'Revisei':'Ciclo '+S.cycle}</text><text x="95" y="102" text-anchor="middle" fill="var(--ink)" style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">${fmt(A.reduce((a,s)=>a+prog(s.id),0))}</text><text x="95" y="120" text-anchor="middle" fill="var(--mut)" style="font-size:11px">de ${fmt(total())}</text>`})()}</svg>`;
+ return `<svg viewBox="-8 -8 206 206" role="img" aria-label="${S.type==='review'?'Revisão':'Ciclo '+S.cycle}, ${Math.round(d/T*100)}% concluído"><g transform="rotate(-90 95 95)">${tr}${out}</g>${lab}${(()=>{const ss=!S.edit&&A.find(x=>x.id===selId()),on=ss&&(S.timer.running||el()>0);if(on){return `<text x="95" y="76" text-anchor="middle" fill="${col(ss)}" style="font-size:14px;font-weight:400">${S.timer.running?(S.type==='review'?'Revisando':'Estudando'):'Pausado'}</text><text id="rgct" x="95" y="102" text-anchor="middle" fill="var(--ink)" style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">${hms(el()/1000)}</text><text x="95" y="120" text-anchor="middle" fill="var(--mut)" style="font-size:11px">de ${hms(ss.goal*60)}</text>`}return `<text x="95" y="76" text-anchor="middle" fill="var(--mut)" style="font-size:14px;font-weight:400">${S.type==='review'?'Revisei':'Ciclo '+S.cycle}</text><text x="95" y="102" text-anchor="middle" fill="var(--ink)" style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">${fmt(A.reduce((a,s)=>a+prog(s.id),0))}</text><text x="95" y="120" text-anchor="middle" fill="var(--mut)" style="font-size:11px">de ${fmt(total())}</text>`})()}</svg>`;
 }
 
 function syncSel(){const A=actives();if(!A.length)return;
@@ -986,11 +933,9 @@ function viewCiclo(){
   if(p&&prog(rs.id)<rs.goal){const dn=false;h+=`<div class="card rvcard${!dn?' pvbox'+(S.rvaClosed?'':' open'):''}">${dn?`<h2 class="rvt rvtr" style="--sc:${col(rs)};color:color-mix(in srgb,var(--sc) 45%,var(--ink))"><span class="rvm"><span class="dot" style="background:${col(rs)}"></span><span class="snt" title="${esc(rs.name)}">${esc(rs.name)}</span></span>O que você estudou nessa sessão</h2>`:`<div class="pvh" data-act="rvatog"><button class="x mtog${S.rvaClosed?'':' on'}" data-act="rvatog" aria-expanded="${!S.rvaClosed}" aria-label="Expandir ou recolher">${CHEV}</button><h2 class="rvt" style="--sc:${col(rs)};color:color-mix(in srgb,var(--sc) 45%,var(--ink))">Revise antes de começar a sessão de <span class="rvm"><span class="dot" style="background:${col(rs)}"></span><span class="snt" title="${esc(rs.name)}">${esc(rs.name)}</span></span></h2></div>`}${dn||!S.rvaClosed?`<div class="rvlist${dn?'':' pvb'}">${p}</div>`:''}</div>`}}}
  if(rev&&rs)h+=`<div class="card rvcard"><h2 class="rvt" style="--sc:${col(rs)};color:color-mix(in srgb,var(--sc) 45%,var(--ink))">Tópicos para revisar de <span class="rvm"><span class="dot" style="background:${col(rs)}"></span><span class="snt" title="${esc(rs.name)}">${esc(rs.name)}</span></span></h2><div class="rvlist">${revList(rs,winTopics(rs.id))}</div></div>`;
  if(S.edit&&!edPop())h+=sessCard();
- const rvc=h;
  h+=`<div class="card"><div class="chead"><h2>${rev?'Revisão':'Disciplinas'}</h2>${S.edit?'':'<button class="btn g s" data-act="edopen">Editar ciclo</button>'}</div>${A.map(s=>{const p=prog(s.id),c=col(s),sl=selId()===s.id;return `<div class="row srow${sl?' cur':''}"><div class="grow"${S.edit?'':` data-act="pickrow" data-id="${s.id}"`}><div class="rtop"><span class="rname"><span class="dot" style="background:${c}"></span>${S.edit?`<span class="rnt" title="${esc(nm(s))}">${esc(nm(s))}</span>`:`<button class="rnt rpick" data-act="pickrow" data-id="${s.id}" title="${esc(nm(s))}" aria-pressed="${sl}">${esc(nm(s))}</button>`}</span>${rowCtl(s)}</div><div class="bar"><i id="rbar-${s.id}" style="width:${barW(s)}%;background:${barC(s)}"></i></div></div></div>`}).join('')}</div>`;
  if(rev)h+=`<div class="fl"><button class="btn g" data-act="rvcancel">Cancelar revisão</button></div>`;
  if(rev)return pre+ringC+h;
- if(!PAST&&cur)return pre+`<div class="cy"><section class="card stage" aria-label="Sessão atual">${stageHtml(nw,A)}${rvc}</section><aside class="sup" aria-label="Ciclo"><div class="card supring">${ring(true)}</div>${rvBan}${kpisHtml()}${h.slice(rvc.length)}</aside><div class="cyr">${recentCard()}</div></div>`;
  return pre+`<div class="c2">${kpisHtml()}<div class="c2a">${ringC}${rvBan}</div><div class="c2b">${h}</div><div class="c2c">${recentCard()}</div></div>`;
 }
 const WD=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
