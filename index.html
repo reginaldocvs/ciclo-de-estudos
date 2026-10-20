@@ -388,7 +388,7 @@ const today=()=>{const x=new Date();return x.getFullYear()+'-'+String(x.getMonth
 const fmt=m=>{m=Math.round(m);return m>=60?Math.floor(m/60)+'h'+(m%60?String(m%60).padStart(2,'0'):''):m+'min'};
 const uniq=a=>[...new Set(a)];
 const load=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
-const seed=()=>({subjects:['01','02','03','04'].map(n=>({id:uid(),name:'Disciplina '+n,goal:90,topics:[]})),cycle:1,type:'regular',progress:{},sessions:[],checked:{},reviewEvery:5,sinceReview:0,regDone:[],reviewSrc:[],completed:0,sel:{subj:null,topic:''},timer:{running:false,start:0,acc:0}});
+const seed=()=>({subjects:[],cycle:1,type:'regular',progress:{},sessions:[],checked:{},reviewEvery:5,sinceReview:0,regDone:[],reviewSrc:[],completed:0,sel:{subj:null,topic:''},timer:{running:false,start:0,acc:0}});
 let S=load(KEY),tab='ciclo';const ui={open:new Set()};
 if(!S||!S.subjects){const o=load('ciclo-estudos-v1');S=seed();if(o&&o.subjects){S.subjects=o.subjects.map(s=>({id:s.id,name:s.name,goal:s.goal,topics:[]}));S.cycle=o.cycle||1;S.progress=o.progress||{};S.completed=Math.max(S.cycle-1,0)}}
 /* LJ = último JSON que esta aba gravou ou leu em KEY; serve para notar gravações de outra aba. */
