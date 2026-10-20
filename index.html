@@ -629,6 +629,16 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
  .c2b .srow .rtime .x{min-width:40px;min-height:40px}
  .c2 .now b.nwn{font-size:1.5rem;line-height:2rem}
 }
+/* Diálogo de confirmação (padrão Material): título, uma frase de apoio, ações à direita */
+.dlg.swd{width:min(92vw,460px);padding:24px}
+.dlgt{font-size:1.5rem;line-height:2rem;font-weight:500;margin:0 0 16px;text-wrap:balance;overflow-wrap:anywhere}
+.dlg .dlgs{color:var(--mut);line-height:1.5;margin:0 0 24px}
+.dlgs b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.dlg .dlge{color:var(--bad);margin:-12px 0 16px;font-size:.875rem}
+.dlga{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:8px}
+.btn.tx{background:none;color:var(--m-p);padding:8px 12px}
+.btn.tx:hover:not(:disabled){background:color-mix(in srgb,var(--m-p) 8%,transparent);box-shadow:none}
+@media (max-width:600px){.dlg.swd{padding:36px 20px calc(20px + env(safe-area-inset-bottom,0px))}}
 @media (prefers-reduced-motion:reduce){.btn,.x,.tbig,.fab,.seg,.row.srow,.sidenav button,.tabbar svg,.navmini .sidenav svg{transition:none}}
 </style>
 </head>
@@ -838,7 +848,7 @@ function loadSubj(to){const o=pz()[to];S.sel.subj=to;S.sel.topic='';S.timer={run
 function runThen(th){const cs=curS();if(th==='rplay'&&cs&&el()>=(cs.goal-prog(cs.id))*60000-500){if(gDone(cs))return;th='rreg'}if(th==='rplay'){ui.sxo=false;S.timer.running=true;S.timer.start=Date.now();if(!S.timer.d0)S.timer.d0=today();S.sx=true;S.sel.mt=''}else if(th==='rreg'){S.sx='manual';prefill(S.timer.acc)}}
 const reqSwitch=(to,th)=>{if(!to||S.edit)return;if(to===S.sel.subj){if(th)runThen(th);return}if(studyActive()){ui.sw={to,then:th||null};ui.swmsg=''}else{loadSubj(to);if(th)runThen(th)}};
 const modalHtml=()=>{const cu=S.subjects.find(x=>x.id===S.sel.subj),to=S.subjects.find(x=>x.id===ui.sw.to);if(!cu||!to)return '';
- return `<div class="ov top" data-act="swno"></div><div class="dlg top swd" role="dialog" aria-modal="true" aria-label="Estudo em andamento"><p>Você tem <b>${hms(el()/1000)}</b> de estudo em andamento em <b>${esc(cu.name)}</b>. Antes de mudar para <b>${esc(to.name)}</b>, registre esse tempo agora ou pause para continuar depois.</p><div class="mut" style="color:var(--bad)">${esc(ui.swmsg||'')}</div><div class="fl">${canReg(regMin())?'<button class="btn" data-act="swok">Registrar e mudar</button>':''}<button class="btn${canReg(regMin())?' g':''}" data-act="swpause">Pausar e mudar</button><button class="btn g" data-act="swno">Ficar em ${esc(cu.name)}</button></div></div>`};
+ return `<div class="ov top" data-act="swno"></div><div class="dlg top swd" role="dialog" aria-modal="true" aria-labelledby="swt"><h2 id="swt" class="dlgt">Mudar para ${esc(to.name)}?</h2><p class="dlgs">Há <b>${hms(el()/1000)}</b> em andamento em ${esc(cu.name)}. Registre agora ou pause para continuar depois.</p>${ui.swmsg?`<p class="dlge">${esc(ui.swmsg)}</p>`:''}<div class="dlga"><button class="btn tx" data-act="swno" aria-label="Ficar em ${esc(cu.name)}">Ficar</button><button class="btn${canReg(regMin())?' tx':''}" data-act="swpause">Pausar e mudar</button>${canReg(regMin())?'<button class="btn" data-act="swok">Registrar e mudar</button>':''}</div></div>`};
 const tipEl=document.createElement?document.createElement('div'):null;
 if(tipEl){tipEl.id='tip';document.body.appendChild(tipEl)}
 document.addEventListener('mousemove',e=>{if(!tipEl)return;const a=e.target.closest&&e.target.closest('.arc[data-tip],.sday[data-tip],.srow2[data-tip]');
