@@ -331,7 +331,6 @@ input::placeholder,textarea::placeholder{color:var(--mut);opacity:1}
 .mname{display:block}
 .c2>*,.pvh .rvt,.rvt,.now{min-width:0}.ringwrap>.now{max-width:100%}@media (max-width:600px){.ringwrap>.now{width:100%}}
 .rvm .tag,.edn~.tag{flex:none}
-.c2a>.card.rvcard{flex:none;display:block;margin-top:12px}
 </style>
 </head>
 <body>
@@ -599,7 +598,6 @@ function viewCicloPast(n){
  html=html.replace(/<button[^>]*data-act="(rplay|rzero|rmore|rreopen|edopen|next|rvend)"[^>]*>[\s\S]*?<\/button>/g,'').replace(/<button class="x" data-act="rreg" data-id="([^"]+)"[^>]*>[\s\S]*?<\/button>/g,(m,id)=>`<button class="x" data-act="rview" data-id="${id}" title="Visualizar" aria-label="Visualizar">${EYEI}</button>`).replace(/ data-act="(pickrow|pickarc)"/g,' data-act="ppick"').replace('Você cumpriu todas as metas. Pronto para o próximo?','Você cumpriu todas as metas deste ciclo.').replace(/<div class="dd rmenu">[\s\S]*?<\/div>/g,'');
  return html+`<div class="fl"><button class="btn g" data-act="ccur">${vset()?'Voltar à rodada atual':'Voltar ao ciclo atual'}</button><span class="mut" style="align-self:center">${vset()?'Rodadas anteriores são somente para consulta.':'Para corrigir um registro deste ciclo, use o Histórico.'}</span></div>`;
 }
-const WIDE=matchMedia('(min-width:1120px)');
 /* Fim de ciclo: resumo do que foi feito + um único próximo passo. */
 function cycleEnd(){const ss=CS().filter(x=>x.cycle===S.cycle&&!x.rid&&!x.review),ds=uniq(ss.map(x=>x.date).filter(Boolean)).sort(),tp=new Set(ss.filter(x=>x.topic).map(x=>x.subj+'|'+x.topic)).size,A=actives(),f2=d=>d.slice(8,10)+'/'+d.slice(5,7);
  const AV=rgInfo().list.filter(o=>o.st==='disponivel'&&rgTopics(o.g).size),nx=rgNext(),nxo=AV.find(o=>o.g.id===nx)||AV[0];
@@ -625,14 +623,12 @@ function viewCiclo(){
  if(rs&&!rev&&!PAST){const own=prog(rs.id)>=rs.goal?CS().filter(x=>x.subj===rs.id&&!x.review&&x.topic&&x.cycle===S.cycle).slice(-1)[0]:null,l=own||lastSess(rs.id);if(l){const G=grp(rs.id),recs=CS().filter(x=>G.includes(x.subj)&&!x.review&&x.topic&&(x.ses||x.id)===(l.ses||l.id));
   const p=recs.map(r=>{const t=topicOf(rs,r.topic);if(!t)return '';const pl=(r.items||[]).map(itKey).filter(Boolean).map(l=>`<div class="rvit">${itemLine(l,t.id)}</div>`).join('');return `<div class="rvtp"><div class="rvtn">${esc(t.name)}</div>${pl?`<div class="rvits">${pl}</div>`:''}</div>`}).join('');
   if(p&&prog(rs.id)<rs.goal){const dn=false;h+=`<div class="card rvcard${!dn?' pvbox'+(S.rvaClosed?'':' open'):''}">${dn?`<h2 class="rvt rvtr" style="--sc:${col(rs)};color:color-mix(in srgb,var(--sc) 45%,var(--ink))"><span class="rvm"><span class="dot" style="background:${col(rs)}"></span><span class="snt" title="${esc(rs.name)}">${esc(rs.name)}</span></span>O que você estudou nessa sessão</h2>`:`<div class="pvh" data-act="rvatog"><button class="x mtog${S.rvaClosed?'':' on'}" data-act="rvatog" aria-expanded="${!S.rvaClosed}" aria-label="Expandir ou recolher">${CHEV}</button><h2 class="rvt" style="--sc:${col(rs)};color:color-mix(in srgb,var(--sc) 45%,var(--ink))">Revise antes de começar a sessão de <span class="rvm"><span class="dot" style="background:${col(rs)}"></span><span class="snt" title="${esc(rs.name)}">${esc(rs.name)}</span></span></h2></div>`}${dn||!S.rvaClosed?`<div class="rvlist${dn?'':' pvb'}">${p}</div>`:''}</div>`}}}
- /* Desktop largo: "Revise antes" fica na coluna da direita, logo abaixo do cronômetro */
- let rvA='';if(!rev&&!PAST&&WIDE.matches){rvA=h;h=''}
  if(rev&&rs)h+=`<div class="card rvcard"><h2 class="rvt" style="--sc:${col(rs)};color:color-mix(in srgb,var(--sc) 45%,var(--ink))">Tópicos para revisar de <span class="rvm"><span class="dot" style="background:${col(rs)}"></span><span class="snt" title="${esc(rs.name)}">${esc(rs.name)}</span></span></h2><div class="rvlist">${revList(rs,winTopics(rs.id))}</div></div>`;
  if(S.edit&&!edPop())h+=sessCard();
  h+=`<div class="card"><div class="chead"><h2>${rev?'Revisão':'Disciplinas'}</h2>${S.edit?'':'<button class="btn g s" data-act="edopen">Editar ciclo</button>'}</div>${A.map(s=>{const p=prog(s.id),c=col(s),sl=selId()===s.id;return `<div class="row srow${sl?' cur':''}"><div class="grow"${S.edit?'':` data-act="pickrow" data-id="${s.id}"`}><div class="rtop"><span class="rname"><span class="dot" style="background:${c}"></span>${S.edit?`<span class="rnt" title="${esc(nm(s))}">${esc(nm(s))}</span>`:`<button class="rnt rpick" data-act="pickrow" data-id="${s.id}" title="${esc(nm(s))}" aria-pressed="${sl}">${esc(nm(s))}</button>`}</span>${rowCtl(s)}</div><div class="bar"><i id="rbar-${s.id}" style="width:${barW(s)}%;background:${barC(s)}"></i></div></div></div>`}).join('')}</div>`;
  if(rev)h+=`<div class="fl"><button class="btn g" data-act="rvcancel">Cancelar revisão</button></div>`;
  if(rev)return pre+ringC+h;
- return pre+`<div class="c2">${kpisHtml()}<div class="c2a">${ringC}${rvA}${rvBan}</div><div class="c2b">${h}</div><div class="c2c">${recentCard()}</div></div>`;
+ return pre+`<div class="c2">${kpisHtml()}<div class="c2a">${ringC}${rvBan}</div><div class="c2b">${h}</div><div class="c2c">${recentCard()}</div></div>`;
 }
 const WD=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
 function sesRow(k,r,o){o=o||{};const f=r[0],s=subjAny(f.subj),t0=r.reduce((a,x)=>a+x.min,0);
@@ -877,7 +873,6 @@ function posDD(){document.querySelectorAll('.dlg .dd').forEach(d=>{const a=d.par
  const need=Math.min(d.scrollHeight,lim),below=vh-a.bottom-8,above=a.top-8;
  if(need>below&&above>below)Object.assign(d.style,{top:'auto',bottom:(vh-a.top+4)+'px',marginTop:'0',maxHeight:Math.min(lim,above)+'px'});
  else Object.assign(d.style,{top:(a.bottom+4)+'px',bottom:'auto',marginTop:'0',maxHeight:Math.min(lim,below)+'px'})})}
-try{WIDE.addEventListener('change',()=>{if(tab==='ciclo')render()})}catch(e){}
 addEventListener('resize',()=>{posDD();fitKpis();fitNames();subFlow()});try{document.fonts.ready.then(()=>{fitKpis();fitNames();subFlow()})}catch(e){}document.addEventListener('scroll',()=>posDD(),true);
 const FOC={kb:false,op:null};document.addEventListener('keydown',e=>{if(e.key==='Tab'||e.key==='Enter'||e.key==='Escape'||e.key.startsWith('Arrow'))FOC.kb=true},true);document.addEventListener('pointerdown',()=>{FOC.kb=false},true);
 const focSig=()=>{const a=document.activeElement;if(!a||a===document.body||a===document.documentElement)return null;const d=a.dataset||{};if(a.id)return '#'+CSS.escape(a.id);if(d.act)return '[data-act="'+CSS.escape(d.act)+'"]'+(d.id!==undefined?'[data-id="'+CSS.escape(d.id)+'"]':'');if(d.tab)return '[data-tab="'+CSS.escape(d.tab)+'"]';return null};
