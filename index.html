@@ -782,7 +782,7 @@ function chrome(){const mt=$('mtt'),ms=$('msub');if(!mt||!ms)return;let t=TTL[ta
  subFlow();
  const h=[...document.querySelectorAll('#app h2')].find(e=>e.textContent.trim()===TTL[tab]);document.querySelectorAll('#app .mdup').forEach(e=>{if(e!==h)e.classList.remove('mdup')});if(h)h.classList.add('mdup')}
 function viewConfig(){const t=S.theme||'auto',o=[['auto','Automático'],['light','Claro'],['dark','Escuro']];
- return `<div class="card hasinfo">${infoBtn('tema','Aparência')}<h2 style="margin-bottom:12px">Aparência</h2><div class="sper" role="group" aria-label="Tema">${o.map(([v,l])=>`<button type="button" class="seg${t===v?' on':''}" data-act="theme" data-id="${v}" aria-pressed="${t===v}">${l}</button>`).join('')}</div></div><div class="card"><h2>Seus dados</h2><p class="mut" style="margin:4px 0 0">Tudo o que você registra é salvo automaticamente neste navegador e na sua conta. Você não precisa fazer backup.</p></div>`}
+ return `<div class="card hasinfo">${infoBtn('tema','Aparência')}<h2 style="margin-bottom:12px">Aparência</h2><div class="sper" role="group" aria-label="Tema">${o.map(([v,l])=>`<button type="button" class="seg${t===v?' on':''}" data-act="theme" data-id="${v}" aria-pressed="${t===v}">${l}</button>`).join('')}</div></div><div class="card"><h2>Seus dados</h2>${syCard()}</div>`}
 
 /* ===== Vários ciclos de estudo (um por concurso) ===== */
 const PEN='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>';
@@ -861,11 +861,18 @@ function showUndo(u){pushU(u.msg,u.snap);toast(u.msg,'undo','Desfazer')}
 function doUndo(){const u=UST.pop();if(!u){toast('Nada para desfazer');return}RST.push({snap:JSON.stringify(S),msg:u.msg});S=JSON.parse(u.snap);norm();save();render();toast('Desfeito: '+u.msg,'redo','Refazer')}
 function doRedo(){const r=RST.pop();if(!r){toast('Nada para refazer');return}UST.push({snap:JSON.stringify(S),msg:r.msg});S=JSON.parse(r.snap);norm();save();render();toast('Refeito: '+r.msg,'undo','Desfazer')}
 document.addEventListener('keydown',e=>{if(!(e.ctrlKey||e.metaKey)||e.altKey)return;const k=(e.key||'').toLowerCase();if(k!=='z'&&k!=='y')return;const tg=e.target,ed=tg&&(tg.isContentEditable||(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)&&!/^(checkbox|radio|button|submit)$/.test(tg.type||'')));if(ed)return;e.preventDefault();e.stopImmediatePropagation();if(k==='y'||e.shiftKey)doRedo();else doUndo()},true);
-/* ===== Salvamento automático: navegador + conta (sem telas) ===== */
-const SY={db:null,uid:null,status:'init',dev:null,lastTs:0,lastJson:null,timer:null,busy:false,again:false,dirty:false,localTs:0};
+/* ===== Salvamento automático: navegador + nuvem =====
+   Dentro do claude.ai usa o banco do artifact. Fora dele (ex.: GitHub Pages) usa o Firebase:
+   login com Google + Firestore em users/{uid}/ciclo. Preencha FIREBASE_CONFIG com o "firebaseConfig"
+   do seu projeto (Configurações do projeto → Seus apps → Web). Vazio = só o navegador. */
+const FIREBASE_CONFIG={apiKey:'',authDomain:'',projectId:'',appId:''};
+const FB_SDK='https://www.gstatic.com/firebasejs/10.12.2/';
+const fbOn=()=>!!(FIREBASE_CONFIG&&FIREBASE_CONFIG.apiKey&&FIREBASE_CONFIG.projectId);
+const loadJs=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=()=>ok();s.onerror=()=>no(new Error(src));document.head.appendChild(s)});
+const SY={prov:null,user:null,err:null,db:null,uid:null,status:'init',dev:null,lastTs:0,lastJson:null,timer:null,busy:false,again:false,dirty:false,localTs:0};
 (()=>{try{SY.dev=localStorage.getItem('ciclo-dev')||(()=>{const d=Math.random().toString(36).slice(2,10);localStorage.setItem('ciclo-dev',d);return d})();const m=JSON.parse(localStorage.getItem('ciclo-sync')||'{}');SY.lastTs=m.ts||0;SY.dirty=!!m.dirty;SY.localTs=m.lts||0}catch(x){SY.dev=SY.dev||'x'}})();
 const syMeta=()=>{try{localStorage.setItem('ciclo-sync',JSON.stringify({ts:SY.lastTs,dirty:!!SY.dirty,lts:SY.localTs||0}))}catch(x){}};
-const syCol=()=>SY.db.collection('data/users/'+SY.uid);
+const syCol=()=>SY.db.collection(SY.prov==='firebase'?'users/'+SY.uid+'/ciclo':'data/users/'+SY.uid);
 function syMark(){SY.dirty=true;SY.localTs=Date.now();syMeta();if(SY.status==='on'||SY.status==='saving'||SY.status==='err'){clearTimeout(SY.timer);SY.timer=setTimeout(syPush,1500)}}
 async function syPush(){if(!SY.db||SY.status==='off'||SY.status==='init')return;if(SY.busy){SY.again=true;return}
  const json=JSON.stringify(S);if(json===SY.lastJson&&!SY.dirty)return;SY.busy=true;SY.status='saving';
@@ -901,10 +908,32 @@ async function syOnMeta(snap){
 function syRetry(snap){clearTimeout(SY.rtimer);SY.rtimer=setTimeout(()=>{if(SY.lastTs<((snap.data&&snap.data()||{}).ts||Infinity))syOnMeta(snap).catch(()=>syRetry(snap))},8000)}
 function sySub(){try{if(SY.unsub)SY.unsub()}catch(x){}
  try{SY.unsub=syCol().doc('meta').onSnapshot(s=>{syOnMeta(s).catch(()=>syRetry(s))},()=>{SY.status='err';setTimeout(sySub,15000)})}catch(x){SY.status='off'}}
-async function syInit(){if(OFFLINE){SY.status='off';return}let db=null,uid=null;
+async function syInit(){if(OFFLINE)return fbInit();let db=null,uid=null;
  try{db=await claude.use('db');const user=await claude.use('user');uid=user?await user.id():null}catch(x){}
  if(!db||!uid){SY.status='off';return}
- SY.db=db;SY.uid=uid;sySub()}
+ SY.prov='claude';SY.db=db;SY.uid=uid;sySub()}
+/* Firebase: carrega o SDK só quando configurado; o estado do login decide se sincroniza. */
+async function fbInit(){SY.status='off';if(!fbOn())return;
+ try{for(const m of ['app','auth','firestore'])await loadJs(FB_SDK+'firebase-'+m+'-compat.js')}catch(x){SY.err='Não foi possível carregar a sincronização. Verifique a internet.';render();return}
+ try{if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);SY.prov='firebase';const auth=firebase.auth();
+  try{await auth.getRedirectResult()}catch(e){SY.err=fbErr(e)}
+  auth.onAuthStateChanged(u=>{try{if(SY.unsub)SY.unsub()}catch(x){}SY.unsub=null;
+   if(u){SY.db=firebase.firestore();SY.uid=u.uid;SY.user={name:u.displayName||'',email:u.email||''};SY.status='init';SY.err=null;sySub()}
+   else{SY.db=null;SY.uid=null;SY.user=null;SY.status='off'}
+   if(tab==='bk')render()})}catch(e){SY.err=fbErr(e);render()}}
+const fbErr=e=>{const c=e&&e.code||'';return c==='auth/unauthorized-domain'?'Este endereço não está autorizado no Firebase (Authentication → Configurações → Domínios autorizados).':c==='auth/popup-closed-by-user'||c==='auth/cancelled-popup-request'?null:'Não foi possível entrar: '+(e&&e.message||c||'erro desconhecido')};
+function fbLogin(){if(!window.firebase)return;const p=new firebase.auth.GoogleAuthProvider();SY.err=null;
+ firebase.auth().signInWithPopup(p).catch(e=>{const c=e&&e.code;if(c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment')firebase.auth().signInWithRedirect(p);else{SY.err=fbErr(e);render()}})}
+function fbLogout(){if(!window.firebase)return;firebase.auth().signOut();SY.lastTs=0;SY.lastJson=null;SY.dirty=false;SY.localTs=0;syMeta()}
+/* Texto e botões do cartão "Seus dados" */
+const SYST={on:'Sincronizado',saving:'Sincronizando…',init:'Conectando…',err:'Sem conexão — tentando de novo'};
+setInterval(()=>{const e=document.getElementById('systat');if(e){const v=SYST[SY.status]||'';if(e.textContent!==v)e.textContent=v}},1000);
+function syCard(){const st={on:'Sincronizado',saving:'Sincronizando…',init:'Conectando…',err:'Sem conexão — tentando de novo'}[SY.status]||'';
+ const err=SY.err?`<div role="alert" style="color:var(--bad);font-size:.85rem;margin-top:8px">${esc(SY.err)}</div>`:'';
+ if(SY.prov==='claude')return '<p class="mut" style="margin:4px 0 0">Tudo o que você registra é salvo automaticamente neste navegador e na sua conta. Você não precisa fazer backup.</p>';
+ if(!fbOn())return '<p class="mut" style="margin:4px 0 0">Seus dados ficam salvos neste navegador. A sincronização entre aparelhos ainda não foi configurada.</p>';
+ if(SY.user)return `<p class="mut" style="margin:4px 0 0">Conectado como <b>${esc(SY.user.email||SY.user.name)}</b>. Seus dados sincronizam automaticamente entre os aparelhos em que você entrar.</p><div class="mut" id="systat" role="status" style="font-size:.85rem;margin-top:6px">${st}</div>${err}<div class="fl" style="margin-top:12px"><button class="btn g s" data-act="fblogout">Sair</button></div>`;
+ return `<p class="mut" style="margin:4px 0 0">Seus dados ficam salvos neste navegador. Entre com sua conta Google para acessá-los de qualquer computador ou celular.</p>${err}<div class="fl" style="margin-top:12px"><button class="btn" data-act="fblogin">Entrar com Google</button></div>`}
 if(typeof document!=='undefined'){document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&SY.dirty&&SY.status==='on'){clearTimeout(SY.timer);syPush()}})}
 const ask=(k,b)=>{ui.undoNext={snap:JSON.stringify(S),msg:UNDO_MSG[k.split(':')[0]]||'Ação concluída'};return true};
 const sameIt=(a,b)=>a.kind===b.kind&&a.url===b.url&&a.title===b.title;
@@ -1120,6 +1149,8 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='pdtog'){const k='pd:'+p;if(ui.pde===p){pdClose()}else if(ui.open.has(k))ui.open.delete(k);else{pdOnly(p);ui.open.add(k)}}
  if(a==='pdedit'){if(ui.pde===p)pdClose();else{pdOnly(p);pdClose();ui.pde=p;ui.open.add('pd:'+p)}ui.pdn=null}
  if(a==='pdend')pdClose();
+ if(a==='fblogin'){fbLogin();return}
+ if(a==='fblogout'){fbLogout();return}
  if(a==='rvcfg'){ui.rvcfg=true;ui.rvcfgmsg=null;ui.focus='rvci'}
  if(a==='rvcfgx'){ui.rvcfg=null;ui.rvcfgmsg=null}
  if(a==='info')ui.info=p;
