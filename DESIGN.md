@@ -218,7 +218,7 @@ components:
 
 Ciclo de Estudos se apresenta como um aplicativo próprio do Google em Material 3 Expressive: esquema tonal gerado do ciano do logo, superfícies em degraus de surface-container, Google Sans Flex com o eixo de arredondamento ligado nos títulos e formas que respondem ao toque com mola. Nada flutua por cima do conteúdo sem motivo; o que tem sombra é o que está acima da página (menus, diálogos, FAB, snackbar e o controle de estudar).
 
-A densidade é de ferramenta de uso diário: listas conectadas, cartões grandes de 28px, campos compactos e contornados. O momento expressivo fica concentrado em dois lugares: o anel do ciclo, com o progresso desenhado como indicador ondulado, e o controle de estudar, que troca de forma entre pílula e quadrado arredondado quando o cronômetro corre. Todo o resto lê como lista de app do Google.
+A densidade é de ferramenta de uso diário: listas conectadas, cartões grandes de 28px, campos compactos e contornados. O momento expressivo fica concentrado em dois lugares: o anel do ciclo, com o progresso por disciplina em arco de borda lisa, e o controle de estudar, que troca de forma entre pílula e quadrado arredondado quando o cronômetro corre. Todo o resto lê como lista de app do Google.
 
 O sistema recusa o painel SaaS anterior (barra lateral flutuante, cartões com sombra suave, bordas finas em tudo). Esse recuo é confirmado pela própria construção: os cartões perderam borda e sombra, e a navegação virou rail e barra de navegação Material.
 
@@ -227,7 +227,7 @@ O sistema recusa o painel SaaS anterior (barra lateral flutuante, cartões com s
 - Profundidade por tom, não por sombra, em toda superfície que pertence à página.
 - Forma como estado: pílula em repouso, quadrado arredondado ao pressionar ou enquanto o cronômetro corre.
 - Camadas de estado de 8% (10% nos botões de ícone) em vez de filtros de brilho.
-- Anel do ciclo com progresso ondulado e trilho reto.
+- Anel do ciclo com progresso de borda lisa sobre trilho reto.
 
 ## Colors
 
@@ -235,7 +235,7 @@ Um esquema tonal Material 3 inteiro, frio e claro, gerado de uma única semente 
 
 ### Primary
 - **Ciano Profundo do Logo** (primary): ação principal — botão preenchido, controle de estudar em repouso, segmento selecionado, dia selecionado e contorno de "hoje" no calendário, subtítulos de data no Histórico, links e botões de texto, cursor de digitação, foco dos campos.
-- **Ciano Glacial** (primary-container): FAB, ícones dos indicadores sobre a forma "cookie", aviso de revisão pendente, seleção de texto, dias de revisão disponíveis no calendário.
+- **Ciano Glacial** (primary-container): FAB, ícones dos indicadores em círculo, aviso de revisão pendente, seleção de texto, dias de revisão disponíveis no calendário.
 
 ### Secondary
 - **Névoa Azul-Petróleo** (secondary-container): o indicador ativo — pílula atrás do item atual do rail e da barra de navegação, disciplina atual na lista do ciclo, botão tonal, controle de estudar enquanto o cronômetro corre, item atual dos menus, rótulos (tags). Também é o trilho do anel do ciclo.
@@ -306,7 +306,7 @@ Híbrido com hierarquia clara: o que pertence à página é plano e separado por
 
 Escala de cantos Material: 8px (campos, chips, rótulos, snackbar, tooltip, segmentos internos), 12px (itens de menu, balões, estado pressionado), 16px (menus, caixas agrupadoras, FAB, item de lista), 20px (indicadores, item selecionado, faixa de meta concluída), 28px (cartões, diálogos, topo das folhas inferiores; 24px nos cartões do celular) e pílula (botões, navegação, busca, barras de progresso, dias do calendário).
 
-Forma Expressive além da escala: ícones dos indicadores recortados na forma "cookie" de 12 lóbulos; anel do ciclo com progresso ondulado (raio 87, amplitude 3, 20 ondas) sobre trilho reto; barras de progresso de 8px em pílula. Folhas inferiores no celular têm alça de 32×4px.
+Bordas regulares por escolha do usuário: ícones dos indicadores em círculo; anel do ciclo com progresso em arco liso (raio 87) sobre trilho reto; barras de progresso de 8px em pílula. Folhas inferiores no celular têm alça de 32×4px.
 
 **The Morph Rule.** Forma muda com estado: pílula ao pressionar vira 12px (8px nos pequenos), FAB quadrado de 16px vira círculo ao pressionar, controle de estudar vira quadrado de 16px enquanto o cronômetro corre, item selecionado da lista vai de 16 para 20px. Toda troca de forma usa a mola.
 
@@ -362,7 +362,7 @@ surface-container-high, 28px, Nível 3, 24px de respiro, véu de 32%. Até 600px
 Superfície invertida, 8px de canto; snackbar de 48px com Nível 3 e ação em inverse-primary.
 
 ### Anel do ciclo (assinatura)
-SVG com dois anéis: interno de segmentos por disciplina (os não atuais a 32% da cor) e externo com trilho reto em secondary-container e progresso ondulado na cor da disciplina, ponta arredondada. Centro com estado, tempo em 20px/700 tabular e meta.
+SVG com dois anéis: interno de segmentos por disciplina (os não atuais a 32% da cor) e externo com trilho reto em secondary-container e progresso em arco liso na cor da disciplina, ponta arredondada. Centro com estado, tempo em 20px/700 tabular e meta.
 
 ## Do's and Don'ts
 
