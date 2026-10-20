@@ -639,6 +639,18 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 .btn.tx{background:none;color:var(--m-p);padding:8px 12px}
 .btn.tx:hover:not(:disabled){background:color-mix(in srgb,var(--m-p) 8%,transparent);box-shadow:none}
 @media (max-width:600px){.dlg.swd{padding:36px 20px calc(20px + env(safe-area-inset-bottom,0px))}}
+/* ===== Revisão: calendário numa coluna própria (fixa no computador, largura limitada nas telas menores) ===== */
+.rvw{display:grid;grid-template-columns:minmax(0,1fr);gap:0 16px}
+.rvmain{min-width:0}
+.rvside{min-width:0;width:100%;max-width:420px;justify-self:center}
+.rvside>.card{margin-bottom:0}
+.rvside .rch .pvt{margin:0}
+/* Do tablet para cima o calendário fica à direita: até 380px (largura do cartão do anel na tela Ciclo) e encolhe até 280px para não apertar a coluna da esquerda */
+@media (min-width:600.02px){
+ .rvw{grid-template-columns:minmax(0,1fr) clamp(280px,38%,380px);align-items:start}
+ .rvside .rcd{min-height:0}
+ .rvside{max-width:none;position:sticky;top:24px;will-change:transform;contain:layout paint}
+}
 @media (prefers-reduced-motion:reduce){.btn,.x,.tbig,.fab,.seg,.row.srow,.sidenav button,.tabbar svg,.navmini .sidenav svg{transition:none}}
 </style>
 </head>
@@ -1058,7 +1070,7 @@ function rvCal(I){
   const subs=[...by.keys()].map(id=>S.subjects.find(y=>y.id===id)).filter(Boolean);
   const lines=es.map(e=>({est:'Dia de estudo do '+rgLabel(e.o),disp:rgLabel(e.o)+' fica disponível para revisar',proj:rgLabel(e.o)+' ficará disponível (projeção)',rev:rgLabel(e.o)+' revisado'}[e.k]));
   det=`<div class="rcdet"><b>${fd(sd)}${sd===td?' · hoje':''}</b>${lines.map(l=>`<div class="mut">${l}</div>`).join('')}${subs.length?subs.map(s=>`<div class="grp"><span class="dot" style="background:${col(s)}"></span><span class="snt" title="${esc(s.name)}">${esc(s.name)}</span></div>${tl(s,by.get(s.id)).map(t=>`<div class="mut rgt" title="${esc(t.name)}">• ${esc(t.name)}</div>`).join('')}`).join(''):(es.some(e=>e.k==='est')?'<div class="mut">Dia de estudo sem tópicos registrados.</div>':(es.length?'':'<div class="mut">Nada registrado neste dia.</div>'))}</div>`}
- return `<div class="card hasinfo">${infoBtn('rvcal','Calendário de revisões')}<div class="rch"><div class="pvh" data-act="rctog"><button class="x mtog on" data-act="rctog" aria-expanded="true" aria-label="Recolher calendário de revisões">${CHEV}</button><h2 class="pvt">Calendário de revisões</h2></div><div class="rcn"><button class="x" data-act="rcm" data-id="-1" aria-label="Mês anterior">‹</button><b>${RCM[first.getMonth()]} ${first.getFullYear()}</b><button class="x" data-act="rcm" data-id="1" aria-label="Próximo mês">›</button></div></div>
+ return `<div class="card hasinfo">${infoBtn('rvcal','Calendário de revisões')}<div class="rch"><h2 class="pvt">Calendário de revisões</h2><div class="rcn"><button class="x" data-act="rcm" data-id="-1" aria-label="Mês anterior">‹</button><b>${RCM[first.getMonth()]} ${first.getFullYear()}</b><button class="x" data-act="rcm" data-id="1" aria-label="Próximo mês">›</button></div></div>
  <div class="rcg">${['seg','ter','qua','qui','sex','sáb','dom'].map(w=>`<span class="rcw">${w}</span>`).join('')}${cells.map(cell).join('')}</div>
  <div class="rcl"><span><i class="rcx e"></i>Estudo</span><span><i class="rcx d"></i>Disponível</span><span><i class="rcx p"></i>Projeção</span><span><i class="rcv s"></i>Revisado</span></div>
  <div class="rcchips" role="group" aria-label="Filtrar por grupo">${chips||'<span class="mut">Os grupos aparecem aqui conforme você estuda.</span>'}</div>
@@ -1098,8 +1110,8 @@ function viewRev(){
  const dnc=dn.map(o=>`<div class="card rgc"><div>${head(o)}</div><div class="mut rgw">${when(o)}</div></div>`).join('');
  const fu0=fu[0],top=nxo?avc[av.indexOf(nxo)]:'',rest=avc.filter((x,i)=>av[i]!==nxo).join('');
  const nxt=`<div class="card rvnext"><h2>Próxima revisão</h2>${top||(fu0?`<div class="rga"><div class="rgal"><div class="rgan"><b>${rgLabel(fu0)}</b><span class="tag">${typeof TAG.futuro==='function'?TAG.futuro(fu0):''}</span></div><div class="mut rgw">${when(fu0)}</div></div></div>`:av.length?'<div class="empty">Os grupos disponíveis não têm tópicos registrados.</div>':'<div class="empty">Nenhum grupo ainda. Eles se formam conforme você estuda.</div>')}</div>`;
- const cal=S.rcOpen?rvCal(I):`<div class="card pvbox"><div class="pvh" data-act="rctog"><button class="x mtog" data-act="rctog" aria-expanded="false" aria-label="Mostrar calendário de revisões">${CHEV}</button><h2 class="pvt">Calendário de revisões</h2></div></div>`;
- return nxt+(rest?`<div class="card"><h2>Na fila</h2>${rest}</div>`:'')+`${fu.length>(top?0:1)?`<h2 class="sec">Revisões futuras</h2>${top?fuc:fu.slice(1).map(o=>`<div class="card rgc"><div>${head(o)}</div><div class="mut rgw">${when(o)}</div>${body(o)}</div>`).join('')}`:''}${dn.length?`<h2 class="sec">Concluídas</h2>${dnc}`:''}`+cal;
+ const cal=rvCal(I);
+ return `<div class="rvw"><div class="rvmain">`+nxt+(rest?`<div class="card"><h2>Na fila</h2>${rest}</div>`:'')+`${fu.length>(top?0:1)?`<h2 class="sec">Revisões futuras</h2>${top?fuc:fu.slice(1).map(o=>`<div class="card rgc"><div>${head(o)}</div><div class="mut rgw">${when(o)}</div>${body(o)}</div>`).join('')}`:''}${dn.length?`<h2 class="sec">Concluídas</h2>${dnc}`:''}</div><aside class="rvside">${cal}</aside></div>`;
 }
 const MINUS='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>';
 const nmAvail=()=>S.subjects.filter(s=>!s.of&&s.hid&&s.ed===S.sel.af).length;
@@ -1241,7 +1253,7 @@ function render0(){
  if(tab==='rev')setMode(S.rv?'review':'study');else if(tab==='ciclo')setMode('study');
  document.querySelectorAll('nav button[data-tab]').forEach(b=>{if(b.dataset.tab===tab&&!ui.pl)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});document.querySelectorAll('nav [data-nav=pl]').forEach(b=>{b.classList.toggle('on',!!ui.pl);b.setAttribute('aria-haspopup','dialog');b.setAttribute('aria-expanded',String(!!ui.pl))});
  {const sb=$('sub');if(sb)sb.innerHTML=`<button class="x gear${tab==='bk'?' on':''}" data-tab="bk" title="Configurações" aria-label="Configurações">${GEAR}</button>`}
- document.body.classList.toggle('wide',tab==='ciclo');$('app').innerHTML=tab==='ciclo'?viewCiclo():tab==='rev'?viewRev():tab==='reg'?viewReg():tab==='st'?viewStats():viewConfig();
+ document.body.classList.toggle('wide',tab==='ciclo'||tab==='rev');$('app').innerHTML=tab==='ciclo'?viewCiclo():tab==='rev'?viewRev():tab==='reg'?viewReg():tab==='st'?viewStats():viewConfig();
  const fmv=!!S.sx&&!S.edit&&fmOk();
  $('modal').innerHTML=(ui.pl?plansHtml()+(ui.pdadd&&ui.pdd?pdAddHtml():''):'')+(ui.ed&&(tab==='ciclo'||(tab==='rev'&&S.rv))?editHtml()+(ui.addm?newMatCard():''):'')+(S.sx&&!S.edit?(fmv&&!ui.sxo?fmHtml():sessCard()):'')+(edPop()?sessCard():'')+(ui.rview?regViewHtml():'')+(ui.rgview&&tab==='rev'?rgPopHtml():'')+(ui.rvcfg&&tab==='rev'?rvcfgHtml():'')+(ui.info?infoHtml():'')+(ui.sw?modalHtml():'')+(welcomeOn()?welcomeHtml():'');if(tipEl)tipEl.style.display='none';fmSync(fmv);
  [$('app'),$('modal')].forEach(c=>{if(c&&c.querySelectorAll)c.querySelectorAll('button[aria-label]:not([title])').forEach(b=>{b.title=b.getAttribute('aria-label')})});
