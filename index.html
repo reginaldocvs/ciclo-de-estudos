@@ -621,6 +621,7 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 .c2b .row.srow{padding:10px 12px}
 .c2b .srow .bar{margin-top:6px}
 .c2c>.card{margin-bottom:0}
+@media (min-width:1120px){.c2a{position:sticky;top:24px;will-change:transform;contain:layout paint}}
 @media (max-width:600px){
  .c2b .srow .rtop{row-gap:0}
  .c2b .row.srow{padding:8px 10px}
@@ -961,7 +962,7 @@ function viewCiclo(){
  h+=`<div class="card"><div class="chead"><h2>${rev?'Revisão':'Disciplinas'}</h2>${S.edit?'':'<button class="btn g s" data-act="edopen">Editar ciclo</button>'}</div>${A.map(s=>{const p=prog(s.id),c=col(s),sl=selId()===s.id;return `<div class="row srow${sl?' cur':''}"><div class="grow"${S.edit?'':` data-act="pickrow" data-id="${s.id}"`}><div class="rtop"><span class="rname"><span class="dot" style="background:${c}"></span>${S.edit?`<span class="rnt" title="${esc(nm(s))}">${esc(nm(s))}</span>`:`<button class="rnt rpick" data-act="pickrow" data-id="${s.id}" title="${esc(nm(s))}" aria-pressed="${sl}">${esc(nm(s))}</button>`}</span>${rowCtl(s)}</div><div class="bar"><i id="rbar-${s.id}" style="width:${barW(s)}%;background:${barC(s)}"></i></div></div></div>`}).join('')}</div>`;
  if(rev)h+=`<div class="fl"><button class="btn g" data-act="rvcancel">Cancelar revisão</button></div>`;
  if(rev)return pre+ringC+h;
- return pre+`<div class="c2">${kpisHtml()}<div class="c2a">${ringC}${rvBan}</div><div class="c2b">${h}</div><div class="c2c">${recentCard()}</div></div>`;
+ return pre+`<div class="c2">${kpisHtml()}<div class="c2a">${ringC}${rvBan}</div><div class="c2b">${h}</div>${PAST?`<div class="c2c">${recentCard()}</div>`:''}</div>`;
 }
 const WD=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
 function sesRow(k,r,o){o=o||{};const f=r[0],s=subjAny(f.subj),t0=r.reduce((a,x)=>a+x.min,0);
