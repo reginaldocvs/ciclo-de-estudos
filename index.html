@@ -267,7 +267,7 @@ input[type=checkbox]{border-radius:4px}
 .rcv{position:absolute;right:4px;bottom:4px;width:7px;height:7px;border-radius:50%;background:var(--ok)}.rcl .rcv{position:static;display:inline-block;margin-right:6px}
 .rcl{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0 8px;font-size:.75rem;color:var(--mut)}.rcl span{display:inline-flex;align-items:center}
 .rcx{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px}.rcx.e{background:color-mix(in srgb,var(--ac) 28%,var(--card))}.rcx.d{border:2px solid var(--ac)}.rcx.p{border:2px dashed var(--ac)}
-.rcchips{display:flex;flex-wrap:wrap;gap:6px;max-height:104px;overflow:auto;margin-bottom:8px}
+.rcchips{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:none;margin:0 -4px 8px;padding:2px 4px}.rcchips::-webkit-scrollbar{display:none}.rcchips>.rcc{flex:none;scroll-snap-align:start}.rcchips>.mut{white-space:normal}
 .rcc{font:inherit;font-size:.85rem;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);padding:3px 10px;cursor:pointer}.rcc.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 18%,var(--card));font-weight:700}
 .rcs{width:10px;height:10px;border-radius:50%;background:var(--c)}
 .rcav{background:color-mix(in srgb,var(--ac) 11%,var(--card));color:var(--ac);font-weight:700;border-radius:8px;padding:6px 10px;margin-bottom:10px;font-size:.85rem}
@@ -1069,7 +1069,7 @@ function rvCal(I){
   const ring=disp[0]||proj[0];if(ring){st+=`--r:${rgCol(ring.o.g)};`;cls.push(disp[0]?'dsp':'prj')}
   const lbl=[x===td?'hoje':'',est?'estudo '+rgLabel(est.o):'',disp.map(e=>rgLabel(e.o)+' disponível').join(', '),proj.map(e=>rgLabel(e.o)+' disponível (projeção)').join(', '),rev.map(e=>rgLabel(e.o)+' revisado').join(', ')].filter(Boolean).join(' · ');
   return `<button class="${cls.join(' ')}" style="${st}" data-act="rcday" data-id="${x}" aria-label="${+x.slice(8)} de ${RCM[+x.slice(5,7)-1]}${lbl?' — '+lbl:''}">${+x.slice(8)}${rev.length&&rev.some(e=>rel(e,e.o))?'<i class="rcv"></i>':''}</button>`};
- const chips=I.list.map(o=>`<button class="rcc${flt===o.g.id?' on':''}" style="--c:${rgCol(o.g)}" data-act="rcg" data-id="${o.g.id}" aria-pressed="${flt===o.g.id}"><span class="rcs"></span>${rgLabel(o)}</button>`).join('');
+ const chips=[...I.list].reverse().map(o=>`<button class="rcc${flt===o.g.id?' on':''}" style="--c:${rgCol(o.g)}" data-act="rcg" data-id="${o.g.id}" aria-pressed="${flt===o.g.id}" title="${esc(rgLabel(o))}" aria-label="Filtrar ${esc(rgLabel(o))}"><span class="rcs"></span>G${o.g.idx}</button>`).join('');
  let det='';const sd=ui.rcd;
  if(sd){const es=E[sd]||[],ss=CS().filter(x=>!x.review&&!x.rid&&x.date===sd&&sesHasIt(x)),by=new Map();
   ss.forEach(x=>{const sb=subjAny(x.subj),b=sb&&(sb.of?S.subjects.find(y=>y.id===sb.of)||sb:sb);if(!b)return;if(!by.has(b.id))by.set(b.id,[]);if(!by.get(b.id).includes(x.topic))by.get(b.id).push(x.topic)});
