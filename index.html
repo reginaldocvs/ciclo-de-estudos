@@ -606,13 +606,13 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 /* ===== Tela Ciclo: ajustes de hierarquia e densidade ===== */
 /* Números do dia: uma faixa só, mais discreta que o cartão da sessão */
 .c2>.kpis{gap:0;padding:4px;background:var(--card);border-radius:var(--r-xl);margin-bottom:16px}
-.c2>.kpis .kpi{background:none;border-radius:0;padding:10px 16px}
+.c2>.kpis .kpi{background:none;border-radius:0;padding:10px 16px;flex-direction:row-reverse;justify-content:flex-end;gap:14px}
 .c2>.kpis .kpi+.kpi{border-left:1px solid var(--m-ov)}
 .c2>.kpis .kic{width:36px;height:36px}
 .c2>.kpis .kic svg{width:18px;height:18px}
 .c2>.kpis .kpi b{font-size:1.25rem}
 @media (min-width:600.02px) and (max-width:1119.98px){.c2{row-gap:16px}.c2a>.card{margin-bottom:0}.c2>.kpis{margin:0}.c2>.kpis .kpi+.kpi{border-left:0;border-top:1px solid var(--m-ov)}}
-@container (max-width:520px){.c2>.kpis .kpi{padding:10px 8px}}
+@container (max-width:520px){.c2>.kpis .kpi{padding:10px 8px;flex-direction:column-reverse;justify-content:flex-end;align-items:center;text-align:center;gap:8px}}
 /* Sessão atual: o cartão principal ganha peso */
 .c2a>.card{padding:28px 24px}
 .c2 .now b.nwn{font-size:2rem;line-height:2.5rem}
@@ -1156,7 +1156,7 @@ function dayStats(){const td=today(),by={};S.sessions.forEach(x=>{if(x.date&&x.m
 function kpisHtml(){const st=dayStats(),A=actives(),T=total()||1,d=A.reduce((a,s)=>a+Math.min(prog(s.id),s.goal),0),nd=A.filter(s=>gDone(s)).length;
  const t=(l,v,ic,c)=>`<div class="kpi"><div><div class="kl">${l}</div><b>${v}</b></div><span class="kic${c?' '+c:''}">${ic}</span></div>`;
  const pr=PAST?CS().filter(x=>x.cycle===S.cycle&&!x.rid&&!x.review):[],pd2=pr.map(x=>x.date).filter(Boolean).sort(),f2=d=>d.slice(8,10)+'/'+d.slice(5,7),per=pd2.length?(pd2[0]===pd2[pd2.length-1]?f2(pd2[0]):f2(pd2[0])+' a '+f2(pd2[pd2.length-1])):'—';
- return '<div class="kpis">'+(PAST?t('Tempo estudado',fmt(pr.reduce((a,x)=>a+x.min,0)),CLOCKI)+t('Período',per,CALI):t('Hoje',fmt(st.today),CLOCKI))+t('Ciclo '+S.cycle,Math.round(d/T*100)+'%',TARGETI)+t('Disciplinas',nd+' de '+A.length,DONEI,'ok')+'</div>'}
+ return '<div class="kpis">'+(PAST?t('Tempo estudado',fmt(pr.reduce((a,x)=>a+x.min,0)),CLOCKI)+t('Período',per,CALI):t('Hoje',fmt(st.today),CLOCKI))+t('Ciclo '+S.cycle,Math.round(d/T*100)+'%',TARGETI)+t('Sessões',nd+' de '+A.length,DONEI,'ok')+'</div>'}
 const TTL={ciclo:'Ciclo',rev:'Revisão',reg:'Histórico',st:'Estatísticas',bk:'Configurações'};
 const greet=()=>{const h=new Date().getHours();return h<5?'Boa madrugada':h<12?'Bom dia':h<18?'Boa tarde':'Boa noite'};
 function applyTheme(){const r=document.documentElement,t=S.theme||'auto';try{if(t==='light'||t==='dark'){r.setAttribute('data-theme',t);r.dataset.ownTheme='1'}else if(r.dataset.ownTheme){r.removeAttribute('data-theme');delete r.dataset.ownTheme}}catch(e){}}
