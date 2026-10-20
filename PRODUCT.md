@@ -41,7 +41,9 @@ Não é um cronômetro genérico nem um planner com grade de horários. Combina 
 - **Revisão:** grupos de N dias válidos de estudo, disponíveis após W dias corridos (ambos configuráveis, 1–60), revisados em ordem, um grupo por vez; calendário de revisões.
 - **Histórico:** lista com busca e filtro por datas (a visualização em calendário foi removida).
 - **Terminologia fixa:** ciclo, rodada, plano, disciplina, tópico, aula, sessão, grupo de revisão, dias válidos de estudo, dias corridos.
-- **Em aberto:** forma de distribuição principal (artifact publicado no claude.ai ou arquivo local aberto no navegador) não foi decidida.
+- **Distribuição (decidido):** o app precisa ser acessível de qualquer computador, **fora do claude.ai** e **de graça** (hospedagem estática gratuita). Os dados de estudo devem acompanhar o usuário entre computadores e celular.
+- **Hospedagem (decidido):** GitHub Pages, publicado a partir do repositório git do projeto.
+- **Sincronização (decidido):** login com conta Google e dados na nuvem pelo Firebase (Authentication + Firestore, plano gratuito). O app continua funcionando sem login, só com os dados do navegador.
 
 ## Brand Commitments
 
