@@ -847,7 +847,7 @@ function chrome(){const mt=$('mtt'),ms=$('msub');if(!mt||!ms)return;let t=TTL[ta
  subFlow();
  const h=[...document.querySelectorAll('#app h2')].find(e=>e.textContent.trim()===TTL[tab]);document.querySelectorAll('#app .mdup').forEach(e=>{if(e!==h)e.classList.remove('mdup')});if(h)h.classList.add('mdup')}
 function viewConfig(){const t=S.theme||'auto',o=[['auto','Automático'],['light','Claro'],['dark','Escuro']];
- return `<div class="card hasinfo">${infoBtn('tema','Aparência')}<h2 style="margin-bottom:12px">Aparência</h2><div class="sper" role="group" aria-label="Tema">${o.map(([v,l])=>`<button type="button" class="seg${t===v?' on':''}" data-act="theme" data-id="${v}" aria-pressed="${t===v}">${l}</button>`).join('')}</div></div><div class="card"><h2>Seus dados</h2>${syCard()}</div>`}
+ return `<div class="card hasinfo">${infoBtn('tema','Aparência')}<h2 style="margin-bottom:12px">Aparência</h2><div class="sper" role="group" aria-label="Tema">${o.map(([v,l])=>`<button type="button" class="seg${t===v?' on':''}" data-act="theme" data-id="${v}" aria-pressed="${t===v}">${l}</button>`).join('')}</div></div><div class="card"><h2>Seus dados</h2>${syCard()}</div><div class="card"><h2>Backup</h2><p class="mut" style="margin:4px 0 0">Salve um arquivo com todos os seus dados para guardar onde quiser. Para voltar a ele, use Restaurar backup: o arquivo substitui os dados atuais.</p><div class="fl" style="margin-top:12px"><button class="btn g s" data-act="bkout">Salvar backup</button><button class="btn g s" data-act="bkin">Restaurar backup</button></div></div>`}
 
 /* ===== Vários ciclos de estudo (um por concurso) ===== */
 const PEN='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>';
@@ -1007,6 +1007,18 @@ function syCard(){const st={on:'Sincronizado',saving:'Sincronizando…',init:'Co
  if(!fbOn())return '<p class="mut" style="margin:4px 0 0">Seus dados ficam salvos neste navegador. A sincronização entre aparelhos ainda não foi configurada.</p>';
  if(SY.user)return `<p class="mut" style="margin:4px 0 0">Conectado como <b>${esc(SY.user.email||SY.user.name)}</b>. Seus dados sincronizam automaticamente entre os aparelhos em que você entrar.</p><div class="mut" id="systat" role="status" style="font-size:.85rem;margin-top:6px">${st}</div>${err}<div class="fl" style="margin-top:12px"><button class="btn g s" data-act="fblogout">Sair</button></div>`;
  return `<p class="mut" style="margin:4px 0 0">Seus dados ficam salvos neste navegador. Entre com sua conta Google para acessá-los de qualquer computador ou celular.</p>${err}<div class="fl" style="margin-top:12px"><button class="btn" data-act="fblogin">Entrar com Google</button></div>`}
+/* Backup em arquivo: baixa o estado inteiro em .json; restaurar valida como syApply e pode ser desfeito. */
+function bkOut(){try{const b=new Blob([JSON.stringify(S,null,1)],{type:'application/json'}),u=URL.createObjectURL(b),l=document.createElement('a');
+ l.href=u;l.download='ciclo-de-estudos-backup-'+today()+'.json';document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);toast('Backup salvo')}
+ catch(x){toast('Não foi possível salvar o backup')}}
+function bkIn(){const f=document.createElement('input');f.type='file';f.accept='.json,application/json';
+ f.onchange=()=>{const file=f.files&&f.files[0];if(!file)return;const r=new FileReader();
+  r.onload=()=>{let o;try{o=JSON.parse(r.result)}catch(x){o=null}
+   if(!o||!Array.isArray(o.subjects)||!o.subjects.every(x=>x&&typeof x==='object'&&x.id)||(o.sessions!==undefined&&!Array.isArray(o.sessions))){toast('Este arquivo não é um backup do Ciclo de Estudos');return}
+   const prev=S,snap=JSON.stringify(S);try{S=Object.assign(seed(),o);norm()}catch(x){S=prev;toast('Não foi possível ler este backup');return}
+   pushU('Backup restaurado',snap);save();render();toast('Backup restaurado','undo','Desfazer')};
+  r.onerror=()=>toast('Não foi possível ler o arquivo');r.readAsText(file)};
+ f.click()}
 if(typeof document!=='undefined'){document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&SY.dirty&&SY.status==='on'){clearTimeout(SY.timer);syPush()}})}
 const ask=(k,b)=>{ui.undoNext={snap:JSON.stringify(S),msg:UNDO_MSG[k.split(':')[0]]||'Ação concluída'};return true};
 const sameIt=(a,b)=>a.kind===b.kind&&a.url===b.url&&a.title===b.title;
@@ -1232,6 +1244,8 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='wskip'){ui.wskip=true;try{localStorage.setItem(WSKIP,'1')}catch(x){}render();return}
  if(a==='fblogin'){fbLogin();return}
  if(a==='fblogout'){fbLogout();return}
+ if(a==='bkout'){bkOut();return}
+ if(a==='bkin'){bkIn();return}
  if(a==='rvcfg'){ui.rvcfg=true;ui.rvcfgmsg=null;ui.focus='rvci'}
  if(a==='rvcfgx'){ui.rvcfg=null;ui.rvcfgmsg=null}
  if(a==='info')ui.info=p;
