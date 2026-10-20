@@ -159,7 +159,7 @@ body:not(.wide) #app{max-width:940px}
 .sidenav button,.tabbar button{font:inherit;background:none;border:0;cursor:pointer;color:var(--mut);font-weight:600}
 .sidenav button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:11px 12px;border-radius:12px;transition:background .15s,color .15s}
 .sidenav button:hover{background:var(--track);color:var(--ink)}
-.sidenav button[aria-current=page],.tabbar button[aria-current=page]{color:var(--ac)}
+.sidenav button[aria-current=page],.tabbar button[aria-current=page],.sidenav button[data-nav=pl].on,.tabbar button[data-nav=pl].on{color:var(--act)}
 .sidenav button[aria-current=page]{background:color-mix(in srgb,var(--ac) 12%,var(--card))}
 .sidenav svg,.tabbar svg{width:20px;height:20px;flex:none}
 .sidenav .navend{margin-top:auto}
@@ -193,7 +193,7 @@ input[type=checkbox]{border-radius:4px}
 .tag{background:color-mix(in srgb,var(--ac) 11%,var(--card));color:var(--act);border-radius:8px;font-weight:700}
 .tag.del{background:color-mix(in srgb,var(--bad) 12%,transparent);color:var(--bad)}
 .seg{border:0;background:var(--track);color:var(--mut);padding:7px 16px}
-.seg.on{background:color-mix(in srgb,var(--ac) 14%,var(--card));color:var(--act)}
+.seg.on{background:var(--ac);color:var(--on-ac)}
 .plansw{border:0;background:var(--card);box-shadow:var(--sh)}
 .dd{border-radius:14px;box-shadow:var(--sh-pop);border-color:var(--line)}
 .gbox{border-radius:14px}
@@ -310,6 +310,10 @@ input[type=checkbox]{border-radius:4px}
 .c2a .rvrem{margin:12px 0 0;padding:10px 16px}.c2a .rvrem b{font-size:.95rem}.c2a .rvrem .lnk{padding:6px 0}
 .recent .rlist.rshort{max-height:none;overflow:visible;margin-right:0;padding-right:0}
 @media (max-width:600px){.ringwrap .now{order:-1}.ringwrap{gap:14px}.ringwrap svg{width:170px;height:170px}}
+.sidenav button[data-nav=pl].on{background:color-mix(in srgb,var(--ac) 12%,var(--card))}
+.tag.qtag{background:var(--track);color:var(--mut)}
+input::placeholder,textarea::placeholder{color:var(--mut);opacity:1}
+@media (pointer:coarse){.btn.s,.plansw{position:relative}.btn.s::after,.plansw::after{content:'';position:absolute;inset:-6px 0}.rpick{padding:11px 0;margin:-11px 0}input[type=date],input[type=search]{min-height:44px}}
 </style>
 </head>
 <body>
@@ -728,13 +732,13 @@ function viewRev(){
  const when=o=>o.st==='disponivel'||o.st==='andamento'?`Disponível desde ${fd(o.availDate)}`:o.st==='concluido'?'Revisado em '+(S.reviewed[o.g.id]==='-'?'—':fd(S.reviewed[o.g.id])):(o.closed?`Disponível em ${fd(o.availDate)} · faltam ${o.missing} dia${o.missing===1?'':'s'}`:`Disponível ${rvWait()} dias corridos após o último dia do grupo · faltam ${o.g.len-o.g.dates.length} dia${o.g.len-o.g.dates.length===1?'':'s'} de estudo para fechar`);
  const av=I.list.filter(o=>o.st==='disponivel'),fu=I.list.filter(o=>o.st==='futuro'),dn=I.list.filter(o=>o.st==='concluido');
  const nx=rgNext(I),nxo=I.list.find(x=>x.g.id===nx);
- const avc=av.map(o=>`<div class="rga"><div class="rgal"><div class="rgan"><b>${rgLabel(o)}</b><button class="x rgeye" data-act="rgview" data-id="${o.g.id}" title="Ver disciplinas e tópicos" aria-label="Ver disciplinas e tópicos do ${rgLabel(o)}">${EYEP}</button></div><div class="mut rgm">Dias válidos de estudo ${o.start}–${o.start+o.g.dates.length-1}${o.g.len!==N?' · intervalo '+o.g.len:''}</div><div class="mut rgw">${hasC(o)?when(o):'Sem tópicos registrados nestes dias.'}</div></div><div class="rgar"><span class="rgtg"><span class="tag">Disponível</span></span>${!hasC(o)?'':o.g.id===nx?`<button class="btn s" data-act="rvstart" data-id="${o.g.id}">Iniciar</button>`:`<button class="btn s" disabled title="Conclua a revisão do ${nxo?rgLabel(nxo):'grupo anterior'} primeiro">Iniciar</button>`}</div>${hasC(o)&&o.g.id!==nx&&nxo?`<div class="mut rgwait">Conclua a revisão do ${rgLabel(nxo)} primeiro.</div>`:''}</div>`);
+ const avc=av.map(o=>`<div class="rga"><div class="rgal"><div class="rgan"><b>${rgLabel(o)}</b><button class="x rgeye" data-act="rgview" data-id="${o.g.id}" title="Ver disciplinas e tópicos" aria-label="Ver disciplinas e tópicos do ${rgLabel(o)}">${EYEP}</button></div><div class="mut rgm">Dias válidos de estudo ${o.start}–${o.start+o.g.dates.length-1}${o.g.len!==N?' · intervalo '+o.g.len:''}</div><div class="mut rgw">${hasC(o)?when(o):'Sem tópicos registrados nestes dias.'}</div></div><div class="rgar"><span class="rgtg"><span class="tag${o.g.id===nx||!nxo?'':' qtag'}">${o.g.id===nx||!nxo?'Disponível':'Na fila'}</span></span>${!hasC(o)?'':o.g.id===nx?`<button class="btn s" data-act="rvstart" data-id="${o.g.id}">Iniciar</button>`:''}</div>${hasC(o)&&o.g.id!==nx&&nxo?`<div class="mut rgwait">Começa depois da revisão do ${rgLabel(nxo)}.</div>`:''}</div>`);
  const fuc=fu.map(o=>`<div class="card rgc"><div>${head(o)}</div><div class="mut rgw">${when(o)}</div>${body(o)}</div>`).join('');
  const dnc=dn.map(o=>`<div class="card rgc"><div>${head(o)}</div><div class="mut rgw">${when(o)}</div></div>`).join('');
  const fu0=fu[0],top=nxo?avc[av.indexOf(nxo)]:'',rest=avc.filter((x,i)=>av[i]!==nxo).join('');
  const nxt=`<div class="card rvnext"><h2>Próxima revisão</h2>${top||(fu0?`<div class="rga"><div class="rgal"><div class="rgan"><b>${rgLabel(fu0)}</b><span class="tag">${typeof TAG.futuro==='function'?TAG.futuro(fu0):''}</span></div><div class="mut rgw">${when(fu0)}</div></div></div>`:av.length?'<div class="empty">Os grupos disponíveis não têm tópicos registrados.</div>':'<div class="empty">Nenhum grupo ainda. Eles se formam conforme você estuda.</div>')}</div>`;
  const cal=S.rcOpen?rvCal(I):`<div class="card pvbox"><div class="pvh" data-act="rctog"><button class="x mtog" data-act="rctog" aria-expanded="false" aria-label="Mostrar calendário de revisões">${CHEV}</button><h2 class="pvt">Calendário de revisões</h2></div></div>`;
- return nxt+(rest?`<div class="card"><h2>Também disponíveis</h2>${rest}</div>`:'')+`${fu.length>(top?0:1)?`<h2 class="sec">Revisões futuras</h2>${top?fuc:fu.slice(1).map(o=>`<div class="card rgc"><div>${head(o)}</div><div class="mut rgw">${when(o)}</div>${body(o)}</div>`).join('')}`:''}${dn.length?`<h2 class="sec">Concluídas</h2>${dnc}`:''}`+cal;
+ return nxt+(rest?`<div class="card"><h2>Na fila</h2>${rest}</div>`:'')+`${fu.length>(top?0:1)?`<h2 class="sec">Revisões futuras</h2>${top?fuc:fu.slice(1).map(o=>`<div class="card rgc"><div>${head(o)}</div><div class="mut rgw">${when(o)}</div>${body(o)}</div>`).join('')}`:''}${dn.length?`<h2 class="sec">Concluídas</h2>${dnc}`:''}`+cal;
 }
 const MINUS='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>';
 const nmAvail=()=>S.subjects.filter(s=>!s.of&&s.hid&&s.ed===S.sel.af).length;
@@ -872,7 +876,7 @@ function render0(){
  if(!S.edit&&ui.edPrev){if(S.subjects.some(x=>x.id===ui.edPrev.subj))S.sel.subj=ui.edPrev.subj;ui.edPrev=null}
  norm();
  if(tab==='rev')setMode(S.rv?'review':'study');else if(tab==='ciclo')setMode('study');
- document.querySelectorAll('nav button[data-tab]').forEach(b=>{if(b.dataset.tab===tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+ document.querySelectorAll('nav button[data-tab]').forEach(b=>{if(b.dataset.tab===tab&&!ui.pl)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});document.querySelectorAll('nav [data-nav=pl]').forEach(b=>{b.classList.toggle('on',!!ui.pl);b.setAttribute('aria-haspopup','dialog');b.setAttribute('aria-expanded',String(!!ui.pl))});
  {const pl=S.plans.find(x=>x.id===S.plan)||{};const SUBH=`<button class="plansw${ui.pl?' on':''}" data-act="plopen" title="Trocar ou criar plano de estudos" aria-label="Trocar ou criar plano de estudos"><b>${esc(pl.name||'')}</b><span class="mut">${S.rv?'Revisão · '+esc(S.rv.lbl||''):((S.set||1)>1?'Rodada '+S.set+' · ':'')+'Ciclo '+S.cycle}</span>${CHEV}</button><button class="x gear${tab==='bk'?' on':''}" data-tab="bk" title="Configurações" aria-label="Configurações">${GEAR}</button>`;[$('sub'),$('sub2')].forEach(e=>{if(e)e.innerHTML=SUBH})}
  document.body.classList.toggle('wide',tab==='ciclo');$('app').innerHTML=tab==='ciclo'?viewCiclo():tab==='rev'?viewRev():tab==='reg'?viewReg():tab==='st'?viewStats():viewConfig();
  $('modal').innerHTML=(ui.pl?plansHtml()+(ui.pdadd&&ui.pdd?pdAddHtml():''):'')+(ui.ed&&(tab==='ciclo'||(tab==='rev'&&S.rv))?editHtml()+(ui.addm?newMatCard():''):'')+(S.sx&&!S.edit?sessCard():'')+(edPop()?sessCard():'')+(ui.rview?regViewHtml():'')+(ui.rgview&&tab==='rev'?rgPopHtml():'')+(ui.rvcfg&&tab==='rev'?rvcfgHtml():'')+(ui.info?infoHtml():'')+(ui.sw?modalHtml():'');if(tipEl)tipEl.style.display='none';
