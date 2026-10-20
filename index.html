@@ -307,6 +307,9 @@ input[type=checkbox]{border-radius:4px}
 .rvch{font-size:.82rem;margin-top:8px}.rvcfgdlg .rvcf{display:flex;flex-direction:column;align-items:flex-start;gap:6px}.rvcfgdlg .rvcf>span{order:-1;font-size:.9rem}.rvcfgdlg .rvcf input{width:96px}.rvcfgdlg .rvcf+.rvcf{margin-top:12px}
 .rvrem .mut{color:color-mix(in srgb,var(--mut) 75%,var(--ink))}
 .rpick{display:block;min-width:0;background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer;max-width:100%}.lsm{font-size:.85rem;padding:6px 4px;color:var(--mut)}.lsm:hover{color:var(--act)}
+.c2a .rvrem{margin:12px 0 0;padding:10px 16px}.c2a .rvrem b{font-size:.95rem}.c2a .rvrem .lnk{padding:6px 0}
+.recent .rlist.rshort{max-height:none;overflow:visible;margin-right:0;padding-right:0}
+@media (max-width:600px){.ringwrap .now{order:-1}.ringwrap{gap:14px}.ringwrap svg{width:170px;height:170px}}
 </style>
 </head>
 <body>
@@ -586,9 +589,9 @@ function viewCiclo(){
  if(rev||(ui.view&&ui.view>=S.cycle))ui.view=null;
  if(ui.view)return cnav()+viewCicloPast(ui.view);
  if(!S.edit)syncSel();
- const A=actives(),cur=current();let h=(rev?'':cnav())+(ui.note?`<div class="mut" style="text-align:center;margin-bottom:10px">${esc(ui.note)}</div>`:'');
+ const A=actives(),cur=current();let rvBan='',h=(rev?'':cnav())+(ui.note?`<div class="mut" style="text-align:center;margin-bottom:10px">${esc(ui.note)}</div>`:'');
  
- if(!rev&&!PAST&&cur){const AV=rgInfo().list.filter(o=>o.st==='disponivel'&&rgTopics(o.g).size);if(AV.length||S.rv)h+=`<div class="done rvrem"><div><b>${S.rv?'Revisão em andamento':'Revisão do '+rgLabel(AV.find(o=>o.g.id===rgNext())||AV[0])+' disponível'}</b><div class="mut">${S.rv?'Continue de onde parou na aba Revisão.':'Ela corre em paralelo ao ciclo'+(AV.length>1?'; depois dela, mais '+(AV.length-1)+' grupo'+(AV.length>2?'s':'')+' na fila.':'.')}</div></div><button class="btn g" data-tab="rev">${S.rv?'Continuar revisão':'Ir para a revisão'}</button></div>`}
+ if(!rev&&!PAST&&cur){const AV=rgInfo().list.filter(o=>o.st==='disponivel'&&rgTopics(o.g).size);if(AV.length||S.rv)rvBan=`<div class="done rvrem"><div><b>${S.rv?'Revisão em andamento':'Revisão do '+rgLabel(AV.find(o=>o.g.id===rgNext())||AV[0])+' disponível'}</b><div class="mut">${S.rv?'Continue de onde parou na aba Revisão.':'Ela corre em paralelo ao ciclo'+(AV.length>1?'; depois dela, mais '+(AV.length-1)+' grupo'+(AV.length>2?'s':'')+' na fila.':'.')}</div></div><button class="lnk" data-tab="rev">${S.rv?'Continuar revisão':'Ir para a revisão'} ›</button></div>`}
  if(!cur){
   h+=rev?`<div class="done"><div><b>${A.length?'Revisão concluída.':'Nada para revisar.'}</b><div class="mut">${A.length?'Você cumpriu todas as metas desta revisão.':'Os grupos escolhidos não têm tópicos registrados.'}</div></div><button class="btn" data-act="rvend">Concluir revisão</button></div>`:''}
  let info='';const nw=A.find(x=>x.id===selId())||cur;
@@ -604,7 +607,7 @@ function viewCiclo(){
  h+=`<div class="card"><div class="chead"><h2>${rev?'Revisão':'Disciplinas'}</h2>${S.edit?'':'<button class="btn g s" data-act="edopen">Editar ciclo</button>'}</div>${A.map(s=>{const p=prog(s.id),c=col(s),sl=selId()===s.id;return `<div class="row srow${sl?' cur':''}"><div class="grow"${S.edit?'':` data-act="pickrow" data-id="${s.id}"`}><div class="rtop"><span class="rname"><span class="dot" style="background:${c}"></span>${S.edit?`<span class="rnt" title="${esc(nm(s))}">${esc(nm(s))}</span>`:`<button class="rnt rpick" data-act="pickrow" data-id="${s.id}" title="${esc(nm(s))}" aria-pressed="${sl}">${esc(nm(s))}</button>`}</span>${rowCtl(s)}</div><div class="bar"><i id="rbar-${s.id}" style="width:${barW(s)}%;background:${barC(s)}"></i></div></div></div>`}).join('')}</div>`;
  if(rev)h+=`<div class="fl"><button class="btn g" data-act="rvcancel">Cancelar revisão</button></div>`;
  if(rev)return pre+ringC+h;
- return pre+`<div class="c2">${kpisHtml()}<div class="c2a">${ringC}</div><div class="c2b">${h}</div><div class="c2c">${recentCard()}</div></div>`;
+ return pre+`<div class="c2">${kpisHtml()}<div class="c2a">${ringC}${rvBan}</div><div class="c2b">${h}</div><div class="c2c">${recentCard()}</div></div>`;
 }
 const WD=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
 function sesRow(k,r,o){o=o||{};const f=r[0],s=subjAny(f.subj),t0=r.reduce((a,x)=>a+x.min,0);
@@ -616,13 +619,13 @@ function sesRow(k,r,o){o=o||{};const f=r[0],s=subjAny(f.subj),t0=r.reduce((a,x)=
  return `<div class="ritem${o.flush?' flush':''}"><div class="grow"><div class="rsub" style="--sc:${s?col(s):'var(--mut)'};color:color-mix(in srgb,var(--sc) 45%,var(--ink))">${esc(s?nm(s):'Disciplina removida')}</div>${tps.length?`<div class="rtps">${tps.join('')}</div>`:''}<div class="rmeta"><span>${fmt(t0)}</span>${o.date&&f.date?`<span class="tag">${fd(f.date)}</span>`:''}<span class="tag">${f.rid||f.review?'revisão':'ciclo '+f.cycle}</span></div>${hop?NL.map(z=>`<div class="nvw"><b>${esc(z.lb)}</b>\n${esc(z.nt)}</div>`).join(''):''}</div><div class="hic">${NL.length?`<button class="x clip on" data-act="hnote" data-id="${k}" title="${NL.length===1?'1 anotação':NL.length+' anotações'}" aria-label="Ver anotações" aria-expanded="${hop?'true':'false'}">${NOTEI}</button>`:''}${s?`<button class="x" data-act="edit" data-id="${k}" title="Editar registro" aria-label="Editar registro">${PEN}</button>`:''}${o.del?`<button class="x" data-act="delreg" data-id="${k}" title="Excluir" aria-label="Excluir registro">${TRASH}</button>`:''}</div></div>`}
 function recentCard(){
  const map=new Map();S.sessions.filter(x=>!PAST||(x.cycle===S.cycle&&!x.rid&&!x.review&&(x.set||1)===(S.set||1))).forEach(x=>{const k=x.ses||x.id;if(!map.has(k))map.set(k,[]);map.get(k).push(x)});
- const L=[...map.entries()].reverse().sort((a,b)=>(b[1][0].date||'').localeCompare(a[1][0].date||'')).slice(0,30);
+ const L=[...map.entries()].reverse().sort((a,b)=>(b[1][0].date||'').localeCompare(a[1][0].date||'')).slice(0,PAST?30:3);
  const head=`<div class="chead"><h2>${PAST?'Estudos do ciclo':'Últimos estudos'}</h2>${L.length?'<button class="btn g s" data-tab="reg">Ver histórico</button>':''}</div>`;
  if(!L.length)return `<div class="card recent">${head}<div class="empty">Nenhum estudo registrado ainda. Inicie o cronômetro de uma disciplina para começar.</div></div>`;
  let out='',last=null;
  L.forEach(([k,r])=>{const f=r[0],d=f.date||'';if(d!==last){last=d;const dt=d?new Date(d+'T12:00:00'):null;out+=`<div class="rday">${dt?WD[dt.getDay()]+' '+d.slice(8,10)+'/'+d.slice(5,7)+'/'+d.slice(2,4):'Sem data'}</div>`}
   out+=sesRow(k,r,{lim:3})});
- return `<div class="card recent">${head}<div class="rlist">${out}</div></div>`;
+ return `<div class="card recent">${head}<div class="rlist${PAST?'':' rshort'}">${out}</div></div>`;
 }
 
 /* ===== Revisão por dias válidos de estudo ===== */
