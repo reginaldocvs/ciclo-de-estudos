@@ -366,7 +366,9 @@ const load=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return nu
 const seed=()=>({subjects:['01','02','03','04'].map(n=>({id:uid(),name:'Disciplina '+n,goal:90,topics:[]})),cycle:1,type:'regular',progress:{},sessions:[],checked:{},reviewEvery:5,sinceReview:0,regDone:[],reviewSrc:[],completed:0,sel:{subj:null,topic:''},timer:{running:false,start:0,acc:0}});
 let S=load(KEY),tab='ciclo';const ui={open:new Set()};
 if(!S||!S.subjects){const o=load('ciclo-estudos-v1');S=seed();if(o&&o.subjects){S.subjects=o.subjects.map(s=>({id:s.id,name:s.name,goal:s.goal,topics:[]}));S.cycle=o.cycle||1;S.progress=o.progress||{};S.completed=Math.max(S.cycle-1,0)}}
-const save=()=>{if(window.__ro)return;const j=JSON.stringify(S);try{localStorage.setItem(KEY,j)}catch(e){}try{if(typeof syMark==='function'&&j!==SY.lastJson)syMark()}catch(e){}};
+/* LJ = último JSON que esta aba gravou ou leu em KEY; serve para notar gravações de outra aba. */
+let LJ=null;try{LJ=localStorage.getItem(KEY)}catch(e){}
+const save=()=>{if(window.__ro)return;const j=JSON.stringify(S);try{localStorage.setItem(KEY,j);LJ=j}catch(e){}try{if(typeof syMark==='function'&&j!==SY.lastJson)syMark()}catch(e){}};
 const CTX=['progress','timer','paused','sx','draft','type','reviewSrc'],SELK=['subj','topic','groups','mt','mtAuto','mtMs'];
 const layOf=()=>S.subjects.map(s=>({id:s.id,goal:s.goal,of:s.of||null,...(s.of&&s.off?{off:true}:{})}));
 function applyLay(l){if(!l)return;const bases=S.subjects.filter(s=>!s.of),by={};bases.forEach(b=>by[b.id]=b);const out=[],used=new Set();
@@ -954,7 +956,7 @@ async function syFetch(m){const parts=[];for(let i=0;i<m.n;i++){const s=await sy
 function syApply(json,ts){const prev=S;let o;try{o=JSON.parse(json)}catch(x){return false}
  if(!o||!Array.isArray(o.subjects)||!o.subjects.every(x=>x&&typeof x==='object'&&x.id)||(o.sessions!==undefined&&!Array.isArray(o.sessions)))return false;
  try{S=Object.assign(seed(),o);norm()}catch(x){S=prev;return false}
- try{localStorage.setItem(KEY+'-bak',JSON.stringify(prev));localStorage.setItem(KEY,JSON.stringify(S))}catch(x){}
+ try{localStorage.setItem(KEY+'-bak',JSON.stringify(prev));const j=JSON.stringify(S);localStorage.setItem(KEY,j);LJ=j}catch(x){}
  UST.length=0;RST.length=0;SY.lastTs=ts;SY.lastJson=json;SY.dirty=false;syMeta();if(!['ciclo','rev','reg','st','bk'].includes(tab))tab='ciclo';render();return true}
 const localHasData=()=>S.sessions.length>0||(S.editais||[]).length>1||S.subjects.some(s=>s.topics&&s.topics.length);
 /* Dados diferentes no navegador e na conta: vence a versão mais recente, sem perguntar. */
@@ -1023,6 +1025,23 @@ function bkIn(){const f=document.createElement('input');f.type='file';f.accept='
   r.onerror=()=>toast('Não foi possível ler o arquivo');r.readAsText(file)};
  f.click()}
 if(typeof document!=='undefined'){document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&SY.dirty&&SY.status==='on'){clearTimeout(SY.timer);syPush()}})}
+/* ===== Várias abas no mesmo navegador =====
+   Quando outra aba grava, esta adota os dados dela na hora, para nunca regravar uma versão velha
+   (o que apagaria registros feitos lá ou deixaria registrar a mesma sessão duas vezes).
+   O que está digitado nos campos, o foco e o cursor são preservados no redesenho. */
+function tabAdopt(j){if(j==null||j===LJ)return;let o;try{o=JSON.parse(j)}catch(x){return}
+ if(!o||!Array.isArray(o.subjects)||!o.subjects.every(x=>x&&typeof x==='object'&&x.id))return;
+ const fk=el=>{if(el.id)return '#'+CSS.escape(el.id);if(!el.name)return null;const f=el.closest('form[data-f]');return (f?'form[data-f="'+CSS.escape(f.dataset.f)+'"] ':'')+'[name="'+CSS.escape(el.name)+'"]'};
+ const vals=[];document.querySelectorAll('#app input,#app textarea,#app select,#modal input,#modal textarea,#modal select').forEach(el=>{const k=fk(el);if(k)vals.push([k,el.type==='checkbox'||el.type==='radio'?{c:el.checked,v:el.value}:{v:el.value}])});
+ const ae=document.activeElement,ak=ae&&ae!==document.body&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)?fk(ae):null;let car=null;try{car=ae&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null}catch(x){}
+ const prev=S;try{S=Object.assign(seed(),o);norm()}catch(x){S=prev;return}
+ LJ=j;UST.length=0;RST.length=0;hideUndo();render();
+ vals.forEach(([k,o])=>{let el=null;try{el=document.querySelector(k)}catch(x){}if(!el)return;if('c' in o){if(el.value===o.v)el.checked=o.c}else if(el.value!==o.v&&el.type!=='file')el.value=o.v});
+ if(ak){let el=null;try{el=document.querySelector(ak)}catch(x){}if(el&&document.activeElement!==el){el.focus({preventScroll:true});if(car&&el.setSelectionRange){try{el.setSelectionRange(car[0],car[1])}catch(x){}}}}}
+addEventListener('storage',e=>{if(e.key===KEY&&e.storageArea===localStorage)tabAdopt(e.newValue)});
+/* Aba congelada pelo navegador pode perder o aviso: confere de novo ao voltar a ela. */
+const tabCheck=()=>{try{tabAdopt(localStorage.getItem(KEY))}catch(x){}};
+addEventListener('focus',tabCheck);if(typeof document!=='undefined')document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')tabCheck()});
 const ask=(k,b)=>{ui.undoNext={snap:JSON.stringify(S),msg:UNDO_MSG[k.split(':')[0]]||'Ação concluída'};return true};
 const sameIt=(a,b)=>a.kind===b.kind&&a.url===b.url&&a.title===b.title;
 const fd=s=>s?String(s).split('-').reverse().join('/'):'';
