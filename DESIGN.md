@@ -94,6 +94,10 @@ typography:
     fontFamily: "Google Sans Flex, Google Sans, Roboto, system-ui, sans-serif"
     fontSize: "11px"
     fontWeight: 400
+  calendar-legend-min:
+    fontFamily: "Google Sans Flex, Google Sans, Roboto, system-ui, sans-serif"
+    fontSize: "9px"
+    fontWeight: 400
 rounded:
   xs: "4px"
   s: "8px"
