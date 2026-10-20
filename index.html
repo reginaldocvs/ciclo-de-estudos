@@ -672,7 +672,7 @@ function cycleEnd(){const ss=CS().filter(x=>x.cycle===S.cycle&&!x.rid&&!x.review
 function viewCiclo(){
  const rev=S.type==='review';
  if(vset()){ui.view=Math.min(ui.view||rodMax(vset()),rodMax(vset()));return cnav()+viewCicloPast(ui.view)}
- if(!rev&&!inCycle().length)return `<div class="card empty"><b>Seu ciclo ainda está vazio.</b><div class="mut">Adicione as disciplinas que você vai estudar e defina uma meta de tempo para cada uma.</div><div style="margin-top:12px"><button class="btn" data-act="edopen">Montar meu ciclo</button></div></div>`;
+ if(!rev&&!inCycle().length)return `<div class="card empty"><b>Seu ciclo ainda está vazio.</b><div class="mut">Adicione as disciplinas que você vai estudar e defina uma meta de tempo para cada uma.</div><div style="margin-top:12px">${S.subjects.some(x=>!x.of)?'<button class="btn" data-act="edopen">Montar meu ciclo</button>':`<button class="btn" data-act="pled" data-id="${esc(S.plan)}">Monte seu plano</button>`}</div></div>`;
  if(rev||(ui.view&&ui.view>=S.cycle))ui.view=null;
  if(ui.view)return cnav()+viewCicloPast(ui.view);
  if(!S.edit)syncSel();
