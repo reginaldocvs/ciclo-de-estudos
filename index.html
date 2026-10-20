@@ -6,6 +6,14 @@
 <meta name="color-scheme" content="light dark">
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>Ciclo de Estudos</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#EEF8F9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B1A1D" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Ciclo">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 xmlns:xlink=%22http://www.w3.org/1999/xlink%22 viewBox=%220 0 512 512%22%3E %3Cdefs%3E %3Cstyle%3E .cls-1%7Bfill:url(%23linear-gradient-1)%7D .cls-2%7Bfill:%23d9ff6f%3Bstroke:%23d9ff6f%3Bstroke-width:14%3Bstroke-linejoin:round%7D .cls-3%7Bfill:%23ffffff%7D .cls-4%7Bfill:%23ffffff%3Bfill-opacity:0.85%7D .cls-5%7Bfill:none%3Bstroke:%23d9ff6f%3Bstroke-width:38%3Bstroke-linecap:round%3Bstroke-miterlimit:10%7D .cls-6%7Bfill:none%3Bstroke:%23ffffff%3Bstroke-width:38%3Bstroke-linecap:round%3Bstroke-miterlimit:10%7D .cls-7%7Bfill:none%3Bstroke:%23ffffff%3Bstroke-width:38%3Bstroke-linecap:round%3Bstroke-miterlimit:10%3Bopacity:0.8%7D .cls-8%7Bfill:none%3Bstroke:%23ffffff%3Bstroke-width:38%3Bstroke-linecap:round%3Bstroke-miterlimit:10%3Bopacity:0.6%7D %3C/style%3E %3ClinearGradient id=%22linear-gradient-1%22 x1=%220%22 y1=%220%22 x2=%22512%22 y2=%22512%22 gradientUnits=%22userSpaceOnUse%22%3E %3Cstop offset=%220%22 stop-color=%22%2354e1ef%22/%3E %3Cstop offset=%221%22 stop-color=%22%233fa9bb%22/%3E %3C/linearGradient%3E %3C/defs%3E %3Cg id=%22Layer_1%22 data-name=%22Layer 1%22%3E %3Cpath d=%22M112 0 L400 0 C461.856 0 512 50.144 512 112 L512 400 C512 461.856 461.856 512 400 512 L112 512 C50.144 512 0 461.856 0 400 L0 112 C0 50.144 50.144 0 112 0 Z%22 class=%22cls-1%22/%3E %3Cpath d=%22M155 91 L228 100 L199 167 Z%22 class=%22cls-2%22/%3E %3Cg%3E %3Cpath d=%22M248 216 C222 200 192 198 170 206 L170 302 C194 294 224 296 248 312 Z%22 class=%22cls-3%22/%3E %3Cpath d=%22M264 216 C290 200 320 198 342 206 L342 302 C318 294 288 296 264 312 Z%22 class=%22cls-4%22/%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cpath d=%22M113.561 212.48 C125.732 172.592 154.2 139.812 191.206 121.899%22 class=%22cls-5%22/%3E %3Cpath d=%22M299.024 113.41 C346.864 127.825 384.554 165.658 398.771 213.583%22 class=%22cls-6%22/%3E %3Cpath d=%22M398.504 299.307 C384.134 346.655 346.813 384.018 299.492 398.448%22 class=%22cls-7%22/%3E %3Cpath d=%22M213.623 398.783 C165.243 384.446 127.142 346.189 113.023 297.716%22 class=%22cls-8%22/%3E %3C/g%3E %3C/svg%3E ">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <style>
@@ -314,6 +322,8 @@ input[type=checkbox]{border-radius:4px}
 .tag.qtag{background:var(--track);color:var(--mut)}
 input::placeholder,textarea::placeholder{color:var(--mut);opacity:1}
 @media (pointer:coarse){.btn.s,.plansw{position:relative}.btn.s::after,.plansw::after{content:'';position:absolute;inset:-6px 0}.rpick{padding:11px 0;margin:-11px 0}input[type=date],input[type=search]{min-height:44px}}
+.wel{width:min(92vw,380px);padding:28px 24px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}.wel img{border-radius:16px}.wel h2{margin:4px 0 0;font-size:1.45rem}.wel p{margin:0 0 8px;color:var(--mut);line-height:1.5}.wel .btn{margin-top:4px}.welft{font-size:.85rem}.welerr{color:var(--bad);font-size:.85rem}
+.nsync{display:flex;align-items:center;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;font-size:.85rem;color:var(--mut);border:1px dashed var(--line);border-radius:12px;padding:4px 14px;margin-bottom:12px}.nsync .lnk{padding:8px 0}
 </style>
 </head>
 <body>
@@ -593,7 +603,7 @@ function viewCiclo(){
  if(rev||(ui.view&&ui.view>=S.cycle))ui.view=null;
  if(ui.view)return cnav()+viewCicloPast(ui.view);
  if(!S.edit)syncSel();
- const A=actives(),cur=current();let rvBan='',h=(rev?'':cnav())+(ui.note?`<div class="mut" style="text-align:center;margin-bottom:10px">${esc(ui.note)}</div>`:'');
+ const A=actives(),cur=current();let rvBan='',h=nsyncBar()+(rev?'':cnav())+(ui.note?`<div class="mut" style="text-align:center;margin-bottom:10px">${esc(ui.note)}</div>`:'');
  
  if(!rev&&!PAST&&cur){const AV=rgInfo().list.filter(o=>o.st==='disponivel'&&rgTopics(o.g).size);if(AV.length||S.rv)rvBan=`<div class="done rvrem"><div><b>${S.rv?'Revisão em andamento':'Revisão do '+rgLabel(AV.find(o=>o.g.id===rgNext())||AV[0])+' disponível'}</b><div class="mut">${S.rv?'Continue de onde parou na aba Revisão.':'Ela corre em paralelo ao ciclo'+(AV.length>1?'; depois dela, mais '+(AV.length-1)+' grupo'+(AV.length>2?'s':'')+' na fila.':'.')}</div></div><button class="lnk" data-tab="rev">${S.rv?'Continuar revisão':'Ir para a revisão'} ›</button></div>`}
  if(!cur){
@@ -879,7 +889,7 @@ function render0(){
  document.querySelectorAll('nav button[data-tab]').forEach(b=>{if(b.dataset.tab===tab&&!ui.pl)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});document.querySelectorAll('nav [data-nav=pl]').forEach(b=>{b.classList.toggle('on',!!ui.pl);b.setAttribute('aria-haspopup','dialog');b.setAttribute('aria-expanded',String(!!ui.pl))});
  {const pl=S.plans.find(x=>x.id===S.plan)||{};const SUBH=`<button class="plansw${ui.pl?' on':''}" data-act="plopen" title="Trocar ou criar plano de estudos" aria-label="Trocar ou criar plano de estudos"><b>${esc(pl.name||'')}</b><span class="mut">${S.rv?'Revisão · '+esc(S.rv.lbl||''):((S.set||1)>1?'Rodada '+S.set+' · ':'')+'Ciclo '+S.cycle}</span>${CHEV}</button><button class="x gear${tab==='bk'?' on':''}" data-tab="bk" title="Configurações" aria-label="Configurações">${GEAR}</button>`;[$('sub'),$('sub2')].forEach(e=>{if(e)e.innerHTML=SUBH})}
  document.body.classList.toggle('wide',tab==='ciclo');$('app').innerHTML=tab==='ciclo'?viewCiclo():tab==='rev'?viewRev():tab==='reg'?viewReg():tab==='st'?viewStats():viewConfig();
- $('modal').innerHTML=(ui.pl?plansHtml()+(ui.pdadd&&ui.pdd?pdAddHtml():''):'')+(ui.ed&&(tab==='ciclo'||(tab==='rev'&&S.rv))?editHtml()+(ui.addm?newMatCard():''):'')+(S.sx&&!S.edit?sessCard():'')+(edPop()?sessCard():'')+(ui.rview?regViewHtml():'')+(ui.rgview&&tab==='rev'?rgPopHtml():'')+(ui.rvcfg&&tab==='rev'?rvcfgHtml():'')+(ui.info?infoHtml():'')+(ui.sw?modalHtml():'');if(tipEl)tipEl.style.display='none';
+ $('modal').innerHTML=(ui.pl?plansHtml()+(ui.pdadd&&ui.pdd?pdAddHtml():''):'')+(ui.ed&&(tab==='ciclo'||(tab==='rev'&&S.rv))?editHtml()+(ui.addm?newMatCard():''):'')+(S.sx&&!S.edit?sessCard():'')+(edPop()?sessCard():'')+(ui.rview?regViewHtml():'')+(ui.rgview&&tab==='rev'?rgPopHtml():'')+(ui.rvcfg&&tab==='rev'?rvcfgHtml():'')+(ui.info?infoHtml():'')+(ui.sw?modalHtml():'')+(welcomeOn()?welcomeHtml():'');if(tipEl)tipEl.style.display='none';
  [$('app'),$('modal')].forEach(c=>{if(c&&c.querySelectorAll)c.querySelectorAll('button[aria-label]:not([title])').forEach(b=>{b.title=b.getAttribute('aria-label')})});
  [$('app'),$('modal')].forEach(c=>{if(c&&c.querySelectorAll)c.querySelectorAll('form,input:not([type=checkbox]):not([type=file]):not([type=hidden]),textarea').forEach(x=>x.setAttribute('autocomplete','off'))});
  scrLoad(scr);ui.rtab=tab;fitKpis();
@@ -959,10 +969,16 @@ async function fbInit(){SY.status='off';if(!fbOn())return;
   auth.onAuthStateChanged(u=>{try{if(SY.unsub)SY.unsub()}catch(x){}SY.unsub=null;
    if(u){SY.db=firebase.firestore();SY.uid=u.uid;SY.user={name:u.displayName||'',email:u.email||''};SY.status='init';SY.err=null;sySub()}
    else{SY.db=null;SY.uid=null;SY.user=null;SY.status='off'}
-   if(tab==='bk')render()})}catch(e){SY.err=fbErr(e);render()}}
+   SY.ready=true;render()})}catch(e){SY.err=fbErr(e);render()}}
 const fbErr=e=>{const c=e&&e.code||'';return c==='auth/unauthorized-domain'?'Este endereço não está autorizado no Firebase (Authentication → Configurações → Domínios autorizados).':c==='auth/popup-closed-by-user'||c==='auth/cancelled-popup-request'?null:'Não foi possível entrar: '+(e&&e.message||c||'erro desconhecido')};
+/* Boas-vindas: aparelho sem conta e sem nenhum estudo registrado. A faixa lembra que os dados estão só aqui. */
+const WSKIP='ciclo-welcome-skip';
+const noAcct=()=>fbOn()&&SY.prov==='firebase'&&SY.ready&&!SY.user;
+const welcomeOn=()=>{if(!noAcct()||ui.wskip||S.sessions.length)return false;try{return localStorage.getItem(WSKIP)!=='1'}catch(e){return true}};
+const welcomeHtml=()=>`<div class="ov top"></div><div class="dlg top wel" role="dialog" aria-modal="true" aria-labelledby="welt"><img src="icons/icon-192.png" alt="" width="64" height="64"><h2 id="welt">Ciclo de Estudos</h2><p>Entre com sua conta Google para guardar seus estudos na nuvem e continuar de qualquer computador ou celular.</p>${SY.err?`<div role="alert" class="welerr">${esc(SY.err)}</div>`:''}<button class="btn full" data-act="fblogin">Entrar com Google</button><button class="lnk" data-act="wskip">Usar só neste aparelho</button><div class="mut welft">Você pode entrar depois em Configurações.</div></div>`;
+const nsyncBar=()=>noAcct()&&!welcomeOn()?'<div class="nsync" role="status"><span>Salvo só neste aparelho.</span><button class="lnk" data-act="fblogin">Entrar com Google</button></div>':'';
 function fbLogin(){if(!window.firebase)return;const p=new firebase.auth.GoogleAuthProvider();SY.err=null;
- firebase.auth().signInWithPopup(p).catch(e=>{const c=e&&e.code;if(c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment')firebase.auth().signInWithRedirect(p);else{SY.err=fbErr(e);render()}})}
+ firebase.auth().signInWithPopup(p).catch(e=>{const c=e&&e.code;if(c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment'||c==='auth/web-storage-unsupported'||c==='auth/internal-error')firebase.auth().signInWithRedirect(p);else{SY.err=fbErr(e);render()}})}
 function fbLogout(){if(!window.firebase)return;firebase.auth().signOut();SY.lastTs=0;SY.lastJson=null;SY.dirty=false;SY.localTs=0;syMeta()}
 /* Texto e botões do cartão "Seus dados" */
 const SYST={on:'Sincronizado',saving:'Sincronizando…',init:'Conectando…',err:'Sem conexão — tentando de novo'};
@@ -1189,6 +1205,7 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='pdtog'){const k='pd:'+p;if(ui.pde===p){pdClose()}else if(ui.open.has(k))ui.open.delete(k);else{pdOnly(p);ui.open.add(k)}}
  if(a==='pdedit'){if(ui.pde===p)pdClose();else{pdOnly(p);pdClose();ui.pde=p;ui.open.add('pd:'+p)}ui.pdn=null}
  if(a==='pdend')pdClose();
+ if(a==='wskip'){ui.wskip=true;try{localStorage.setItem(WSKIP,'1')}catch(x){}render();return}
  if(a==='fblogin'){fbLogin();return}
  if(a==='fblogout'){fbLogout();return}
  if(a==='rvcfg'){ui.rvcfg=true;ui.rvcfgmsg=null;ui.focus='rvci'}
@@ -1249,7 +1266,7 @@ document.addEventListener('focusout',e=>{const t=e.target;if(t.dataset&&'tm' in 
 document.addEventListener('focusin',e=>{const t=e.target;if(t.dataset&&'tm' in t.dataset)t.dataset.v=parseInt(t.value.replace(/\D/g,''),10)||0});
 document.addEventListener('input',e=>{if(e.target.dataset&&'nmi' in e.target.dataset){e.target.setCustomValidity('');S.sel.nn=e.target.value;S.sel.nnid=null;S.sel.nnall=false;if(ui.nmnote){ui.nmnote=null;const n=document.querySelector&&document.querySelector('.nmnote');if(n)n.remove()}return}const t=e.target;if(t.dataset&&'tm' in t.dataset){const prev=+(t.dataset.v||0),del=e.inputType&&e.inputType.indexOf('delete')===0;let v=parseInt(t.value.replace(/\D/g,''),10)||0;if(del&&v===prev)v=Math.floor(prev/10);if(v>99999)v=prev;t.dataset.v=v;t.value=del&&v===0?'':Math.floor(v/100)+'h'+String(v%100).padStart(2,'0');if('em' in t.dataset&&S.edit)S.edit.min=String(Math.floor(v/100)*60+v%100);const k=t.dataset.tf;if(k==='man')S.sel.mt=t.value;else if(k==='ng')S.sel.ng=t.value;return}
  const d=e.target.dataset;if(S.edit&&'ed' in d)S.edit.date=e.target.value;if(d.gn){const g=grps().find(x=>x.id===d.gn);if(g){g.nt=e.target.value;if(g.err&&g.nt.trim()){g.err=false;const w=e.target.closest('.cb');if(w)w.classList.remove('err')}}}if(d.rac||d.rtq){const g=grps().find(x=>x.id===d.g),r=g&&g.rows.find(x=>x.id===(d.rac||d.rtq));const v=e.target.value.replace(/\D/g,'').slice(0,4);e.target.value=v;if(r){if(d.rac)r.ac=v;else r.tq=v;const qp=document.getElementById('qp-'+r.id);if(qp)qp.textContent=qPct(r)}}if(d.rq){const g=grps().find(x=>x.id===d.g),r=g&&g.rows.find(x=>x.id===d.rq);if(r){const was=!!(r.q||'').trim();r.q=e.target.value;const now=!!r.q.trim();const cb=document.querySelector('[data-act=clip][data-id="'+d.g+':'+d.rq+'"]');if(cb)cb.classList.toggle('on',!!(now||(r.link||'').trim()));if(was!==now){ui.focus='q-'+r.id;ui.caret=e.target.selectionStart;render()}}}if(d.rnt){const g=grps().find(x=>x.id===d.g),r=g&&g.rows.find(x=>x.id===d.rnt);if(r)r.note=e.target.value;const nb=document.querySelector('[data-act=rnote][data-id="'+d.g+':'+d.rnt+'"]');if(nb)nb.classList.toggle('on',!!e.target.value.trim())}if(d.rn){const g0=grps().find(x=>x.id===d.g),r0=g0&&g0.rows.find(x=>x.id===d.rn);if(r0&&r0.err&&e.target.value.trim()){r0.err=false;const lb=e.target.closest('.aname');if(lb)lb.classList.remove('err')}}if(d.rn||d.rl){const g=grps().find(x=>x.id===d.g),r=g&&g.rows.find(x=>x.id===(d.rn||d.rl));if(r){if(d.rn)r.name=e.target.value;else r.link=e.target.value}}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(ui.more){const id=ui.more;ui.more=null;render();const b=document.querySelector('.ctb [data-act=rmore][data-id="'+id+'"]');if(b)b.focus()}else if(ui.info){ui.info=null;render()}else if(ui.rvcfg){ui.rvcfg=null;ui.rvcfgmsg=null;render()}else if(ui.rgview){ui.rgview=null;render()}else if(ui.pdadd){ui.pdadd=null;render()}else if(ui.rview){ui.rview=null;render()}else if(ui.sw){ui.sw=null;ui.swmsg='';render()}else if(ui.dd){ui.dd=null;render()}else if(ui.addm){ui.addm=null;render()}else if(ui.pl){ui.pl=null;render()}else if(ui.ed){ui.ed=null;render()}else if(S.sx&&!S.edit){S.sx=false;S.sel.mt='';render()}else if(edPop()){const w=S.edit.rvg;S.edit=null;if(!w)S.sel.groups=null;ui.msg='';save();render()}}const gd=e.target.dataset&&e.target.dataset.gn;if(e.key==='ArrowDown'&&gd&&ui.dd!==gd){e.preventDefault();ui.dd=gd;ui.focus='n-'+gd;ui.caret=e.target.selectionStart;render()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(welcomeOn()){ui.wskip=true;render()}else if(ui.more){const id=ui.more;ui.more=null;render();const b=document.querySelector('.ctb [data-act=rmore][data-id="'+id+'"]');if(b)b.focus()}else if(ui.info){ui.info=null;render()}else if(ui.rvcfg){ui.rvcfg=null;ui.rvcfgmsg=null;render()}else if(ui.rgview){ui.rgview=null;render()}else if(ui.pdadd){ui.pdadd=null;render()}else if(ui.rview){ui.rview=null;render()}else if(ui.sw){ui.sw=null;ui.swmsg='';render()}else if(ui.dd){ui.dd=null;render()}else if(ui.addm){ui.addm=null;render()}else if(ui.pl){ui.pl=null;render()}else if(ui.ed){ui.ed=null;render()}else if(S.sx&&!S.edit){S.sx=false;S.sel.mt='';render()}else if(edPop()){const w=S.edit.rvg;S.edit=null;if(!w)S.sel.groups=null;ui.msg='';save();render()}}const gd=e.target.dataset&&e.target.dataset.gn;if(e.key==='ArrowDown'&&gd&&ui.dd!==gd){e.preventDefault();ui.dd=gd;ui.focus='n-'+gd;ui.caret=e.target.selectionStart;render()}});
 document.addEventListener('paste',e=>{const t=e.target,d=t.dataset;if(!d||!d.rl)return;
  setTimeout(()=>{const g=grps().find(x=>x.id===d.g),r=g&&g.rows.find(x=>x.id===d.rl);if(r){r.link=t.value;save()}},0)});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.target.dataset.rn||e.target.dataset.rl)){e.preventDefault();const d=e.target.dataset;if(d.rl){const g=grps().find(x=>x.id===d.g),r=g&&g.rows.find(x=>x.id===d.rl);if(r)r.open=false}addRow(d.g);save();render()}});
@@ -1336,6 +1353,8 @@ document.addEventListener('keydown',e=>{if(e.code!=='Space'&&e.key!==' ')return;
 try{norm();setMode('study');if(!S.edit&&!S.sx&&!(S.timer&&(S.timer.running||S.timer.acc>0))){const c=current();if(c&&c.id!==S.sel.subj){if(S.sel.subj&&hasG())pz()[S.sel.subj]={acc:0,groups:S.sel.groups};S.sel.subj=c.id;S.sel.topic='';S.sel.groups=null}}}catch(x){}
 render();
 try{syInit()}catch(x){}
+/* App instalável: o service worker guarda o app para abrir sem internet (só fora do claude.ai, em https ou localhost). */
+if('serviceWorker' in navigator&&!(window.claude&&typeof window.claude.use==='function')&&(location.protocol==='https:'||location.hostname==='localhost'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
 
 </body></html>

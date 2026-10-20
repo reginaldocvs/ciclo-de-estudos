@@ -52,3 +52,13 @@ O código já está pronto. Faltam as contas e algumas configurações, que só 
 ## Pronto
 
 Abra o endereço do GitHub Pages, vá em **Configurações → Seus dados → Entrar com Google**. Faça o mesmo em cada computador ou celular. A primeira vez que você entrar, os dados deste navegador sobem para a nuvem. Nos outros aparelhos, eles descem sozinhos.
+
+## Instalar como app
+
+O app é instalável (PWA): abre em janela própria, com ícone, e funciona sem internet. Os registros sobem para a nuvem quando a conexão volta.
+
+- **Computador (Chrome ou Edge):** clique no ícone **Instalar** na barra de endereço.
+- **Android (Chrome):** menu ⋮ → **Instalar app** (ou **Adicionar à tela inicial**).
+- **iPhone (Safari):** botão **Compartilhar** → **Adicionar à Tela de Início**.
+
+Depois de instalar, entre com a conta Google uma vez em cada aparelho. Atualizações publicadas no GitHub chegam sozinhas na próxima vez que o app abrir com internet.
