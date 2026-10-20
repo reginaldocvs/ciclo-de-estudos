@@ -865,7 +865,7 @@ document.addEventListener('keydown',e=>{if(!(e.ctrlKey||e.metaKey)||e.altKey)ret
    Dentro do claude.ai usa o banco do artifact. Fora dele (ex.: GitHub Pages) usa o Firebase:
    login com Google + Firestore em users/{uid}/ciclo. Preencha FIREBASE_CONFIG com o "firebaseConfig"
    do seu projeto (Configurações do projeto → Seus apps → Web). Vazio = só o navegador. */
-const FIREBASE_CONFIG={apiKey:'',authDomain:'',projectId:'',appId:''};
+const FIREBASE_CONFIG={apiKey:'AIzaSyADlkzmY7n5br0CoPOIa0JuL2gCn4UUP2Q',authDomain:'ciclo-de-estudos-44233.firebaseapp.com',projectId:'ciclo-de-estudos-44233',storageBucket:'ciclo-de-estudos-44233.firebasestorage.app',messagingSenderId:'794232609061',appId:'1:794232609061:web:8606029917c50536ce62cc'};
 const FB_SDK='https://www.gstatic.com/firebasejs/10.12.2/';
 const fbOn=()=>!!(FIREBASE_CONFIG&&FIREBASE_CONFIG.apiKey&&FIREBASE_CONFIG.projectId);
 const loadJs=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=()=>ok();s.onerror=()=>no(new Error(src));document.head.appendChild(s)});
