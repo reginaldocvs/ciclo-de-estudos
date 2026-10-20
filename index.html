@@ -941,13 +941,13 @@ const SY={prov:null,user:null,err:null,db:null,uid:null,status:'init',dev:null,l
 const syMeta=()=>{try{localStorage.setItem('ciclo-sync',JSON.stringify({ts:SY.lastTs,dirty:!!SY.dirty,lts:SY.localTs||0}))}catch(x){}};
 const syCol=()=>SY.db.collection(SY.prov==='firebase'?'users/'+SY.uid+'/ciclo':'data/users/'+SY.uid);
 function syMark(){SY.dirty=true;SY.localTs=Date.now();syMeta();if(SY.status==='on'||SY.status==='saving'||SY.status==='err'){clearTimeout(SY.timer);SY.timer=setTimeout(syPush,1500)}}
-async function syPush(){if(!SY.db||SY.status==='off'||SY.status==='init')return;if(SY.busy){SY.again=true;return}
+async function syPush(){if(!SY.db||SY.status==='off'||SY.status==='init'||SY.status==='denied')return;if(SY.busy){SY.again=true;return}
  const json=JSON.stringify(S);if(json===SY.lastJson&&!SY.dirty)return;SY.busy=true;SY.status='saving';
  try{const CH=180000,n=Math.max(1,Math.ceil(json.length/CH)),ts=Math.max(Date.now(),SY.lastTs+1);
   for(let i=0;i<n;i++)await syCol().doc('c'+i).set({d:json.slice(i*CH,(i+1)*CH),ts});
   await syCol().doc('meta').set({ts,n,dev:SY.dev,size:json.length});
   SY.lastTs=ts;SY.lastJson=json;SY.dirty=JSON.stringify(S)!==json;SY.status='on';syMeta()}
- catch(e){SY.status='err';setTimeout(()=>{if(SY.status==='err'){SY.status='on';syPush()}},e&&e.code==='quota_exceeded'?60000:8000)}
+ catch(e){if(e&&e.code==='permission-denied'){SY.busy=false;syDenied();return}SY.status='err';setTimeout(()=>{if(SY.status==='err'){SY.status='on';syPush()}},e&&e.code==='quota_exceeded'?60000:8000)}
  SY.busy=false;if(SY.status==='on'&&(SY.again||SY.dirty)){SY.again=false;clearTimeout(SY.timer);SY.timer=setTimeout(syPush,1500)}}
 async function syFetch(m){const parts=[];for(let i=0;i<m.n;i++){const s=await syCol().doc('c'+i).get();if(!s.exists)return null;const d=s.data();if(d.ts!==m.ts)return null;parts.push(d.d)}return parts.join('')}
 /* Valida e normaliza a versão da conta antes de trocar S; guarda a versão local em KEY+'-bak'. */
@@ -973,8 +973,10 @@ async function syOnMeta(snap){
  else{SY.lastTs=m.ts;SY.status='on';SY.dirty=true;syPush()}}
 /* Falha ao ler a conta: tenta de novo em vez de ficar parado em 'init'. */
 function syRetry(snap){clearTimeout(SY.rtimer);SY.rtimer=setTimeout(()=>{if(SY.lastTs<((snap.data&&snap.data()||{}).ts||Infinity))syOnMeta(snap).catch(()=>syRetry(snap))},8000)}
+/* As regras do Firebase recusaram esta conta: para de tentar e avisa; os dados seguem no navegador. */
+function syDenied(){try{if(SY.unsub)SY.unsub()}catch(x){}SY.unsub=null;clearTimeout(SY.timer);SY.status='denied';render()}
 function sySub(){try{if(SY.unsub)SY.unsub()}catch(x){}
- try{SY.unsub=syCol().doc('meta').onSnapshot(s=>{syOnMeta(s).catch(()=>syRetry(s))},()=>{SY.status='err';setTimeout(sySub,15000)})}catch(x){SY.status='off'}}
+ try{SY.unsub=syCol().doc('meta').onSnapshot(s=>{syOnMeta(s).catch(()=>syRetry(s))},e=>{if(e&&e.code==='permission-denied'){syDenied();return}SY.status='err';setTimeout(sySub,15000)})}catch(x){SY.status='off'}}
 async function syInit(){if(OFFLINE)return fbInit();let db=null,uid=null;
  try{db=await claude.use('db');const user=await claude.use('user');uid=user?await user.id():null}catch(x){}
  if(!db||!uid){SY.status='off';return}
@@ -1005,6 +1007,7 @@ function syCard(){const st={on:'Sincronizado',saving:'Sincronizando…',init:'Co
  const err=SY.err?`<div role="alert" style="color:var(--bad);font-size:.85rem;margin-top:8px">${esc(SY.err)}</div>`:'';
  if(SY.prov==='claude')return '<p class="mut" style="margin:4px 0 0">Tudo o que você registra é salvo automaticamente neste navegador e na sua conta. Você não precisa fazer backup.</p>';
  if(!fbOn())return '<p class="mut" style="margin:4px 0 0">Seus dados ficam salvos neste navegador. A sincronização entre aparelhos ainda não foi configurada.</p>';
+ if(SY.user&&SY.status==='denied')return `<p class="mut" style="margin:4px 0 0">A conta <b>${esc(SY.user.email||SY.user.name)}</b> não tem acesso à sincronização. Seus dados continuam salvos neste navegador.</p><div class="fl" style="margin-top:12px"><button class="btn g s" data-act="fblogout">Sair</button></div>`;
  if(SY.user)return `<p class="mut" style="margin:4px 0 0">Conectado como <b>${esc(SY.user.email||SY.user.name)}</b>. Seus dados sincronizam automaticamente entre os aparelhos em que você entrar.</p><div class="mut" id="systat" role="status" style="font-size:.85rem;margin-top:6px">${st}</div>${err}<div class="fl" style="margin-top:12px"><button class="btn g s" data-act="fblogout">Sair</button></div>`;
  return `<p class="mut" style="margin:4px 0 0">Seus dados ficam salvos neste navegador. Entre com sua conta Google para acessá-los de qualquer computador ou celular.</p>${err}<div class="fl" style="margin-top:12px"><button class="btn" data-act="fblogin">Entrar com Google</button></div>`}
 /* Backup em arquivo: baixa o estado inteiro em .json; restaurar valida como syApply e pode ser desfeito. */
