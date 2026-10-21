@@ -642,6 +642,10 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 .ctb>.x{flex:none;width:40px;min-width:40px;display:inline-flex;align-items:center;justify-content:center;padding:0}
 .ctb>.x svg{width:18px;height:18px}
 .srow .rtime .ctl{justify-content:flex-start;min-width:9.6em}
+/* Linha da disciplina igual em todas as disciplinas: acima de 480px tudo numa linha (nome longo ganha reticências);
+   até 480px todas têm o nome em cima e o tempo com as ações embaixo, alinhados */
+@media (min-width:480.02px){.srow .rtop{flex-wrap:nowrap}.srow .rtop>.rname{flex:1 1 auto;min-width:0}.srow .rtop>.rtime{flex:none}}
+@media (max-width:480px){.srow .rtop{flex-wrap:wrap;row-gap:0}.srow .rtop>.rname{flex:1 1 100%;min-width:0}.srow .rtop>.rtime{flex:1 1 100%;margin-left:22px;justify-content:space-between}.srow .grow>.bar{margin-left:22px}}
 .x.sts{cursor:default}
 .x.sts:hover{background:none}
 @media (max-width:600px){.ctb>.x{width:44px;min-width:44px}}
