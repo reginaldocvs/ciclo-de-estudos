@@ -1795,7 +1795,12 @@ document.addEventListener('keydown',e=>{if(e.code!=='Space'&&e.key!==' ')return;
   if(!b){if(S.edit)return;const id=selId(),s=S.subjects.find(x=>x.id===id);if(!s||(gDone(s)&&!(S.timer.running&&S.sel.subj===id)))return;
    b=document.createElement('button');b.type='button';b.hidden=true;b.dataset.act='rplay';b.dataset.id=id;document.getElementById('app').appendChild(b)}}
  e.preventDefault();e.stopPropagation();FOC.kb=false;b.click();if(b.hidden&&b.isConnected)b.remove()},true);})();
-try{norm();setMode('study');if(!S.edit&&!S.sx&&!(S.timer&&(S.timer.running||S.timer.acc>0))){const c=current();if(c&&c.id!==S.sel.subj){S.sel.subj=c.id;S.sel.topic='';S.sel.groups=null}}}catch(x){}
+/* Ao abrir ou atualizar, volta ao padrão: tela, abas e cartões recolhíveis, e também o trabalho em andamento
+   (cronômetro, modo foco, registro sendo preenchido), por escolha do usuário. Tema e barra lateral são mantidos. */
+function bootReset(){['hmode','rvaClosed','rodOpen'].forEach(k=>delete S[k]);S.edit=null;
+ const clr=c=>{if(!c)return;c.timer={running:false,start:0,acc:0};c.sx=false;c.paused={};c.draft=[];if(c.sel)Object.assign(c.sel,{topic:'',groups:null,mt:'',mtMs:0,md:'',nt:'',lk:''})};
+ clr(S);clr(S.alt);save()}
+try{norm();bootReset();setMode('study');if(!S.edit&&!S.sx&&!(S.timer&&(S.timer.running||S.timer.acc>0))){const c=current();if(c&&c.id!==S.sel.subj){S.sel.subj=c.id;S.sel.topic='';S.sel.groups=null}}}catch(x){}
 render();
 try{syInit()}catch(x){}
 /* App instalável: o service worker guarda o app para abrir sem internet (só fora do claude.ai, em https ou localhost). */
