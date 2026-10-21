@@ -396,10 +396,10 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--m-p);outline-of
 
 /* ---------- Navegação: rail no computador, barra de navegação no celular ---------- */
 @media (min-width:860.02px){
- body{padding-block:0 32px;padding-left:0}
+ body{padding-block:0;padding-left:0}
  .shell{grid-template-columns:240px minmax(0,1fr);gap:16px}
  .side{position:sticky;top:0;height:100vh;height:100dvh;min-height:0;background:none;border-radius:0;box-shadow:none;padding:29px 12px 20px 12px;gap:24px}
- main{padding-top:28px}
+ main{padding-top:28px;padding-bottom:32px} /* espaço final dentro da área do menu: no fim da rolagem o menu não sobe */
 }
 .sbrand{padding:0 4px 0 8px;gap:12px;font-weight:600;font-size:1.125rem;letter-spacing:0}
 .sbrand .logo{width:40px;height:40px}
