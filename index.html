@@ -676,7 +676,9 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 }
 /* Setinhas da linha de grupos (só com mouse; no toque basta deslizar) */
 .sgrip{display:none}
-/* Janela aberta: a página de trás não rola */
+/* Janela aberta: a página de trás não rola. O espaço da barra de rolagem fica sempre reservado,
+   para que travar a rolagem não mude a largura da página (o conteúdo pularia por trás do fundo escurecido) */
+html{scrollbar-gutter:stable}
 html.mlock{overflow:hidden}
 .dlg{overscroll-behavior:contain}
 .rcscr{position:relative;display:block;width:100%;min-width:0;margin-bottom:8px}
