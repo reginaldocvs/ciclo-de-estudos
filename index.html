@@ -137,6 +137,8 @@ body #hres .ritem .grow>.hic{float:right;height:1.3em;align-items:center;margin:
 .hcbody{display:flex;flex-direction:column;gap:14px;padding:2px 0 16px 34px}
 .hcsn{display:flex;align-items:center;gap:8px}.hcsn .mut{margin-left:auto;font-size:.875rem;font-variant-numeric:tabular-nums}
 .hcst{margin:6px 0 0 20px}
+/* Corpo do ciclo com a largura do conteúdo: o tempo da disciplina fica alinhado à borda direita das etiquetas, sem vão */
+.hcbody{width:fit-content;max-width:min(760px,100%);min-width:min(360px,100%)}.hcbody .hcst.rvlist{width:auto;min-width:0}
 @media (max-width:600px){.hcbody{padding-left:8px}.hcst{margin-left:12px}}
 .htot{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.hclr{background:none;border:0;padding:0;font:inherit;font-size:.85rem;font-weight:600;color:var(--ac);cursor:pointer}.hclr:hover{text-decoration:underline}
 .ctb{position:relative}
