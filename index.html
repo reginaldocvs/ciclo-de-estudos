@@ -745,7 +745,7 @@ const prevTopics=sid=>{const l=lastSess(sid);if(!l)return [];return l.ses?uniq(S
 
 
 
-const norm=()=>{migAll();migEd();migRg();if(S.timer&&!S.sx&&(S.timer.running||S.timer.acc>0))S.timer={running:false,start:0,acc:0};if(S.paused)Object.keys(S.paused).forEach(k=>{const o=S.paused[k];if(!o||!o.groups)delete S.paused[k];else S.paused[k]={groups:o.groups}});try{migBump()}catch(e){}(S.sel&&S.sel.groups||[]).forEach(g=>g.rows.forEach(r=>{if(r.name===undefined){const it=mkItem(r.kind,r.ref)||{};r.name=it.title||'';r.link=it.url||''}}));S.sel=S.sel||{subj:null,topic:''};S.draft=(S.draft||[]).filter(e=>e.subj===S.sel.subj);S.sel.split=S.sel.split||{};S.subjects.forEach(s=>{s.topics=s.topics||[];if(!(+s.goal>0))s.goal=90});S.subjects.forEach(s=>{if(s.of){const b=S.subjects.find(x=>x.id===s.of);if(b)s.topics=b.topics;else delete s.of}});S.subjects.forEach(s=>{if(!s.of&&s.ci===undefined)s.ci=nextCi()});S.editais=S.editais||[];pruneOrphans();S.mode=S.mode||'study';if(S.mode==='study'&&S.type==='review'){S.type='regular';S.reviewSrc=[]}if(!S.reviewed){S.reviewed={};Object.values(S.hist||{}).forEach(h=>{if(h&&h.type==='review')(h.src||[]).forEach(c=>S.reviewed[c]=S.reviewed[c]||'-')})}S.reviews=S.reviews||[];if(S.rv&&!S.rv.src)S.rv=null;if(!S.rv&&S.mode==='review'){S.mode='study'}if(!S.plans||!S.plans.length){S.plans=[{id:uid(),name:'Meu plano'}];S.plan=S.plans[0].id}if(!S.plans.some(x=>x.id===S.plan))S.plan=S.plans[0].id;S.planData=S.planData||{};const orf=S.subjects.filter(s=>!s.of&&!S.editais.some(e=>e.id===s.ed));if(orf.length){let d=myEds()[0];if(!d){d={id:uid(),name:'Meu edital',plan:S.plan};S.editais.push(d)}orf.forEach(s=>s.ed=d.id)}};
+const norm=()=>{migAll();migEd();migRg();if(S.timer&&!S.sx&&(S.timer.running||S.timer.acc>0))S.timer={running:false,start:0,acc:0};if(S.paused&&Object.keys(S.paused).length)S.paused={};try{migBump()}catch(e){}(S.sel&&S.sel.groups||[]).forEach(g=>g.rows.forEach(r=>{if(r.name===undefined){const it=mkItem(r.kind,r.ref)||{};r.name=it.title||'';r.link=it.url||''}}));S.sel=S.sel||{subj:null,topic:''};S.draft=(S.draft||[]).filter(e=>e.subj===S.sel.subj);S.sel.split=S.sel.split||{};S.subjects.forEach(s=>{s.topics=s.topics||[];if(!(+s.goal>0))s.goal=90});S.subjects.forEach(s=>{if(s.of){const b=S.subjects.find(x=>x.id===s.of);if(b)s.topics=b.topics;else delete s.of}});S.subjects.forEach(s=>{if(!s.of&&s.ci===undefined)s.ci=nextCi()});S.editais=S.editais||[];pruneOrphans();S.mode=S.mode||'study';if(S.mode==='study'&&S.type==='review'){S.type='regular';S.reviewSrc=[]}if(!S.reviewed){S.reviewed={};Object.values(S.hist||{}).forEach(h=>{if(h&&h.type==='review')(h.src||[]).forEach(c=>S.reviewed[c]=S.reviewed[c]||'-')})}S.reviews=S.reviews||[];if(S.rv&&!S.rv.src)S.rv=null;if(!S.rv&&S.mode==='review'){S.mode='study'}if(!S.plans||!S.plans.length){S.plans=[{id:uid(),name:'Meu plano'}];S.plan=S.plans[0].id}if(!S.plans.some(x=>x.id===S.plan))S.plan=S.plans[0].id;S.planData=S.planData||{};const orf=S.subjects.filter(s=>!s.of&&!S.editais.some(e=>e.id===s.ed));if(orf.length){let d=myEds()[0];if(!d){d={id:uid(),name:'Meu edital',plan:S.plan};S.editais.push(d)}orf.forEach(s=>s.ed=d.id)}};
 function pruneOrphans(){const all=(S.sessions||[]).concat(...Object.values(S.planData||{}).map(d=>d&&d.sessions||[])),used={};
  all.forEach(x=>{if(!x.topic)return;(x.items||[]).forEach(i=>{const it=itKey(i);if(it)(used[x.topic]=used[x.topic]||[]).push(it)})});
  S.subjects.forEach(s0=>{if(s0.of)return;(s0.topics||[]).forEach(t=>{const old=t.links||[],out=[];(used[t.id]||[]).forEach(u=>{if(out.some(o=>sameIt(o,u)))return;const ex=old.find(o=>sameIt(o,u));out.push(ex?{id:ex.id,kind:ex.kind,url:ex.url,title:ex.title,...(ex.note?{note:ex.note}:{}),...(ex.q?{q:ex.q}:{})}:u)});t.links=out;delete t.hide})})}
@@ -875,7 +875,6 @@ function syncSel(){const A=actives();if(!A.length)return;
  if(!A.find(s=>s.id===S.sel.subj)){const to=(current()||A[0]).id;stashCur();loadSubj(to)}
 }
 const studyActive=()=>S.timer.running||el()>0||(S.sx&&(hasG()||tmParse(S.sel.mt)>0));
-const pz=()=>S.paused||(S.paused={});
 const prefill=ms=>{const t=tmFmt(Math.floor(ms/60000));S.sel.mt=t;S.sel.mtAuto=t;S.sel.mtMs=ms};
 function regMin(){const f=(S.sel.mt||'').trim();if(S.sx&&f&&f!==S.sel.mtAuto)return tmParse(f)||0;if(S.sx&&f&&f===S.sel.mtAuto&&!S.timer.running)return (S.sel.mtMs!=null?S.sel.mtMs:el())/60000;return el()/60000}
 const curS=()=>S.subjects.find(x=>x.id===S.sel.subj);
@@ -883,12 +882,12 @@ const remSec=mn=>{const s=curS();return s?Math.max(0,(s.goal-prog(s.id)-mn)*60):
 const canReg=mn=>mn>0||hasG();
 const metRem=mn=>remSec(mn)<0.5;
 const regHint=mn=>{const s=curS();return s?`<span class="nw">Faltam <b>${hms(remSec(mn))}</b> para completar a meta de ${hms(s.goal*60)}.</span><br>Você pode registrar agora o que estudou ou continuar depois.`:''};
-function stashCur(){const id=S.sel.subj;if(!id)return;if(hasG())pz()[id]={groups:S.sel.groups};S.timer={running:false,start:0,acc:0};S.sx=false;S.sel.mt='';S.sel.groups=null}
+function stashCur(){if(!S.sel.subj)return;S.timer={running:false,start:0,acc:0};S.sx=false;S.sel.mt='';S.sel.groups=null}
 function sesGroups(old,s0){return old.map(r=>{const t=r.topic?topicOf(s0,r.topic)||(r.tn?{name:r.tn}:null):null,rows=(r.items||[]).map(i=>{const it=i.ref!==undefined?(mkItem(i.kind,i.ref)||{}):{title:i.name,url:i.link};const tl0=t&&t.links&&t.links.find(x=>it.title!==undefined&&sameIt(x,{kind:'aula',url:it.url||'',title:it.title||''}));return {id:uid(),kind:'aula',name:it.title||'',link:it.url||'',q:(tl0&&tl0.q)||i.q||'',...(+i.tq>0?{ac:String(i.ac||0),tq:String(i.tq)}:{})}});if(!rows.length)rows.push({id:uid(),kind:'aula',name:'',link:'',q:''});return {id:uid(),nt:t?t.name:'',rows}})}
-function loadSubj(to){const o=pz()[to];S.sel.subj=to;S.sel.topic='';S.timer={running:false,start:0,acc:0};S.sel.groups=o&&o.groups||null;delete pz()[to];S.sx=false;S.sel.mt=''}
+function loadSubj(to){S.sel.subj=to;S.sel.topic='';S.timer={running:false,start:0,acc:0};S.sel.groups=null;S.sx=false;S.sel.mt=''}
 function runThen(th){const cs=curS();if(th==='rplay'&&cs&&el()>=(cs.goal-prog(cs.id))*60000-500){if(gDone(cs))return;th='rreg'}if(th==='rplay'){ui.sxo=false;S.timer.running=true;S.timer.start=Date.now();if(!S.timer.d0)S.timer.d0=today();S.sx=true;S.sel.mt=''}else if(th==='rreg'){S.sx='manual';prefill(S.timer.acc)}}
-/* Trocar de disciplina: tempo pendente (só existe no modo foco) é descartado com Desfazer, como ao sair do foco */
-const reqSwitch=(to,th)=>{if(!to||S.edit)return;if(to===S.sel.subj){if(th)runThen(th);return}if(studyActive())fmExit();loadSubj(to);if(th)runThen(th)};
+/* Trocar de disciplina: com estudo em andamento a troca é ignorada (o fundo já fica inerte enquanto o modo foco ou o registro estão abertos) */
+const reqSwitch=(to,th)=>{if(!to||S.edit)return;if(to===S.sel.subj){if(th)runThen(th);return}if(studyActive())return;loadSubj(to);if(th)runThen(th)};
 const tipEl=document.createElement?document.createElement('div'):null;
 if(tipEl){tipEl.id='tip';document.body.appendChild(tipEl)}
 document.addEventListener('mousemove',e=>{if(!tipEl)return;const a=e.target.closest&&e.target.closest('.arc[data-tip],.sday[data-tip],.srow2[data-tip]');
@@ -1274,7 +1273,7 @@ const focSig=()=>{const a=document.activeElement;if(!a||a===document.body||a===d
 const FQ='a[href],button:not([disabled]),input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 const focIdx=()=>{const a=document.activeElement;if(!a||a===document.body)return null;const box=a.closest('#modal .dlg')||document;return {inDlg:box!==document,i:[...box.querySelectorAll(FQ)].filter(x=>x.getClientRects().length).indexOf(a)}};
 const focTo=sig=>{if(!sig)return false;let el=null;try{el=[...document.querySelectorAll(sig)].find(x=>x.getClientRects().length&&x.matches(FQ))}catch(e){}if(el){el.focus({preventScroll:true});return true}return false};
-function render(){const pre=focSig(),pix=focIdx(),had=!!document.querySelector('#modal .dlg');render0();rcBind();try{const dlg=document.querySelector('#modal .dlg'),ae=document.activeElement,lost=!ae||ae===document.body;
+function render(){const pre=focSig(),pix=focIdx(),had=!!document.querySelector('#modal .dlg');render0();rcBind();{const op=!!document.querySelector('#modal .dlg');document.querySelectorAll('.shell,.tabbar').forEach(e=>{e.inert=op})}try{const dlg=document.querySelector('#modal .dlg'),ae=document.activeElement,lost=!ae||ae===document.body;
  if(dlg&&!had){FOC.op=pre;if(!dlg.contains(ae)){if(FOC.kb){const f=dlg.querySelector('input:not([type=hidden]):not([disabled]),textarea,select,button:not([disabled])');if(f){f.focus({preventScroll:true});return}}dlg.setAttribute('tabindex','-1');dlg.focus({preventScroll:true})}return}
  if(!dlg&&had){const o=FOC.op;FOC.op=null;if(lost&&FOC.kb&&focTo(o))return}
  if(lost&&FOC.kb&&!focTo(pre)&&pix&&pix.i>=0){const box=pix.inDlg?dlg:document;if(box){const L=[...box.querySelectorAll(FQ)].filter(x=>x.getClientRects().length);const el=L[Math.min(pix.i,L.length-1)];el&&el.focus({preventScroll:true})}}}catch(e){}}
@@ -1795,7 +1794,7 @@ document.addEventListener('keydown',e=>{if(e.code!=='Space'&&e.key!==' ')return;
   if(!b){if(S.edit)return;const id=selId(),s=S.subjects.find(x=>x.id===id);if(!s||(gDone(s)&&!(S.timer.running&&S.sel.subj===id)))return;
    b=document.createElement('button');b.type='button';b.hidden=true;b.dataset.act='rplay';b.dataset.id=id;document.getElementById('app').appendChild(b)}}
  e.preventDefault();e.stopPropagation();FOC.kb=false;b.click();if(b.hidden&&b.isConnected)b.remove()},true);})();
-try{norm();setMode('study');if(!S.edit&&!S.sx&&!(S.timer&&(S.timer.running||S.timer.acc>0))){const c=current();if(c&&c.id!==S.sel.subj){if(S.sel.subj&&hasG())pz()[S.sel.subj]={groups:S.sel.groups};S.sel.subj=c.id;S.sel.topic='';S.sel.groups=null}}}catch(x){}
+try{norm();setMode('study');if(!S.edit&&!S.sx&&!(S.timer&&(S.timer.running||S.timer.acc>0))){const c=current();if(c&&c.id!==S.sel.subj){S.sel.subj=c.id;S.sel.topic='';S.sel.groups=null}}}catch(x){}
 render();
 try{syInit()}catch(x){}
 /* App instalável: o service worker guarda o app para abrir sem internet (só fora do claude.ai, em https ou localhost). */
