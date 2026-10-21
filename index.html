@@ -267,7 +267,7 @@ input[type=checkbox]{border-radius:4px}
 .rcv{position:absolute;right:4px;bottom:4px;width:7px;height:7px;border-radius:50%;background:var(--ok)}.rcl .rcv{position:static;display:inline-block;margin-right:6px}
 .rcl{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0 8px;font-size:.75rem;color:var(--mut)}.rcl span{display:inline-flex;align-items:center}
 .rcx{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px}.rcx.e{background:color-mix(in srgb,var(--ac) 28%,var(--card))}.rcx.d{border:2px solid var(--ac)}.rcx.p{border:2px dashed var(--ac)}
-.rcchips{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:none;margin:0 -4px 8px;padding:2px 4px}.rcchips::-webkit-scrollbar{display:none}.rcchips>.rcc{flex:none;scroll-snap-align:start}.rcchips>.mut{white-space:normal}
+.rcchips{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scroll-padding-inline:4px;scrollbar-width:none;margin:0 -4px 8px;padding:2px 4px}.rcchips::-webkit-scrollbar{display:none}.rcchips>.rcc{flex:none;scroll-snap-align:start}.rcchips>.mut{white-space:normal}
 .rcc{font:inherit;font-size:.85rem;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);padding:3px 10px;cursor:pointer}.rcc.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 18%,var(--card));font-weight:700}
 .rcs{width:10px;height:10px;border-radius:50%;background:var(--c)}
 .rcav{background:color-mix(in srgb,var(--ac) 11%,var(--card));color:var(--ac);font-weight:700;border-radius:8px;padding:6px 10px;margin-bottom:10px;font-size:.85rem}
@@ -657,6 +657,17 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
  .rvside .rcd{min-height:0}
  .rvside{max-width:none;position:sticky;top:24px;will-change:transform;contain:layout paint}
 }
+/* Setinhas da linha de grupos (só com mouse; no toque basta deslizar) */
+.rcscr{position:relative;display:block;width:100%;min-width:0;margin-bottom:8px}
+.rcscr>.rcchips{margin-bottom:0}
+.rcar{position:absolute;top:50%;z-index:1;width:32px;height:32px;margin-top:-16px;border:0;border-radius:999px;padding:0;display:grid;place-items:center;cursor:pointer;background:var(--m-c-high);color:var(--ink);box-shadow:var(--e1);transition:background-color .2s var(--emph)}
+.rcar:hover{background:color-mix(in srgb,var(--ink) 8%,var(--m-c-high))}
+.rcar.l{left:-6px}.rcar.r{right:-6px}
+.rcar[hidden]{display:none}
+/* Esmaecido na borda em que há grupos escondidos, para a setinha não cobrir o botão */
+.rcscr>.rcchips{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--ml,0px),#000 calc(100% - var(--mr,0px)),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 var(--ml,0px),#000 calc(100% - var(--mr,0px)),transparent 100%)}
+.rcscr.fl{--ml:44px}.rcscr.fr{--mr:44px}
+@media (pointer:coarse){.rcar{display:none}}
 @media (prefers-reduced-motion:reduce){.btn,.x,.tbig,.fab,.seg,.row.srow,.sidenav button,.tabbar svg,.navmini .sidenav svg{transition:none}}
 </style>
 </head>
@@ -1050,6 +1061,14 @@ const rgTopics=g=>{const set=new Set(g.dates),by=new Map();CS().filter(x=>!x.rev
 
 const RCM=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const rgCol=g=>g.idx%2?'#0B7A8A':'#7A9EA4';
+/* Linha de grupos do calendário: setinhas só quando há grupos escondidos daquele lado, roda do mouse rola para o lado e a posição se mantém entre redesenhos */
+const CHVL='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>';
+const CHVR='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+function rcArrows(){const c=document.querySelector('.rcchips'),w=c&&c.closest('.rcscr');if(!w)return;const max=c.scrollWidth-c.clientWidth,l=c.scrollLeft<=2,r=max<=2||c.scrollLeft>=max-2;w.querySelector('.rcar.l').hidden=l;w.querySelector('.rcar.r').hidden=r;w.classList.toggle('fl',!l);w.classList.toggle('fr',!r)}
+function rcBind(){const c=document.querySelector('.rcchips');if(!c||c.dataset.b)return;c.dataset.b='1';if(ui.rcsl)c.scrollLeft=ui.rcsl;
+ c.addEventListener('scroll',()=>{ui.rcsl=c.scrollLeft;rcArrows()},{passive:true});
+ c.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)<=Math.abs(e.deltaX))return;const max=c.scrollWidth-c.clientWidth;if(max<=2)return;const to=Math.max(0,Math.min(max,c.scrollLeft+e.deltaY));if(to===c.scrollLeft)return;e.preventDefault();c.scrollLeft=to},{passive:false});
+ rcArrows()}
 function rvCal(I){
  const td=today(),mon=ui.rcm||td.slice(0,7),flt=ui.rcg&&I.list.some(o=>o.g.id===ui.rcg)?ui.rcg:null,E={};
  const ev=(d,k,o)=>{(E[d]=E[d]||[]).push({k,o})};
@@ -1079,7 +1098,7 @@ function rvCal(I){
  return `<div class="card hasinfo">${infoBtn('rvcal','Calendário de revisões')}<div class="rch"><h2 class="pvt">Calendário de revisões</h2><div class="rcn"><button class="x" data-act="rcm" data-id="-1" aria-label="Mês anterior">‹</button><b>${RCM[first.getMonth()]} ${first.getFullYear()}</b><button class="x" data-act="rcm" data-id="1" aria-label="Próximo mês">›</button></div></div>
  <div class="rcg">${['seg','ter','qua','qui','sex','sáb','dom'].map(w=>`<span class="rcw">${w}</span>`).join('')}${cells.map(cell).join('')}</div>
  <div class="rcl"><span><i class="rcx e"></i>Estudo</span><span><i class="rcx d"></i>Disponível</span><span><i class="rcx p"></i>Projeção</span><span><i class="rcv s"></i>Revisado</span></div>
- <div class="rcchips" role="group" aria-label="Filtrar por grupo">${chips||'<span class="mut">Os grupos aparecem aqui conforme você estuda.</span>'}</div>
+ <div class="rcscr"><button type="button" class="rcar l" data-act="rcsc" data-id="-1" aria-label="Grupos mais recentes" title="Grupos mais recentes" hidden>${CHVL}</button><div class="rcchips" role="group" aria-label="Filtrar por grupo">${chips||'<span class="mut">Os grupos aparecem aqui conforme você estuda.</span>'}</div><button type="button" class="rcar r" data-act="rcsc" data-id="1" aria-label="Grupos mais antigos" title="Grupos mais antigos" hidden>${CHVR}</button></div>
  ${det}</div>`}
 /* Disciplinas e tópicos de um grupo de revisão (pop-up do olho e cartões de revisões futuras) */
 function rgBody(o){const by=rgTopics(o.g),subs=[...by.keys()].map(id=>S.subjects.find(x=>x.id===id)).filter(Boolean);
@@ -1236,13 +1255,13 @@ function posDD(){document.querySelectorAll('.dlg .dd').forEach(d=>{const a=d.par
  if(need>below&&above>below)Object.assign(d.style,{top:'auto',bottom:(vh-a.top+4)+'px',marginTop:'0',maxHeight:Math.min(lim,above)+'px'});
  else Object.assign(d.style,{top:(a.bottom+4)+'px',bottom:'auto',marginTop:'0',maxHeight:Math.min(lim,below)+'px'})})}
 if(document.documentElement.classList.contains('navmini'))navMini(true);
-addEventListener('resize',()=>{posDD();fitKpis();fitNames();subFlow()});try{document.fonts.ready.then(()=>{fitKpis();fitNames();subFlow()})}catch(e){}document.addEventListener('scroll',()=>posDD(),true);
+addEventListener('resize',()=>{posDD();fitKpis();fitNames();subFlow();rcArrows()});try{document.fonts.ready.then(()=>{fitKpis();fitNames();subFlow()})}catch(e){}document.addEventListener('scroll',()=>posDD(),true);
 const FOC={kb:false,op:null};document.addEventListener('keydown',e=>{if(e.key==='Tab'||e.key==='Enter'||e.key==='Escape'||e.key.startsWith('Arrow'))FOC.kb=true},true);document.addEventListener('pointerdown',()=>{FOC.kb=false},true);
 const focSig=()=>{const a=document.activeElement;if(!a||a===document.body||a===document.documentElement)return null;const d=a.dataset||{};if(a.id)return '#'+CSS.escape(a.id);if(d.act)return '[data-act="'+CSS.escape(d.act)+'"]'+(d.id!==undefined?'[data-id="'+CSS.escape(d.id)+'"]':'');if(d.tab)return '[data-tab="'+CSS.escape(d.tab)+'"]';return null};
 const FQ='a[href],button:not([disabled]),input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 const focIdx=()=>{const a=document.activeElement;if(!a||a===document.body)return null;const box=a.closest('#modal .dlg')||document;return {inDlg:box!==document,i:[...box.querySelectorAll(FQ)].filter(x=>x.getClientRects().length).indexOf(a)}};
 const focTo=sig=>{if(!sig)return false;let el=null;try{el=[...document.querySelectorAll(sig)].find(x=>x.getClientRects().length&&x.matches(FQ))}catch(e){}if(el){el.focus({preventScroll:true});return true}return false};
-function render(){const pre=focSig(),pix=focIdx(),had=!!document.querySelector('#modal .dlg');render0();try{const dlg=document.querySelector('#modal .dlg'),ae=document.activeElement,lost=!ae||ae===document.body;
+function render(){const pre=focSig(),pix=focIdx(),had=!!document.querySelector('#modal .dlg');render0();rcBind();try{const dlg=document.querySelector('#modal .dlg'),ae=document.activeElement,lost=!ae||ae===document.body;
  if(dlg&&!had){FOC.op=pre;if(!dlg.contains(ae)){if(FOC.kb){const f=dlg.querySelector('input:not([type=hidden]):not([disabled]),textarea,select,button:not([disabled])');if(f){f.focus({preventScroll:true});return}}dlg.setAttribute('tabindex','-1');dlg.focus({preventScroll:true})}return}
  if(!dlg&&had){const o=FOC.op;FOC.op=null;if(lost&&FOC.kb&&focTo(o))return}
  if(lost&&FOC.kb&&!focTo(pre)&&pix&&pix.i>=0){const box=pix.inDlg?dlg:document;if(box){const L=[...box.querySelectorAll(FQ)].filter(x=>x.getClientRects().length);const el=L[Math.min(pix.i,L.length-1)];el&&el.focus({preventScroll:true})}}}catch(e){}}
@@ -1519,6 +1538,7 @@ function navMini(on){const r=document.documentElement;if(on===undefined)on=!r.cl
  setTimeout(()=>dispatchEvent(new Event('resize')),260)}
 document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  {const nt=e.target.closest&&e.target.closest('[data-act=navmini]');if(nt){navMini();return}}
+ {const sc=e.target.closest&&e.target.closest('[data-act=rcsc]');if(sc){const c=document.querySelector('.rcchips');if(c)c.scrollBy({left:(+sc.dataset.id)*Math.max(120,c.clientWidth*.7),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});return}}
  {const ua=e.target.closest&&e.target.closest('[data-act]');if(ua&&ua.dataset.act==='undo'){doUndo();return}if(ua&&ua.dataset.act==='redo'){doRedo();return}if(ui.undo&&ua)hideUndo()}
  if(e.target.closest&&e.target.closest('.plrow input'))return;
  const tfk=e.target.dataset&&e.target.dataset.tf;
