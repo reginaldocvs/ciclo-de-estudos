@@ -462,12 +462,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--m-p);outline-of
 /* ---------- Botões ---------- */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:8px 24px;border-radius:999px;background:var(--m-p);color:var(--m-onp);font-size:.875rem;font-weight:600;letter-spacing:.01em;line-height:1.25rem;box-shadow:none;transition:background-color .2s var(--emph),border-radius .35s var(--spring),box-shadow .2s var(--emph)}
 .btn:hover:not(:disabled){filter:none;background:color-mix(in srgb,var(--m-onp) 8%,var(--m-p));box-shadow:var(--e1)}
-.btn:active:not(:disabled){transform:none;border-radius:var(--r-m)}
+.btn:active:not(:disabled){transform:none}
 .btn:disabled{opacity:1;background:color-mix(in srgb,var(--ink) 12%,transparent);color:color-mix(in srgb,var(--ink) 38%,transparent)}
 .btn.g,.btn-or{background:var(--m-sc);color:var(--m-onsc);box-shadow:none}
 .btn.g:hover:not(:disabled),.btn-or:hover:not(:disabled){background:color-mix(in srgb,var(--m-onsc) 8%,var(--m-sc));box-shadow:none;filter:none}
 .btn.s{min-height:32px;padding:6px 16px;border-radius:999px;font-size:.85rem}
-.btn.s:active:not(:disabled){border-radius:var(--r-s)}
 .btn-or{min-height:32px;padding:6px 16px}
 .lnk,.hclr,.ritm{border-radius:999px;color:var(--m-p);font-weight:600;padding:10px 12px;transition:background-color .2s var(--emph)}
 .lnk:hover,.hclr:hover,.ritm:hover{text-decoration:none;background:color-mix(in srgb,var(--m-p) 8%,transparent)}
@@ -475,7 +474,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--m-p);outline-of
 .rvrem .lnk:hover{background:color-mix(in srgb,var(--m-onpc) 8%,transparent)}
 .x{border-radius:999px;color:var(--mut);transition:background-color .2s var(--emph),border-radius .35s var(--spring),color .2s}
 .x:hover:not(:disabled){background:color-mix(in srgb,var(--mut) 10%,transparent);color:var(--ink)}
-.x:active:not(:disabled){border-radius:var(--r-m)}
 .x.on,.x.on:hover{color:var(--m-p)}
 .x.warn,.x.warn:hover{color:var(--m-t)}
 .x.rdone{color:var(--ok)}
@@ -486,11 +484,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--m-p);outline-of
 .btn.nwplay{min-height:56px;padding:0 28px 0 24px;gap:10px;font-size:.9375rem;border-radius:999px;background:var(--m-p);color:var(--m-onp);box-shadow:var(--e1)}
 .btn.nwplay svg{width:22px;height:22px}
 .btn.nwplay:hover:not(:disabled){box-shadow:var(--e2)}
-.btn.nwplay:active:not(:disabled){border-radius:var(--r-m)}
 .tbig{width:56px;height:56px;border:0;border-radius:999px;background:var(--m-c-highest);color:var(--mut);transition:background-color .2s var(--emph),border-radius .35s var(--spring)}
 .tbig svg{width:24px;height:24px}
 .tbig:hover{background:color-mix(in srgb,var(--ink) 8%,var(--m-c-highest));color:var(--ink)}
-.tbig:active{border-radius:var(--r-l)}
 .tbig.on{background:var(--m-sc);color:var(--m-onsc);border-radius:var(--r-l)}
 .tbig.play{background:var(--m-p);color:var(--m-onp)}
 .tbig.play:hover{filter:none;background:color-mix(in srgb,var(--m-onp) 8%,var(--m-p))}
@@ -498,7 +494,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--m-p);outline-of
 .tbig.play.warn{background:var(--m-tc);color:var(--m-ontc)}
 .fab{width:56px;height:56px;border-radius:var(--r-l);background:var(--m-pc);color:var(--m-onpc);box-shadow:var(--e3);transition:border-radius .35s var(--spring),box-shadow .2s var(--emph),background-color .2s}
 .fab:hover{filter:none;background:color-mix(in srgb,var(--m-onpc) 8%,var(--m-pc))}
-.fab:active{border-radius:999px}
 .fma .btn{min-height:56px;border-radius:999px;padding:0 28px;font-size:.9375rem}
 .btn.fmp.run{background:var(--m-sc);color:var(--m-onsc);box-shadow:none;border-radius:var(--r-l)}
 

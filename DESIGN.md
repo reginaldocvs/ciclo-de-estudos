@@ -122,16 +122,12 @@ components:
     rounded: "{rounded.full}"
     padding: "8px 24px"
     height: "40px"
-  button-filled-pressed:
-    rounded: "{rounded.m}"
   button-tonal:
     backgroundColor: "{colors.secondary-container}"
     textColor: "{colors.on-secondary-container}"
     rounded: "{rounded.full}"
     padding: "6px 16px"
     height: "32px"
-  button-small-pressed:
-    rounded: "{rounded.s}"
   play-control:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.on-primary}"
@@ -229,7 +225,7 @@ O sistema recusa o painel SaaS anterior (barra lateral flutuante, cartões com s
 **Key Characteristics:**
 - Esquema tonal Material 3 do ciano do logo, com o verde-limão do logo como terciária; claro e escuro completos.
 - Profundidade por tom, não por sombra, em toda superfície que pertence à página.
-- Forma como estado: pílula em repouso, quadrado arredondado ao pressionar ou enquanto o cronômetro corre.
+- Forma fixa ao pressionar: o retorno do toque vem da camada de cor, não da forma.
 - Camadas de estado de 8% (10% nos botões de ícone) em vez de filtros de brilho.
 - Anel do ciclo com progresso de borda lisa sobre trilho reto.
 
@@ -308,26 +304,26 @@ Híbrido com hierarquia clara: o que pertence à página é plano e separado por
 
 ## Shapes
 
-Escala de cantos Material: 8px (campos, chips, rótulos, snackbar, tooltip, segmentos internos), 12px (itens de menu, balões, estado pressionado), 16px (menus, caixas agrupadoras, FAB, item de lista), 20px (indicadores, item selecionado, faixa de meta concluída), 28px (cartões, diálogos, topo das folhas inferiores; 24px nos cartões do celular) e pílula (botões, navegação, busca, barras de progresso, dias do calendário).
+Escala de cantos Material: 8px (campos, chips, rótulos, snackbar, tooltip, segmentos internos), 12px (itens de menu, balões), 16px (menus, caixas agrupadoras, FAB, item de lista), 20px (indicadores, item selecionado, faixa de meta concluída), 28px (cartões, diálogos, topo das folhas inferiores; 24px nos cartões do celular) e pílula (botões, navegação, busca, barras de progresso, dias do calendário).
 
 Bordas regulares por escolha do usuário: ícones dos indicadores em círculo; anel do ciclo com progresso em arco liso (raio 87) sobre trilho reto; barras de progresso de 8px em pílula. Folhas inferiores no celular têm alça de 32×4px.
 
-**The Morph Rule.** Forma muda com estado: pílula ao pressionar vira 12px (8px nos pequenos), FAB quadrado de 16px vira círculo ao pressionar, controle de estudar vira quadrado de 16px enquanto o cronômetro corre, item selecionado da lista vai de 16 para 20px. Toda troca de forma usa a mola.
+**The Fixed-Shape Rule.** Botões não mudam de forma ao pressionar (decisão do usuário); o retorno vem da camada de cor do hover/pressionado. O item selecionado da lista vai de 16 para 20px, com a mola.
 
 ## Components
 
 ### Buttons
 Pílulas firmes que se achatam no toque.
-- **Shape:** pílula (999px); pressionado vai para 12px.
+- **Shape:** pílula (999px), igual ao pressionar.
 - **Filled:** primary sobre on-primary, 40px de altura, 8px 24px; ao passar o mouse, camada de 8% de on-primary e Nível 1.
-- **Tonal / pequeno:** secondary-container, 32px, 6px 16px, 0.8125rem; pressionado vai para 8px.
+- **Tonal / pequeno:** secondary-container, 32px, 6px 16px, 0.8125rem.
 - **Texto:** primary em pílula transparente, camada de 8% de primary no hover.
-- **Ícone:** círculo transparente na cor secundária, camada de 10% no hover, 12px ao pressionar; estados "ligado" em primary, "aviso" em tertiary.
+- **Ícone:** círculo transparente na cor secundária, camada de 10% no hover; estados "ligado" em primary, "aviso" em tertiary.
 - **Disabled:** 12% de tinta no fundo, 38% no texto.
 - **Motion:** cor e sombra em `.2s cubic-bezier(.2,0,0,1)`; forma em `.35s cubic-bezier(.42,1.67,.21,.9)`. Sem transição com `prefers-reduced-motion`.
 
 ### Controle de estudar (assinatura)
-Botão estendido de 56px, primary com ícone de 22px e Nível 1. Correndo: secondary-container, quadrado de 16px, sem sombra (pressionar volta à pílula). Meta passada: tertiary-container. No modo foco, os botões crescem para 56px em pílula; os botões de ícone grandes (56px, surface-container-highest) seguem a mesma troca de forma.
+Botão estendido de 56px, primary com ícone de 22px e Nível 1. Correndo: secondary-container, quadrado de 16px, sem sombra. Meta passada: tertiary-container. No modo foco, os botões crescem para 56px em pílula; os botões de ícone grandes têm 56px e fundo surface-container-highest.
 
 ### Segmented buttons
 Grupo conectado com 2px de vão, segmentos de 40px em surface-container-highest com cantos internos de 8px e externos de 20px; o selecionado vira pílula inteira em primary.
