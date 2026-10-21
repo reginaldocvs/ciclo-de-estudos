@@ -1,5 +1,5 @@
 /* Service worker do Ciclo de Estudos: abre sem internet e pega a versão nova sozinho.
-   - Página (navegação): rede primeiro; sem rede, a última cópia salva.
+   - Página (navegação): rede primeiro, sempre conferindo se há versão nova; sem rede, a última cópia salva.
    - Arquivos do app, fontes e SDK do Firebase: cópia salva na hora, atualizada em segundo plano.
    - Firestore e login do Google nunca passam por aqui. */
 const CACHE = 'ciclo-v1';
@@ -24,7 +24,8 @@ self.addEventListener('fetch', e => {
   if (!own && !CDN.some(p => req.url.startsWith(p))) return;
 
   if (req.mode === 'navigate') {
-    e.respondWith(fetch(req).then(r => {
+    // no-cache: sempre confere com o servidor se há versão nova (o GitHub Pages permite guardar a página por 10 min)
+    e.respondWith(fetch(req, { cache: 'no-cache' }).then(r => {
       const copy = r.clone();
       caches.open(CACHE).then(c => c.put('index.html', copy));
       return r;

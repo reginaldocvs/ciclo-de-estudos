@@ -719,6 +719,16 @@ html.mlock{overflow:hidden}
  html.navmini .sidenav button:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)!important}
  html.navmini .sidenav button[aria-current=page],html.navmini .sidenav button[data-nav=pl].on{background:var(--m-sc)!important;color:var(--m-onsc)}
 }
+
+/* Telas muito estreitas: botões da disciplina à direita, ocupando a altura do nome e do tempo; o tempo fica com a largura toda e nada vaza do cartão */
+@media (max-width:380px){
+ .srow .rtop{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:4px;align-items:center}
+ .srow .rtime{display:contents}
+ .srow .rname{grid-column:1;grid-row:1;min-width:0}
+ .srow .rtime>.ctl{grid-column:1;grid-row:2}
+ .srow .rtime>.ctb{grid-column:2;grid-row:1/span 2;align-self:center}
+}
+.chead .btn{white-space:nowrap}
 </style>
 </head>
 <body>
