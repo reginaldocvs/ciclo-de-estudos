@@ -398,7 +398,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--m-p);outline-of
 @media (min-width:860.02px){
  body{padding-block:0 32px;padding-left:0}
  .shell{grid-template-columns:240px minmax(0,1fr);gap:16px}
- .side{position:sticky;top:0;height:100vh;height:100dvh;min-height:0;background:none;border-radius:0;box-shadow:none;padding:20px 12px 20px 12px;gap:24px}
+ .side{position:sticky;top:0;height:100vh;height:100dvh;min-height:0;background:none;border-radius:0;box-shadow:none;padding:29px 12px 20px 12px;gap:24px}
  main{padding-top:28px}
 }
 .sbrand{padding:0 4px 0 8px;gap:12px;font-weight:600;font-size:1.125rem;letter-spacing:0}
@@ -408,7 +408,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--m-p);outline-of
 .sidenav button:hover{background:color-mix(in srgb,var(--ink) 8%,transparent);color:var(--ink)}
 .sidenav button[aria-current=page],.sidenav button[data-nav=pl].on{background:var(--m-sc);color:var(--m-onsc);font-weight:600}
 .sidenav svg,.tabbar svg{width:24px;height:24px}
-.sbrand .navtog{width:40px;height:40px;border-radius:999px}
+.sbrand .navtog{width:40px;height:40px;border-radius:999px;display:grid;place-items:center;padding:0}
 .sbrand .navtog:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
 @media (min-width:860.02px){
  .navmini .shell{grid-template-columns:96px minmax(0,1fr)}
@@ -421,8 +421,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--m-p);outline-of
 }
 /* Indicador em pílula (56×32) atrás do ícone: rail recolhido e barra do celular */
 .tabbar svg,.navmini .sidenav svg{box-sizing:content-box;padding:4px 16px;border-radius:999px;transition:background-color .2s var(--emph),padding .35s var(--spring)}
-/* Menu recolhido: só os ícones; o nome aparece na dica ao passar o mouse e continua lido por leitores de tela */
-.navmini .shell{grid-template-columns:80px minmax(0,1fr)}.navmini .sidenav{gap:8px}.navmini .sidenav button{width:64px;min-height:44px;justify-content:center}.navmini .sidenav button>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (hover:hover){.navmini .sidenav button:hover svg,.tabbar button:hover svg{background:color-mix(in srgb,var(--ink) 8%,transparent)}}
 .navmini .sidenav button[aria-current=page] svg,.navmini .sidenav button[data-nav=pl].on svg,.tabbar button[aria-current=page] svg,.tabbar button[data-nav=pl].on svg{background:var(--m-sc);color:var(--m-onsc)}
 @media (max-width:860px){
@@ -703,6 +701,22 @@ html.mlock{overflow:hidden}
 @media (max-width:600px){body #modalOut>.dlg.leave:is(.edlg,.medit,.plans,.reg:not(.fmd),.addm,.rgpop,.pdadd){animation-name:sheetOut;animation-duration:.18s}}
 @media (prefers-reduced-motion:reduce){.ov.enter,.dlg.enter{animation:none}}
 @media (prefers-reduced-motion:reduce){.btn,.x,.tbig,.fab,.seg,.row.srow,.sidenav button,.tabbar svg,.navmini .sidenav svg{transition:none}}
+
+/* Topo do menu: centro do logo alinhado ao centro das letras do título da página (29px). */
+/* Menu recolhido sem "pulo": logo, botão e ícones ficam exatamente onde estão no menu expandido.
+   Só o texto some; o botão de recolher fica ao lado do logo, com 17px de cada lado (do logo e do conteúdo). */
+@media (min-width:600.02px){
+ html.navmini .shell{grid-template-columns:118px minmax(0,1fr)}
+ html.navmini .side{padding:29px 12px 20px;align-items:stretch}
+ html.navmini .sbrand{flex-direction:row;gap:10px;padding:0 8px}
+ html.navmini .sbrand .navtog{margin-left:7px}
+ html.navmini .sidenav{gap:2px;align-items:flex-start}
+ html.navmini .sidenav button{flex-direction:row;justify-content:flex-start;width:56px;height:56px;min-height:0;padding:0 16px;gap:0;border-radius:999px}
+ html.navmini .sidenav button>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+ html.navmini .sidenav svg{padding:0;background:none!important}
+ html.navmini .sidenav button:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)!important}
+ html.navmini .sidenav button[aria-current=page],html.navmini .sidenav button[data-nav=pl].on{background:var(--m-sc)!important;color:var(--m-onsc)}
+}
 </style>
 </head>
 <body>
