@@ -307,6 +307,7 @@ input[type=checkbox]{border-radius:4px}
 .lnk{background:none;border:0;padding:10px 0;color:var(--act);font:inherit;font-weight:600;cursor:pointer}.lnk:hover{text-decoration:underline}
 .rvnext .rga{border-top:0;padding-top:4px}.rvnext h2{margin-bottom:4px}
 .rch .pvh{flex:1}.pvh .pvt{margin:0;flex:1}
+.rodh{padding-right:28px}.rodop .rodh{margin-bottom:6px}.rodc{font-size:.9375rem;font-weight:400;white-space:nowrap}
 @media (max-width:600px){.cfst{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;width:100%}.c2 .nwnext{justify-content:center}}
 @media (min-width:1120px){.c2 .nwnext{justify-content:center}}
 .rvcfgdlg .rvcf{display:flex;flex-direction:column;align-items:flex-start;gap:6px}.rvcfgdlg .rvcf>span{order:-1;font-size:.95rem}.rvcfgdlg .rvcf input{width:96px}.rvcfgdlg .rvcf+.rvcf{margin-top:12px}
@@ -1174,7 +1175,9 @@ function rodCard(){
  const cs=S.set||1,L=[];for(let r=cs;r>=1;r--)L.push(rodSum(r));const fd2=d=>d?d.split('-').reverse().join('/'):'';
  const b=S.rodBack,can=b&&b.to===cs&&!S.sessions.some(x=>(x.set||1)===cs);
  const row=i=>`<div class="row" style="align-items:center"><div class="grow"><b>Rodada ${i.r}</b> <span class="mut">· ${i.cur?'em andamento':'concluída'}</span><div class="mut" style="font-size:.85rem">${i.c} ${i.c===1?'ciclo':'ciclos'} · ${fmt(i.min)} estudados${i.d0?' · '+fd2(i.d0)+(i.d1!==i.d0?' a '+fd2(i.d1):''):''}</div></div></div>`;
- return `<div class="card pdb hasinfo">${infoBtn('rodadas','Rodadas')}<h2 style="margin-bottom:6px">Rodadas</h2>${L.map(row).join('')}${can?`<div class="fl" style="margin-top:10px"><button class="btn g s" data-act="rundo">Desfazer nova rodada</button><span class="mut" style="align-self:center;font-size:.85rem">Disponível enquanto a Rodada ${cs} estiver vazia.</span></div>`:''}</div>`}
+ /* Recolhido por padrão; abre sozinho enquanto dá para desfazer a nova rodada */
+ const op=S.rodOpen!=null?S.rodOpen:!!can;
+ return `<div class="card pdb hasinfo${op?' rodop':''}">${infoBtn('rodadas','Rodadas')}<div class="pvh rodh" data-act="rodtog"><button class="x mtog${op?' on':''}" data-act="rodtog" aria-expanded="${op}" aria-label="${op?'Recolher rodadas':'Ver rodadas'}">${CHEV}</button><h2 class="pvt">Rodadas${op?'':` <span class="mut rodc">· Rodada ${cs}</span>`}</h2></div>${op?L.map(row).join(''):''}${op&&can?`<div class="fl" style="margin-top:10px"><button class="btn g s" data-act="rundo">Desfazer nova rodada</button><span class="mut" style="align-self:center;font-size:.85rem">Disponível enquanto a Rodada ${cs} estiver vazia.</span></div>`:''}</div>`}
 /* Edição da disciplina em rascunho (ui.pdd): nome, nomes/ordem dos tópicos, excluídos (del) e novos (nw).
    Nada vai para S até "Salvar"; "Cancelar" só descarta o rascunho. */
 function pdDraft(s){if(!ui.pdd||ui.pdd.id!==s.id)ui.pdd={id:s.id,name:s.name,topics:s.topics.map(t=>({id:t.id,name:t.name})),del:[]};return ui.pdd}
@@ -1591,6 +1594,7 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='hcyc'){ui.hfc=p;ui.hn=30;render();scrollTo({top:0});return}
  if(a==='hclr'){ui.hq='';ui.hd1='';ui.hd2='';ui.hfs='';ui.hfc='';ui.hn=30;render();const q=$('hq');if(q)q.focus({preventScroll:true});return}
  if(a==='rvatog'){S.rvaClosed=!S.rvaClosed;save();render();return}
+ if(a==='rodtog'){const b=S.rodBack;S.rodOpen=!(S.rodOpen!=null?S.rodOpen:!!(b&&b.to===(S.set||1)&&!S.sessions.some(x=>(x.set||1)===(S.set||1))));save();render();return}
  if(a==='spick'){if(p==='af'){ui.nmph=null;S.sel.nnnew=false;S.sel.af=q;S.sel.nn='';S.sel.nnid=null;S.sel.nnall=false}else if(p==='ne'){S.sel.ne=q}else if(p==='ss'){reqSwitch(q)}else if(p.startsWith('k-')){const [,gi,ri]=p.split('-'),g=grps().find(x=>x.id===gi),r=g&&g.rows.find(x=>x.id===ri);if(r)r.kind=q==='questoes'?'questoes':'aula'}ui.dd=null}
  if(a==='tdd')ui.dd=ui.dd==='t:'+p?null:'t:'+p;
  if(a==='tpick'){if(p.startsWith('goal-')){const s=S.subjects.find(x=>x.id===p.slice(5));if(s)s.goal=+q}else if(p==='man')S.sel.mt=tmFmt(+q);else if(p==='ng')S.sel.ng=tmFmt(+q);else if(p==='edit'&&S.edit)S.edit.min=String(+q);ui.dd=null;ui.focus='tf-'+p}
