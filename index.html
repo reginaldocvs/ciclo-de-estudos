@@ -697,7 +697,7 @@ html.mlock{overflow:hidden}
 @keyframes sheetIn{from{opacity:0;transform:translateY(30%)}}
 .ov.enter{animation:ovIn .3s cubic-bezier(.05,.7,.1,1)}
 .dlg.enter{animation:dlgIn .3s cubic-bezier(.05,.7,.1,1)}
-.dlg.fmd.enter{animation-name:ovIn}
+.dlg.fmd.enter{animation:none}
 @media (max-width:600px){body .dlg.enter:is(.edlg,.medit,.plans,.reg:not(.fmd),.addm,.rgpop,.pdadd){animation-name:sheetIn}}
 /* Saída das janelas: mais curta que a entrada e acelerando, no caminho inverso */
 @keyframes ovOut{to{opacity:0}}
@@ -706,7 +706,6 @@ html.mlock{overflow:hidden}
 #modalOut>*{pointer-events:none}
 #modalOut>.ov.leave{animation:ovOut .26s cubic-bezier(.2,0,0,1) forwards}
 #modalOut>.dlg.leave{animation:dlgOut .15s cubic-bezier(.3,0,.8,.15) forwards}
-#modalOut>.dlg.fmd.leave{animation-name:ovOut}
 @media (max-width:600px){body #modalOut>.dlg.leave:is(.edlg,.medit,.plans,.reg:not(.fmd),.addm,.rgpop,.pdadd){animation-name:sheetOut;animation-duration:.18s}}
 @media (prefers-reduced-motion:reduce){.ov.enter,.dlg.enter{animation:none}}
 @media (prefers-reduced-motion:reduce){.btn,.x,.tbig,.fab,.seg,.row.srow,.sidenav button,.tabbar svg,.navmini .sidenav svg{transition:none}}
@@ -1117,12 +1116,12 @@ function sheetBind(){document.querySelectorAll('#modal .dlg').forEach(d=>{if(!d.
   else{d.style.transition=rm?'none':'transform .25s cubic-bezier(.2,0,0,1)';d.style.transform=''}};
  g.addEventListener('pointerup',end);g.addEventListener('pointercancel',end)})}
 /* Animação de entrada só quando a janela realmente abre (o app redesenha as janelas a cada mudança) */
-/* As telas do modo foco (cronômetro e registro) contam como a mesma janela: trocar entre elas não anima */
+/* As telas do modo foco (cronômetro e registro) contam como a mesma janela; o modo foco entra e sai sem animação */
 const dlgKey=d=>d.classList.contains('fmd')?'fmd':(d.getAttribute('aria-label')||'')+'|'+d.className.split(' ').filter(c=>c!=='enter').slice(0,3).join('.');
 function dlgKeys(){return new Set([...document.querySelectorAll('#modal .dlg')].map(dlgKey))}
 /* Saída: guarda uma cópia visual das janelas abertas; as que fecharam somem animadas (sem aceitar cliques) e são removidas */
 function dlgSnap(){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return [];return [...document.querySelectorAll('#modal .dlg')].map(d=>{const o=d.previousElementSibling;return {k:dlgKey(d),drag:d.dataset.closing==='drag',d:d.cloneNode(true),o:o&&o.classList.contains('ov')?o.cloneNode(true):null}})}
-function dlgLeave(snaps){if(!snaps.length)return;const now=dlgKeys(),box=$('modalOut');if(!box)return;snaps.forEach(x=>{if(now.has(x.k)||x.drag)return;[x.o,x.d].forEach(n=>{if(!n)return;n.classList.remove('enter');n.classList.add('leave');n.removeAttribute('id');n.inert=true;box.appendChild(n);const rm=()=>n.remove();n.addEventListener('animationend',rm,{once:true});setTimeout(rm,320)})})}
+function dlgLeave(snaps){if(!snaps.length)return;const now=dlgKeys(),box=$('modalOut');if(!box)return;snaps.forEach(x=>{if(now.has(x.k)||x.drag||x.k==='fmd')return;[x.o,x.d].forEach(n=>{if(!n)return;n.classList.remove('enter');n.classList.add('leave');n.removeAttribute('id');n.inert=true;box.appendChild(n);const rm=()=>n.remove();n.addEventListener('animationend',rm,{once:true});setTimeout(rm,320)})})}
 function dlgEnter(was){document.querySelectorAll('#modal .dlg').forEach(d=>{if(was.has(dlgKey(d)))return;d.classList.add('enter');const o=d.previousElementSibling;if(o&&o.classList.contains('ov'))o.classList.add('enter')})}
 /* Janela aberta por cima: a página de trás fica inerte e não rola; com janelas empilhadas, só a de cima aceita clique e teclado */
 function modalLock(){const ds=[...document.querySelectorAll('#modal .dlg')],op=ds.length>0;document.querySelectorAll('.shell,.tabbar').forEach(e=>{e.inert=op});document.documentElement.classList.toggle('mlock',op);
