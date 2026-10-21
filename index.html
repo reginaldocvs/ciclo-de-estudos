@@ -36,7 +36,7 @@ html{scroll-padding-top:env(safe-area-inset-top,0px)}
 h2{font-size:1.125rem;font-weight:600;margin:0 0 10px}
 .mut{color:var(--mut);font-size:.95rem}
 button:focus-visible,input:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
-.ringwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap}.ritem{display:flex;gap:8px;align-items:flex-start;padding:10px 4px 10px 10px;border-bottom:1px solid var(--line)}.ritem:last-child{border-bottom:0}.rsub{font-weight:600;line-height:1.3}.rmeta{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.85rem;margin-top:4px}@media (min-width:1120px){.c2{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,380px);grid-template-areas:'b a' 'b c';grid-template-rows:auto 1fr;column-gap:16px;align-items:start}.c2a{grid-area:a}.c2b{grid-area:b;min-width:0}.c2 .ringwrap{flex-direction:column;text-align:center}.c2 .nwact{justify-content:center}.c2 .now{min-width:0}}@media (max-width:1119px){}
+.ringwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap}.ritem{display:flex;gap:8px;align-items:flex-start;padding:10px 4px 10px 10px;border-bottom:1px solid var(--line)}.ritem:last-child{border-bottom:0}.rsub{font-weight:600;line-height:1.3}.rmeta{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.85rem;margin-top:4px}@media (min-width:1120px){.c2{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,380px);grid-template-areas:'b a' '. a';grid-template-rows:auto 32px;margin-bottom:-32px;column-gap:16px;align-items:start}.c2a{grid-area:a}.c2b{grid-area:b;min-width:0}.c2 .ringwrap{flex-direction:column;text-align:center}.c2 .nwact{justify-content:center}.c2 .now{min-width:0}}@media (max-width:1119px){}
 /* Cronômetro na horizontal (601–1119px): os 3 indicadores ficam empilhados à esquerda, com a mesma altura do cartão;
    o anel e a coluna encolhem com o espaço (cqi = largura de #app) para o cronômetro nunca empilhar. */
 #app{container:app/inline-size}
@@ -638,7 +638,9 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 /* Fila de disciplinas mais compacta */
 .c2b .row.srow{padding:10px 12px}
 .c2b .srow .bar{margin-top:6px}
-@media (min-width:1120px){.c2a{position:sticky;top:24px;will-change:transform;contain:layout paint}}
+/* Cartão do ciclo e calendário fixos ao rolar, com o mesmo respiro do topo da página (28px).
+   A coluna do cartão se estende pelo espaço final da página (linha extra de 32px), para ele não subir no fim da rolagem. */
+@media (min-width:1120px){.c2a{position:sticky;top:28px;will-change:transform;contain:layout paint}}
 @media (max-width:600px){
  .c2b .srow .rtop{row-gap:0}
  .c2b .row.srow{padding:8px 10px}
@@ -664,7 +666,7 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 @media (min-width:600.02px){
  .rvw{grid-template-columns:minmax(0,1fr) clamp(280px,38%,380px);align-items:start}
  .rvside .rcd{min-height:0}
- .rvside{max-width:none;position:sticky;top:24px;will-change:transform;contain:layout paint}
+ .rvside{max-width:none;position:sticky;top:28px;will-change:transform;contain:layout paint}
 }
 /* Setinhas da linha de grupos (só com mouse; no toque basta deslizar) */
 .sgrip{display:none}
