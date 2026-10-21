@@ -1186,9 +1186,11 @@ function viewRev(){
  const fuc=fu.map(o=>`<div class="card rgc"><div>${head(o)}</div><div class="mut rgw">${when(o)}</div>${body(o)}</div>`).join('');
  const dnc=dn.map(o=>`<div class="card rgc"><div>${head(o)}</div><div class="mut rgw">${when(o)}</div></div>`).join('');
  const fu0=fu[0],top=nxo?avc[av.indexOf(nxo)]:'',rest=avc.filter((x,i)=>av[i]!==nxo).join('');
- const nxt=`<div class="card rvnext"><h2>Próxima revisão</h2>${top||(fu0?`<div class="rga"><div class="rgal"><div class="rgan"><b>${rgLabel(fu0)}</b><span class="tag">${typeof TAG.futuro==='function'?TAG.futuro(fu0):''}</span></div><div class="mut rgw">${when(fu0)}</div></div></div>`:av.length?'<div class="empty">Os grupos disponíveis não têm tópicos registrados.</div>':'<div class="empty">Nenhum grupo ainda. Eles se formam conforme você estuda.</div>')}</div>`;
+ /* Próxima revisão: só grupos prontos para revisar. Grupos em formação ou aguardando a data ficam em Revisões futuras */
+ const miss=o=>o.g.len-o.g.dates.length,wait=fu0?(fu0.closed?`O ${rgLabel(fu0)} fica disponível em ${fd(fu0.availDate)}.`:`O ${rgLabel(fu0)} fica pronto quando fechar ${fu0.g.len} dias de estudo (falta${miss(fu0)===1?'':'m'} ${miss(fu0)}).`):'';
+ const nxt=`<div class="card rvnext"><h2>Próxima revisão</h2>${top||(av.length?'<div class="empty">Os grupos disponíveis não têm tópicos registrados.</div>':fu0?`<div class="empty"><b>Nenhuma revisão pronta.</b> ${wait}</div>`:'<div class="empty">Nenhum grupo ainda. Eles se formam conforme você estuda.</div>')}</div>`;
  const cal=rvCal(I);
- return `<div class="rvw"><div class="rvmain">`+nxt+(rest?`<div class="card"><h2>Na fila</h2>${rest}</div>`:'')+`${fu.length>(top?0:1)?`<h2 class="sec">Revisões futuras</h2>${top?fuc:fu.slice(1).map(o=>`<div class="card rgc"><div>${head(o)}</div><div class="mut rgw">${when(o)}</div>${body(o)}</div>`).join('')}`:''}${dn.length?`<h2 class="sec">Concluídas</h2>${dnc}`:''}</div><aside class="rvside">${cal}</aside></div>`;
+ return `<div class="rvw"><div class="rvmain">`+nxt+(rest?`<div class="card"><h2>Na fila</h2>${rest}</div>`:'')+`${fu.length?`<h2 class="sec">Revisões futuras</h2>${fuc}`:''}${dn.length?`<h2 class="sec">Concluídas</h2>${dnc}`:''}</div><aside class="rvside">${cal}</aside></div>`;
 }
 const MINUS='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>';
 const nmAvail=()=>S.subjects.filter(s=>!s.of&&s.hid&&s.ed===S.sel.af).length;
