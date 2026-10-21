@@ -570,15 +570,17 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 #tip{background:var(--m-inv);color:var(--m-oninv);border-radius:var(--r-s);font-size:.85rem}
 #tip .tsw{box-shadow:0 0 0 1px color-mix(in srgb,var(--m-oninv) 35%,transparent)}
 .nmnote{background:var(--m-inv);color:var(--m-oninv);border-radius:var(--r-s)}
-/* No celular, os diálogos maiores viram folhas inferiores com alça */
+/* No celular, os diálogos maiores viram folhas inferiores com alça.
+   Confirmações curtas (como o aviso de troca de disciplina) continuam como diálogo centralizado, sem alça.
+   'body' dá mais peso a estas regras, para que nenhuma largura ou margem definida depois para um diálogo desfaça a folha. */
 @media (max-width:600px){
- .dlg.edlg,.dlg.medit,.dlg.plans,.dlg.reg:not(.fmd),.dlg.addm,.dlg.rgpop,.dlg.swd,.dlg.pdadd{inset:auto 0 0 0;margin:0;width:100%;max-width:none;max-height:92vh;max-height:92dvh;border-radius:var(--r-2xl) var(--r-2xl) 0 0;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
- .dlg.reg:not(.edlg):not(.fmd),.dlg.plans,.dlg.rgpop,.dlg.swd,.dlg.pdadd{padding-top:32px}
- .dlg.edlg::before,.dlg.medit::before,.dlg.plans::before,.dlg.reg:not(.fmd)::before,.dlg.addm::before,.dlg.rgpop::before,.dlg.swd::before,.dlg.pdadd::before{content:'';position:absolute;top:10px;left:50%;width:32px;height:4px;margin-left:-16px;border-radius:4px;background:color-mix(in srgb,var(--mut) 40%,transparent);z-index:1}
- .dlg.edlg,.dlg.medit,.dlg.addm{padding-top:0;padding-bottom:0}
- .edh,.mhead{padding-top:28px}
- .dlg.addm{padding:28px 16px calc(16px + env(safe-area-inset-bottom,0px))}
- .dlg.medit .mscroll{padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+ body .dlg.edlg,body .dlg.medit,body .dlg.plans,body .dlg.reg:not(.fmd),body .dlg.addm,body .dlg.rgpop,body .dlg.pdadd{inset:auto 0 0 0;margin:0;width:100%;max-width:none;max-height:92vh;max-height:92dvh;border-radius:var(--r-2xl) var(--r-2xl) 0 0;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+ body .dlg.reg:not(.edlg):not(.fmd),body .dlg.plans,body .dlg.rgpop,body .dlg.pdadd{padding-top:32px}
+ body .dlg.edlg::before,body .dlg.medit::before,body .dlg.plans::before,body .dlg.reg:not(.fmd)::before,body .dlg.addm::before,body .dlg.rgpop::before,body .dlg.pdadd::before{content:'';position:absolute;top:10px;left:50%;width:32px;height:4px;margin-left:-16px;border-radius:4px;background:color-mix(in srgb,var(--mut) 40%,transparent);z-index:1}
+ body .dlg.edlg,body .dlg.medit,body .dlg.addm{padding-top:0;padding-bottom:0}
+ body .edh,body .mhead{padding-top:28px}
+ body .dlg.addm{padding:28px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+ body .dlg.medit .mscroll{padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 }
 
 /* ---------- Anel do ciclo ---------- */
@@ -638,7 +640,6 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 .dlga{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:8px}
 .btn.tx{background:none;color:var(--m-p);padding:8px 12px}
 .btn.tx:hover:not(:disabled){background:color-mix(in srgb,var(--m-p) 8%,transparent);box-shadow:none}
-@media (max-width:600px){.dlg.swd{padding:36px 20px calc(20px + env(safe-area-inset-bottom,0px))}}
 /* ===== Revisão: calendário numa coluna própria (fixa no computador, largura limitada nas telas menores) ===== */
 .rvw{display:grid;grid-template-columns:minmax(0,1fr);gap:0 16px}
 .rvmain{min-width:0}
