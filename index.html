@@ -653,7 +653,7 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 .btn.tx:hover:not(:disabled){background:color-mix(in srgb,var(--m-p) 8%,transparent);box-shadow:none}
 /* ===== Revisão: calendário numa coluna própria (fixa no computador, largura limitada nas telas menores) ===== */
 .rvw{display:grid;grid-template-columns:minmax(0,1fr);gap:0 16px}
-.rvmain{min-width:0}
+.rvmain{min-width:0}.rvmain>.sec:first-child{margin-top:0}
 .rvside{min-width:0;width:100%;max-width:420px;justify-self:center}
 .rvside>.card{margin-bottom:0}
 /* Legenda do calendário sempre numa linha; encolhe o texto e os espaços quando fica apertado */
@@ -1185,10 +1185,9 @@ function viewRev(){
  const avc=av.map(o=>`<div class="rga"><div class="rgal"><div class="rgan"><b>${rgLabel(o)}</b><button class="x rgeye" data-act="rgview" data-id="${o.g.id}" title="Ver disciplinas e tópicos" aria-label="Ver disciplinas e tópicos do ${rgLabel(o)}">${EYEP}</button></div><div class="mut rgm">Dias válidos de estudo ${o.start}–${o.start+o.g.dates.length-1}${o.g.len!==N?' · intervalo '+o.g.len:''}</div><div class="mut rgw">${hasC(o)?when(o):'Sem tópicos registrados nestes dias.'}</div></div><div class="rgar"><span class="rgtg"><span class="tag${o.g.id===nx||!nxo?'':' qtag'}">${o.g.id===nx||!nxo?'Disponível':'Na fila'}</span></span>${!hasC(o)?'':o.g.id===nx?`<button class="btn s" data-act="rvstart" data-id="${o.g.id}">Iniciar</button>`:''}</div>${hasC(o)&&o.g.id!==nx&&nxo?`<div class="mut rgwait">Começa depois da revisão do ${rgLabel(nxo)}.</div>`:''}</div>`);
  const fuc=fu.map(o=>`<div class="card rgc"><div>${head(o)}</div><div class="mut rgw">${when(o)}</div>${body(o)}</div>`).join('');
  const dnc=dn.map(o=>`<div class="card rgc"><div>${head(o)}</div><div class="mut rgw">${when(o)}</div></div>`).join('');
- const fu0=fu[0],top=nxo?avc[av.indexOf(nxo)]:'',rest=avc.filter((x,i)=>av[i]!==nxo).join('');
- /* Próxima revisão: só grupos prontos para revisar. Grupos em formação ou aguardando a data ficam em Revisões futuras */
- const miss=o=>o.g.len-o.g.dates.length,wait=fu0?(fu0.closed?`O ${rgLabel(fu0)} fica disponível em ${fd(fu0.availDate)}.`:`O ${rgLabel(fu0)} fica pronto quando fechar ${fu0.g.len} dias de estudo (falta${miss(fu0)===1?'':'m'} ${miss(fu0)}).`):'';
- const nxt=`<div class="card rvnext"><h2>Próxima revisão</h2>${top||(av.length?'<div class="empty">Os grupos disponíveis não têm tópicos registrados.</div>':fu0?`<div class="empty"><b>Nenhuma revisão pronta.</b> ${wait}</div>`:'<div class="empty">Nenhum grupo ainda. Eles se formam conforme você estuda.</div>')}</div>`;
+ const top=nxo?avc[av.indexOf(nxo)]:'',rest=avc.filter((x,i)=>av[i]!==nxo).join('');
+ /* Próxima revisão só aparece quando há grupo pronto; os demais ficam em Revisões futuras */
+ const nxt=top||av.length?`<div class="card rvnext"><h2>Próxima revisão</h2>${top||'<div class="empty">Os grupos disponíveis não têm tópicos registrados.</div>'}</div>`:I.list.length?'':'<div class="card"><div class="empty">Nenhum grupo ainda. Eles se formam conforme você estuda.</div></div>';
  const cal=rvCal(I);
  return `<div class="rvw"><div class="rvmain">`+nxt+(rest?`<div class="card"><h2>Na fila</h2>${rest}</div>`:'')+`${fu.length?`<h2 class="sec">Revisões futuras</h2>${fuc}`:''}${dn.length?`<h2 class="sec">Concluídas</h2>${dnc}`:''}</div><aside class="rvside">${cal}</aside></div>`;
 }
