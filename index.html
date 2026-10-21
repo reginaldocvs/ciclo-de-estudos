@@ -568,7 +568,9 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 @media (max-width:600px){
  body .dlg.edlg,body .dlg.medit,body .dlg.plans,body .dlg.reg:not(.fmd),body .dlg.addm,body .dlg.rgpop,body .dlg.pdadd{inset:auto 0 0 0;margin:0;width:100%;max-width:none;max-height:92vh;max-height:92dvh;border-radius:var(--r-2xl) var(--r-2xl) 0 0;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
  body .dlg.reg:not(.edlg):not(.fmd),body .dlg.plans,body .dlg.rgpop,body .dlg.pdadd{padding-top:32px}
- body .dlg.edlg::before,body .dlg.medit::before,body .dlg.plans::before,body .dlg.reg:not(.fmd)::before,body .dlg.addm::before,body .dlg.rgpop::before,body .dlg.pdadd::before{content:'';position:absolute;top:10px;left:50%;width:32px;height:4px;margin-left:-16px;border-radius:4px;background:color-mix(in srgb,var(--mut) 40%,transparent);z-index:1}
+ body .dlg>.sgrip{display:block;position:absolute;top:0;left:0;right:0;height:28px;z-index:2;touch-action:none;cursor:grab}
+ body .dlg>.sgrip:active{cursor:grabbing}
+ body .dlg>.sgrip::after{content:'';position:absolute;top:10px;left:50%;width:32px;height:4px;margin-left:-16px;border-radius:4px;background:color-mix(in srgb,var(--mut) 40%,transparent)}
  body .dlg.edlg,body .dlg.medit,body .dlg.addm{padding-top:0;padding-bottom:0}
  body .edh,body .mhead{padding-top:28px}
  body .dlg.addm{padding:28px 16px calc(16px + env(safe-area-inset-bottom,0px))}
@@ -673,6 +675,10 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
  .rvside{max-width:none;position:sticky;top:24px;will-change:transform;contain:layout paint}
 }
 /* Setinhas da linha de grupos (só com mouse; no toque basta deslizar) */
+.sgrip{display:none}
+/* Janela aberta: a página de trás não rola */
+html.mlock{overflow:hidden}
+.dlg{overscroll-behavior:contain}
 .rcscr{position:relative;display:block;width:100%;min-width:0;margin-bottom:8px}
 .rcscr>.rcchips{margin-bottom:0}
 .rcar{position:absolute;top:50%;z-index:1;width:32px;height:32px;margin-top:-16px;border:0;border-radius:999px;padding:0;display:grid;place-items:center;cursor:pointer;background:var(--m-c-high);color:var(--ink);box-shadow:var(--e1);transition:background-color .2s var(--emph)}
@@ -1081,6 +1087,18 @@ function rcBind(){const c=document.querySelector('.rcchips');if(!c||c.dataset.b)
  c.addEventListener('scroll',()=>{ui.rcsl=c.scrollLeft;rcArrows()},{passive:true});
  c.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)<=Math.abs(e.deltaX))return;const max=c.scrollWidth-c.clientWidth;if(max<=2)return;const to=Math.max(0,Math.min(max,c.scrollLeft+e.deltaY));if(to===c.scrollLeft)return;e.preventDefault();c.scrollLeft=to},{passive:false});
  rcArrows()}
+/* Painéis inferiores do celular: arrastar pela alça para baixo fecha o painel (como o Esc); soltando antes, ele volta */
+const SHEETS='.dlg.edlg,.dlg.medit,.dlg.plans,.dlg.reg:not(.fmd),.dlg.addm,.dlg.rgpop,.dlg.pdadd';
+function sheetBind(){document.querySelectorAll('#modal .dlg').forEach(d=>{if(!d.matches(SHEETS)||d.querySelector(':scope>.sgrip'))return;const g=document.createElement('div');g.className='sgrip';g.setAttribute('aria-hidden','true');d.prepend(g);let y0=null,dy=0;
+ g.addEventListener('pointerdown',e=>{if(!matchMedia('(max-width:600px)').matches)return;y0=e.clientY;dy=0;try{g.setPointerCapture(e.pointerId)}catch(x){}d.style.transition='none'});
+ g.addEventListener('pointermove',e=>{if(y0===null)return;dy=Math.max(0,e.clientY-y0);d.style.transform='translateY('+dy+'px)'});
+ const end=()=>{if(y0===null)return;y0=null;const rm=matchMedia('(prefers-reduced-motion: reduce)').matches,h=d.getBoundingClientRect().height;
+  if(dy>Math.min(140,h*.3)){d.style.transition=rm?'none':'transform .18s cubic-bezier(.3,0,1,1)';d.style.transform='translateY(100%)';setTimeout(()=>document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true})),rm?0:170)}
+  else{d.style.transition=rm?'none':'transform .25s cubic-bezier(.2,0,0,1)';d.style.transform=''}};
+ g.addEventListener('pointerup',end);g.addEventListener('pointercancel',end)})}
+/* Janela aberta por cima: a página de trás fica inerte e não rola; com janelas empilhadas, só a de cima aceita clique e teclado */
+function modalLock(){const ds=[...document.querySelectorAll('#modal .dlg')],op=ds.length>0;document.querySelectorAll('.shell,.tabbar').forEach(e=>{e.inert=op});document.documentElement.classList.toggle('mlock',op);
+ if(ds.length>1){const z=d=>parseInt(getComputedStyle(d).zIndex)||0;let top=ds[0];ds.forEach(d=>{if(z(d)>=z(top))top=d});ds.forEach(d=>{d.inert=d!==top})}else ds.forEach(d=>{d.inert=false})}
 function rvCal(I){
  const td=today(),mon=ui.rcm||td.slice(0,7),flt=ui.rcg&&I.list.some(o=>o.g.id===ui.rcg)?ui.rcg:null,E={};
  const ev=(d,k,o)=>{(E[d]=E[d]||[]).push({k,o})};
@@ -1273,7 +1291,7 @@ const focSig=()=>{const a=document.activeElement;if(!a||a===document.body||a===d
 const FQ='a[href],button:not([disabled]),input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 const focIdx=()=>{const a=document.activeElement;if(!a||a===document.body)return null;const box=a.closest('#modal .dlg')||document;return {inDlg:box!==document,i:[...box.querySelectorAll(FQ)].filter(x=>x.getClientRects().length).indexOf(a)}};
 const focTo=sig=>{if(!sig)return false;let el=null;try{el=[...document.querySelectorAll(sig)].find(x=>x.getClientRects().length&&x.matches(FQ))}catch(e){}if(el){el.focus({preventScroll:true});return true}return false};
-function render(){const pre=focSig(),pix=focIdx(),had=!!document.querySelector('#modal .dlg');render0();rcBind();{const op=!!document.querySelector('#modal .dlg');document.querySelectorAll('.shell,.tabbar').forEach(e=>{e.inert=op})}try{const dlg=document.querySelector('#modal .dlg'),ae=document.activeElement,lost=!ae||ae===document.body;
+function render(){const pre=focSig(),pix=focIdx(),had=!!document.querySelector('#modal .dlg');render0();rcBind();modalLock();sheetBind();try{const dlg=document.querySelector('#modal .dlg'),ae=document.activeElement,lost=!ae||ae===document.body;
  if(dlg&&!had){FOC.op=pre;if(!dlg.contains(ae)){if(FOC.kb){const f=dlg.querySelector('input:not([type=hidden]):not([disabled]),textarea,select,button:not([disabled])');if(f){f.focus({preventScroll:true});return}}dlg.setAttribute('tabindex','-1');dlg.focus({preventScroll:true})}return}
  if(!dlg&&had){const o=FOC.op;FOC.op=null;if(lost&&FOC.kb&&focTo(o))return}
  if(lost&&FOC.kb&&!focTo(pre)&&pix&&pix.i>=0){const box=pix.inDlg?dlg:document;if(box){const L=[...box.querySelectorAll(FQ)].filter(x=>x.getClientRects().length);const el=L[Math.min(pix.i,L.length-1)];el&&el.focus({preventScroll:true})}}}catch(e){}}
