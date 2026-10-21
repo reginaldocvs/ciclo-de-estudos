@@ -318,7 +318,7 @@ input[type=checkbox]{border-radius:4px}
 input::placeholder,textarea::placeholder{color:var(--mut);opacity:1}
 @media (pointer:coarse){.btn.s{position:relative}.btn.s::after{content:'';position:absolute;inset:-6px 0}.rpick{padding:11px 0;margin:-11px 0}input[type=date],input[type=search]{min-height:44px}}
 .wel{width:min(92vw,380px);padding:28px 24px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}.wel img{border-radius:16px}.wel h2{margin:4px 0 0;font-size:1.5rem}.wel p{margin:0 0 8px;color:var(--mut);line-height:1.5}.wel .btn{margin-top:4px}.welft{font-size:.85rem}.welerr{color:var(--bad);font-size:.85rem}
-.nsync{display:flex;align-items:center;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;font-size:.85rem;color:var(--mut);border:1px dashed var(--line);border-radius:12px;padding:4px 14px;margin-bottom:12px}.nsync .lnk{padding:8px 0}
+
 /* Quadradinho + nome: nunca quebra linha; o quadradinho não encolhe e o nome ganha reticências */
 .snt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rvm,.edn,.grp,.nwn,.srh>span,.mname{min-width:0;max-width:100%}
@@ -442,7 +442,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--m-p);outline-of
 .rvrem{background:var(--m-pc);color:var(--m-onpc)}
 .rvrem .mut{color:color-mix(in srgb,var(--m-onpc) 80%,transparent)}
 .rvrem .lnk{color:var(--m-onpc)}
-.nsync{border:1px solid var(--m-ov);border-radius:var(--r-l);padding:4px 8px 4px 16px}
+
 .ozone{border-color:var(--m-ov);border-radius:var(--r-l)}
 .nvw,.qbub{background:var(--m-c-high);border:0;border-radius:var(--r-m)}
 
@@ -1015,7 +1015,7 @@ function viewCiclo(){
  if(rev||(ui.view&&ui.view>=S.cycle))ui.view=null;
  if(ui.view)return cnav()+viewCicloPast(ui.view);
  if(!S.edit)syncSel();
- const A=actives(),cur=current();let rvBan='',h=nsyncBar()+(rev?'':cnav())+(ui.note?`<div class="mut" style="text-align:center;margin-bottom:10px">${esc(ui.note)}</div>`:'');
+ const A=actives(),cur=current();let rvBan='',h=(rev?'':cnav())+(ui.note?`<div class="mut" style="text-align:center;margin-bottom:10px">${esc(ui.note)}</div>`:'');
  
  if(!rev&&!PAST&&cur){const AV=rgInfo().list.filter(o=>o.st==='disponivel'&&rgTopics(o.g).size);if(AV.length||S.rv)rvBan=`<div class="done rvrem"><div><b>${S.rv?'Revisão em andamento':'Revisão do '+rgLabel(AV.find(o=>o.g.id===rgNext())||AV[0])+' disponível'}</b><div class="mut">${S.rv?'Continue de onde parou na aba Revisão.':'Ela corre em paralelo ao ciclo'+(AV.length>1?'; depois dela, mais '+(AV.length-1)+' grupo'+(AV.length>2?'s':'')+' na fila.':'.')}</div></div><button class="lnk" data-tab="rev">${S.rv?'Continuar revisão':'Ir para a revisão'} ›</button></div>`}
  if(!cur){
@@ -1424,7 +1424,6 @@ const WSKIP='ciclo-welcome-skip';
 const noAcct=()=>fbOn()&&SY.prov==='firebase'&&SY.ready&&!SY.user;
 const welcomeOn=()=>{if(!noAcct()||ui.wskip||S.sessions.length)return false;try{return localStorage.getItem(WSKIP)!=='1'}catch(e){return true}};
 const welcomeHtml=()=>`<div class="ov top"></div><div class="dlg top wel" role="dialog" aria-modal="true" aria-labelledby="welt"><img src="icons/icon-192.png" alt="" width="64" height="64"><h2 id="welt">Ciclo de Estudos</h2><p>Entre com sua conta Google para guardar seus estudos na nuvem e continuar de qualquer computador ou celular.</p>${SY.err?`<div role="alert" class="welerr">${esc(SY.err)}</div>`:''}<button class="btn full" data-act="fblogin">Entrar com Google</button><button class="lnk" data-act="wskip">Usar só neste aparelho</button><div class="mut welft">Você pode entrar depois em Configurações.</div></div>`;
-const nsyncBar=()=>noAcct()&&!welcomeOn()?'<div class="nsync" role="status"><span>Salvo só neste aparelho.</span><button class="lnk" data-act="fblogin">Entrar com Google</button></div>':'';
 function fbLogin(){if(!window.firebase)return;const p=new firebase.auth.GoogleAuthProvider();SY.err=null;
  firebase.auth().signInWithPopup(p).catch(e=>{const c=e&&e.code;if(c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment'||c==='auth/web-storage-unsupported'||c==='auth/internal-error')firebase.auth().signInWithRedirect(p);else{SY.err=fbErr(e);render()}})}
 function fbLogout(){if(!window.firebase)return;firebase.auth().signOut();SY.lastTs=0;SY.lastJson=null;SY.dirty=false;SY.localTs=0;syMeta()}
