@@ -421,6 +421,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--m-p);outline-of
 }
 /* Indicador em pílula (56×32) atrás do ícone: rail recolhido e barra do celular */
 .tabbar svg,.navmini .sidenav svg{box-sizing:content-box;padding:4px 16px;border-radius:999px;transition:background-color .2s var(--emph),padding .35s var(--spring)}
+/* Menu recolhido: só os ícones; o nome aparece na dica ao passar o mouse e continua lido por leitores de tela */
+.navmini .shell{grid-template-columns:80px minmax(0,1fr)}.navmini .sidenav{gap:8px}.navmini .sidenav button{width:64px;min-height:44px;justify-content:center}.navmini .sidenav button>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (hover:hover){.navmini .sidenav button:hover svg,.tabbar button:hover svg{background:color-mix(in srgb,var(--ink) 8%,transparent)}}
 .navmini .sidenav button[aria-current=page] svg,.navmini .sidenav button[data-nav=pl].on svg,.tabbar button[aria-current=page] svg,.tabbar button[data-nav=pl].on svg{background:var(--m-sc);color:var(--m-onsc)}
 @media (max-width:860px){
@@ -1552,6 +1554,7 @@ function delTopic(sub,q){const bs=sub.of?(S.subjects.find(x=>x.id===sub.of)||sub
   Object.keys(S.checked||{}).forEach(k=>{if(k.indexOf(':'+bs.id+':'+q+':')>0)delete S.checked[k]})}
 /* Navegação lateral recolhível: só ícones, com o nome no title e no aria-label */
 function navMini(on){const r=document.documentElement;if(on===undefined)on=!r.classList.contains('navmini');r.classList.toggle('navmini',on);try{localStorage.setItem('ciclo-nav-mini',on?'1':'0')}catch(e){}
+ document.querySelectorAll('.sidenav button').forEach(x=>{const t=(x.textContent||'').trim();if(on)x.title=t;else x.removeAttribute('title')});
  const b=document.querySelector('.navtog');if(b){const l=on?'Expandir menu':'Recolher menu';b.setAttribute('aria-expanded',String(!on));b.setAttribute('aria-label',l);b.title=l}
  document.querySelectorAll('.sidenav button').forEach(x=>{const s=x.querySelector('span');if(on){x.title=s?s.textContent:'';x.setAttribute('aria-label',x.title)}else{x.removeAttribute('title');x.removeAttribute('aria-label')}});
  setTimeout(()=>dispatchEvent(new Event('resize')),260)}
@@ -1802,6 +1805,7 @@ function bootReset(){['hmode','rvaClosed','rodOpen'].forEach(k=>delete S[k]);S.e
  clr(S);clr(S.alt);save()}
 try{norm();bootReset();setMode('study');if(!S.edit&&!S.sx&&!(S.timer&&(S.timer.running||S.timer.acc>0))){const c=current();if(c&&c.id!==S.sel.subj){S.sel.subj=c.id;S.sel.topic='';S.sel.groups=null}}}catch(x){}
 render();
+if(document.documentElement.classList.contains('navmini'))navMini(true);
 try{syInit()}catch(x){}
 /* App instalável: o service worker guarda o app para abrir sem internet (só fora do claude.ai, em https ou localhost). */
 if('serviceWorker' in navigator&&!(window.claude&&typeof window.claude.use==='function')&&(location.protocol==='https:'||location.hostname==='localhost'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
