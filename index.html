@@ -675,6 +675,8 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
  .rvside .rcd{min-height:0}
  .rvside{max-width:none;position:sticky;top:28px;will-change:transform;contain:layout paint}
 }
+/* A partir de 1120px, as mesmas colunas da aba Ciclo (cartão da direita entre 320 e 380px) */
+@media (min-width:1120px){.rvw{grid-template-columns:minmax(0,1fr) minmax(320px,380px)}}
 /* Setinhas da linha de grupos (só com mouse; no toque basta deslizar) */
 .sgrip{display:none}
 /* Janela aberta: a página de trás não rola. O espaço da barra de rolagem fica sempre reservado,
