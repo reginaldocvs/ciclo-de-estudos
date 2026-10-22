@@ -729,6 +729,9 @@ html.mlock{overflow:hidden}
  .srow .rtime>.ctb{grid-column:2;grid-row:1/span 2;align-self:center}
 }
 .chead .btn{white-space:nowrap}
+
+/* Cartões empilhados (abaixo de 1120px): "Revise antes de começar" no topo, depois "Agora" e a lista */
+@media (max-width:1119.98px){.c2{display:flex;flex-direction:column;gap:16px}.c2>.c2a{order:-1}.c2>.c2b{display:contents}.c2b>.rvcard{order:-2}.c2b>.card,.c2a>.card{margin-bottom:0}}
 </style>
 </head>
 <body>
@@ -1293,7 +1296,11 @@ const focSig=()=>{const a=document.activeElement;if(!a||a===document.body||a===d
 const FQ='a[href],button:not([disabled]),input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 const focIdx=()=>{const a=document.activeElement;if(!a||a===document.body)return null;const box=a.closest('#modal .dlg')||document;return {inDlg:box!==document,i:[...box.querySelectorAll(FQ)].filter(x=>x.getClientRects().length).indexOf(a)}};
 const focTo=sig=>{if(!sig)return false;let el=null;try{el=[...document.querySelectorAll(sig)].find(x=>x.getClientRects().length&&x.matches(FQ))}catch(e){}if(el){el.focus({preventScroll:true});return true}return false};
-function render(){const pre=focSig(),pix=focIdx(),had=!!document.querySelector('#modal .dlg'),wasOpen=dlgKeys(),snaps=dlgSnap();render0();dlgEnter(wasOpen);dlgLeave(snaps);rcBind();modalLock();sheetBind();try{const dlg=document.querySelector('#modal .dlg'),ae=document.activeElement,lost=!ae||ae===document.body;
+/* Ao escolher uma disciplina na lista: com os cartões empilhados (abaixo de 1120px) a página volta ao topo (cartões "Revise antes" e "Agora");
+   em telas maiores a linha clicada fica no mesmo lugar, mesmo que o conteúdo acima mude de altura */
+function rowAnchor(){const A=ui.rowAnc;ui.rowAnc=null;if(!A)return;if(matchMedia('(max-width:1119.98px)').matches){scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});return}
+ const g=document.querySelector('.srow .grow[data-id="'+A.id+'"]'),rw=g&&g.closest('.srow');if(rw)scrollBy(0,rw.getBoundingClientRect().top-A.top)}
+function render(){const pre=focSig(),pix=focIdx(),had=!!document.querySelector('#modal .dlg'),wasOpen=dlgKeys(),snaps=dlgSnap();render0();rowAnchor();dlgEnter(wasOpen);dlgLeave(snaps);rcBind();modalLock();sheetBind();try{const dlg=document.querySelector('#modal .dlg'),ae=document.activeElement,lost=!ae||ae===document.body;
  if(dlg&&!had){FOC.op=pre;if(!dlg.contains(ae)){if(FOC.kb){const f=dlg.querySelector('input:not([type=hidden]):not([disabled]),textarea,select,button:not([disabled])');if(f){f.focus({preventScroll:true});return}}dlg.setAttribute('tabindex','-1');dlg.focus({preventScroll:true})}return}
  if(!dlg&&had){const o=FOC.op;FOC.op=null;if(lost&&FOC.kb&&focTo(o))return}
  if(lost&&FOC.kb&&!focTo(pre)&&pix&&pix.i>=0){const box=pix.inDlg?dlg:document;if(box){const L=[...box.querySelectorAll(FQ)].filter(x=>x.getClientRects().length);const el=L[Math.min(pix.i,L.length-1)];el&&el.focus({preventScroll:true})}}}catch(e){}}
@@ -1692,7 +1699,7 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='pddt'&&ui.pdd){const D=ui.pdd;D.topics=D.topics.filter(x=>x.id!==q);if(!D.nw||!D.nw.includes(q))D.del.push(q);ui.pdmsg=null}
  if(a==='sdel'){if(!ask('sdel:'+p,t))return;const ids=[p,...S.subjects.filter(s=>s.of===p).map(s=>s.id)];S.subjects=S.subjects.filter(s=>!ids.includes(s.id));ids.forEach(id=>{delete S.progress[id];if(S.paused)delete S.paused[id]})}
  if(a==='edclose'){ui.ed=null;ui.addm=null}
- if(a==='pickrow'&&!S.edit&&S.subjects.some(x=>x.id===p)){reqSwitch(p);ui.dd=null}
+ if(a==='pickrow'&&!S.edit&&S.subjects.some(x=>x.id===p)){const rw=t.closest('.srow');ui.rowAnc=rw?{id:p,top:rw.getBoundingClientRect().top}:null;reqSwitch(p);ui.dd=null}
  if(a==='rplay'&&!S.edit){const ps=S.subjects.find(x=>x.id===p);if(ps&&gDone(ps)&&!(p===S.sel.subj&&S.timer.running)){render();return}}
  if((a==='rplay'||a==='rreg')&&!S.edit&&S.subjects.some(x=>x.id===p)){
   if(p===S.sel.subj&&a==='rplay'&&S.timer.running){S.timer.acc=el();S.timer.running=false;S.sx=true;ui.sxo=false;S.sel.mt=''}
