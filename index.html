@@ -1296,9 +1296,10 @@ const focSig=()=>{const a=document.activeElement;if(!a||a===document.body||a===d
 const FQ='a[href],button:not([disabled]),input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 const focIdx=()=>{const a=document.activeElement;if(!a||a===document.body)return null;const box=a.closest('#modal .dlg')||document;return {inDlg:box!==document,i:[...box.querySelectorAll(FQ)].filter(x=>x.getClientRects().length).indexOf(a)}};
 const focTo=sig=>{if(!sig)return false;let el=null;try{el=[...document.querySelectorAll(sig)].find(x=>x.getClientRects().length&&x.matches(FQ))}catch(e){}if(el){el.focus({preventScroll:true});return true}return false};
-/* Ao escolher uma disciplina na lista: com os cartões empilhados (abaixo de 1120px) a página volta ao topo (cartões "Revise antes" e "Agora");
+/* Ao escolher uma disciplina na lista: a página volta ao topo com os cartões empilhados (abaixo de 1120px)
+   ou, em qualquer largura, quando a disciplina tem o cartão "Revise antes de começar" (cartões "Revise antes" e "Agora");
    em telas maiores a linha clicada fica no mesmo lugar, mesmo que o conteúdo acima mude de altura */
-function rowAnchor(){const A=ui.rowAnc;ui.rowAnc=null;if(!A)return;if(matchMedia('(max-width:1119.98px)').matches){scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});return}
+function rowAnchor(){const A=ui.rowAnc;ui.rowAnc=null;if(!A)return;if(matchMedia('(max-width:1119.98px)').matches||document.querySelector('.c2 .rvcard')){scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});return}
  const g=document.querySelector('.srow .grow[data-id="'+A.id+'"]'),rw=g&&g.closest('.srow');if(rw)scrollBy(0,rw.getBoundingClientRect().top-A.top)}
 function render(){const pre=focSig(),pix=focIdx(),had=!!document.querySelector('#modal .dlg'),wasOpen=dlgKeys(),snaps=dlgSnap();render0();rowAnchor();dlgEnter(wasOpen);dlgLeave(snaps);rcBind();modalLock();sheetBind();try{const dlg=document.querySelector('#modal .dlg'),ae=document.activeElement,lost=!ae||ae===document.body;
  if(dlg&&!had){FOC.op=pre;if(!dlg.contains(ae)){if(FOC.kb){const f=dlg.querySelector('input:not([type=hidden]):not([disabled]),textarea,select,button:not([disabled])');if(f){f.focus({preventScroll:true});return}}dlg.setAttribute('tabindex','-1');dlg.focus({preventScroll:true})}return}
