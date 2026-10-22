@@ -201,12 +201,15 @@ body:not(.wide) #app{max-width:940px}
 /* Indicadores do ciclo no subtítulo: chips tonais, valor em destaque */
 #msub:has(.kchs){margin-top:10px;container-type:inline-size}.kchs{display:flex;flex-wrap:wrap;gap:6px}
 .kch{display:inline-flex;align-items:baseline;gap:5px;padding:5px 12px;border-radius:var(--r-s);background:var(--card);color:var(--m-p);font-size:.875rem;line-height:1.3;white-space:nowrap}
+.kadj{display:inline-flex;align-items:center;gap:6px;border:0;background:none;color:var(--m-p);font:inherit;font-size:.875rem;font-weight:600;padding:5px 10px;border-radius:var(--r-s);cursor:pointer}.kadj:hover{background:color-mix(in srgb,var(--m-p) 10%,transparent)}.kadj svg{width:18px;height:18px}
 .kch b{color:var(--m-p);font-weight:600;font-variant-numeric:tabular-nums}
 .kch.zero{background:none;box-shadow:inset 0 0 0 1px var(--m-ov)}
 .kch.ok{background:var(--m-okc);color:var(--m-onokc)}.kch.ok b{color:var(--m-onokc)}
 /* Espaço apertado: três colunas, rótulo em cima e valor embaixo */
 @container (max-width:420px){.kchs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.kch{flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:var(--r-l);text-align:center}}
 /* Rótulo longo (R2 · Ciclo 12) em tela estreita: fonte e espaços menores */
+/* Revisão em tela estreita: os dois chips em linhas da mesma largura, com os valores alinhados em coluna e o ajuste só com o ícone, ao lado */
+@container (max-width:420px){.kchs:has(.kadj){grid-template-columns:max-content auto;justify-content:start;row-gap:6px;column-gap:8px}.kchs:has(.kadj) .kch{grid-column:1;flex-direction:row;justify-content:flex-start;align-items:baseline;gap:8px;padding:8px 12px;text-align:left}.kchs:has(.kadj) .kch>span{min-width:3.4em}.kchs:has(.kadj) .kadj{grid-column:2;grid-row:1/span 2}.kadj{padding:8px;align-self:center}.kadj>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}}
 @container (max-width:340px){.kchs.lng{gap:4px}.kchs.lng .kch{font-size:.75rem}}
 #app .mdup{display:none}
 .chead:has(>h2.mdup:only-child){display:none}
@@ -1250,7 +1253,9 @@ function chrome(){const mt=$('mtt'),ms=$('msub');if(!mt||!ms)return;let t=TTL[ta
  if(tab==='ciclo'){const st=dayStats();t=((S.plans||[]).find(x=>x.id===S.plan)||{}).name||'Ciclo de Estudos';const A=actives(),T=total()||1,d=A.reduce((a,x)=>a+Math.min(prog(x.id),x.goal),0),nd=A.filter(x=>gDone(x)).length,fin=S.type!=='review'&&inCycle().length&&!current();
   const ch=(l,v,c)=>`<span class="kch${c?' '+c:''}"><span>${l}</span> <b>${v}</b></span>`;
   sh=`<span class="kchs${(S.set||1)>1&&S.cycle>9?' lng':''}">`+ch('Hoje',fmt(st.today),st.today?'':'zero')+ch(((S.set||1)>1?'R'+S.set+' · ':'')+'Ciclo '+S.cycle,fin?'concluído':Math.round(d/T*100)+'%',fin?'ok':'')+ch('Sessões',nd+' de '+A.length)+'</span>'}
- else if(tab==='rev'){if(S.rv)s='Revisando '+(S.rv.lbl||('o ciclo '+S.rv.src.join(', ')))+'.';else{const N=rvInt(),W=rvWait();sh=`<span class="s1">Cada grupo reúne o que você estudou em <span class="tag">${N}</span> dia${pl_(N)} com estudo.</span><br class="sbr"> Ele fica disponível para revisar <span class="tag">${W}</span> dia${pl_(W)} corrido${pl_(W)} depois do último dia do <span class="nwr">grupo.<button class="x subedit" data-act="rvcfg" title="Configurar dias de estudo e dias corridos" aria-label="Configurar dias de estudo e dias corridos">${GEAR}</button></span>`}th=esc(t)+infoBtnI('rvdias','Revisão')}
+ else if(tab==='rev'){if(S.rv)s='Revisando '+(S.rv.lbl||('o ciclo '+S.rv.src.join(', ')))+'.';else{const N=rvInt(),W=rvWait();/* A regra dos grupos em dois chips, no mesmo estilo dos indicadores do Ciclo, com o ajuste ao lado */
+  const ch=(l,v)=>`<span class="kch"><span>${l}</span> <b>${v}</b></span>`;
+  sh=`<span class="kchs">${ch('Grupo',N+' dia'+pl_(N)+' de estudo')}${ch('Revisar',W+' dia'+pl_(W)+' depois')}<button type="button" class="kadj" data-act="rvcfg" title="Ajustar dias de estudo e dias corridos" aria-label="Ajustar dias de estudo e dias corridos">${GEAR}<span>Ajustar</span></button></span>`}th=esc(t)+infoBtnI('rvdias','Revisão')}
  else if(tab==='reg')s='Tudo o que você já registrou, do mais recente ao mais antigo.';
  else if(tab==='st')s='Veja como o seu tempo de estudo evolui.';
  else if(tab==='bk')s='Aparência e preferências do app.';
