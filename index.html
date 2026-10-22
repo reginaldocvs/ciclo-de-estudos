@@ -671,7 +671,7 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 .rvside .rch .pvt{margin:0}
 /* Do tablet para cima o calendário fica à direita: até 380px (largura do cartão do anel na tela Ciclo) e encolhe até 280px para não apertar a coluna da esquerda */
 @media (min-width:600.02px){
- .rvw{grid-template-columns:minmax(0,1fr) clamp(280px,38%,380px);align-items:start}
+ .rvw{grid-template-columns:minmax(0,1fr) clamp(280px,29vw,380px);align-items:start} /* largura pela tela, não pela área de conteúdo: não muda ao abrir ou recolher o menu */
  .rvside .rcd{min-height:0}
  .rvside{max-width:none;position:sticky;top:28px;will-change:transform;contain:layout paint}
 }
