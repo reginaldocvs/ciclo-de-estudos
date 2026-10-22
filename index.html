@@ -752,6 +752,10 @@ body .dlg.rvcfgdlg{width:min(92vw,460px)}
 .stp input::-webkit-outer-spin-button,.stp input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .rvsum{margin:8px 0 0;padding:12px 14px;border-radius:var(--r-m);background:color-mix(in srgb,var(--m-p) 8%,transparent);color:var(--mut);font-size:.875rem}.rvsum b{color:var(--ink);font-weight:600;white-space:nowrap}.rvs1{display:inline-block}.rvsum.flow .rvs1{display:inline}
 .rvcfgdlg .fl.rvcfa{display:flex;justify-content:flex-end;margin-top:16px}
+@media (max-width:360px){.rvrow{gap:8px}.stp{gap:0}.stp .x{width:32px;height:32px;min-width:32px}.stp input{width:2.2em}}
+
+/* Regra do app: nunca deixar uma palavra sozinha na última linha de um texto */
+body{text-wrap:pretty}
 </style>
 </head>
 <body>
