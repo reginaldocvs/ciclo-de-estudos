@@ -107,7 +107,7 @@ input.t{flex:1;min-width:140px}
 .rv.rvdone .lnm,.chk.on .lnm{text-decoration:line-through;text-decoration-thickness:1px;text-decoration-color:var(--ink)}.rv.rvdone .lnm{color:color-mix(in srgb,var(--mut) 80%,transparent)}
 .hfbox{display:flex;gap:12px;align-items:stretch;margin:4px 0 8px}.hfcol{flex:0 1 var(--hw,340px);min-width:0;width:min(var(--hw,340px),100%)}.hfcol .hsrch{margin-top:0}.hfcol .hper{width:100%;margin-bottom:0}
 @media (max-width:600px){.hfcol{flex:1 1 auto;width:100%}}
-.mname{display:inline-flex;align-items:center;gap:10px}.srow .rname .dot{flex:none}.srow .rname{min-width:0;max-width:100%}.srow .rnt{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.srow .rtop{min-width:0}.srow .rtop>.rtime{margin-left:22px}.srow .rname{display:inline-flex;align-items:center;gap:10px}.srow .grow>.bar{margin-left:22px}
+.mname{display:inline-flex;align-items:center;gap:10px}.srow .rname .dot{flex:none}.srow .rname{min-width:0;max-width:100%}.srow .rnt{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.srow .rtop{min-width:0}.srow .rtop>.rtime{margin-left:30px}.srow .rname{display:inline-flex;align-items:center;gap:10px}.srow .grow>.bar{margin-left:30px}
 .dlg.edlg{width:min(94vw,560px);padding:0;display:flex;flex-direction:column;max-height:90vh;max-height:90dvh;overflow:hidden}
 .edh{display:flex;align-items:flex-start;gap:10px;padding:16px 18px 12px;border-bottom:1px solid var(--line)}.edti{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .edk{font-size:.85rem;font-weight:600}.edn{display:flex;align-items:center;gap:8px;font-size:1.125rem;font-weight:800;line-height:1.2}.edn .dot{width:10px;height:10px;flex:none}
@@ -638,7 +638,7 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 /* Linha da disciplina igual em todas as disciplinas: acima de 480px tudo numa linha (nome longo ganha reticências);
    até 480px todas têm o nome em cima e o tempo com as ações embaixo, alinhados */
 @media (min-width:480.02px){.srow .rtop{flex-wrap:nowrap}.srow .rtop>.rname{flex:1 1 auto;min-width:0}.srow .rtop>.rtime{flex:none}}
-@media (max-width:480px){.srow .rtop{flex-wrap:wrap;row-gap:0}.srow .rtop>.rname{flex:1 1 100%;min-width:0}.srow .rtop>.rtime{flex:1 1 100%;margin-left:22px;justify-content:space-between}.srow .grow>.bar{margin-left:22px}}
+@media (max-width:480px){.srow .rtop{flex-wrap:wrap;row-gap:0}.srow .rtop>.rname{flex:1 1 100%;min-width:0}.srow .rtop>.rtime{flex:1 1 100%;margin-left:30px;justify-content:space-between}.srow .grow>.bar{margin-left:30px}}
 .x.sts{cursor:default}
 .x.sts:hover{background:none}
 @media (max-width:600px){.ctb>.x{width:44px;min-width:44px}}
@@ -734,13 +734,13 @@ html.mlock{overflow:hidden}
  .srow .rtop{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:4px;align-items:center}
  .srow .rtime{display:contents}
  .srow .rname{grid-column:1;grid-row:1;min-width:0}
- .srow .rtime>.ctl{grid-column:1;grid-row:2}
- .srow .rtime>.ctb{grid-column:2;grid-row:1/span 2;align-self:center}
+ .srow .rtime>.ctl{grid-column:1;grid-row:2;margin-left:30px}
+ .srow .rtime>.ctb{grid-column:2;grid-row:2;align-self:center;margin:-12px 0} /* ícones na mesma linha do tempo, centro com centro */
 }
 .chead .btn{white-space:nowrap}
 
 /* Cartões empilhados (abaixo de 1120px): "Revise antes de começar" no topo, depois "Agora" e a lista */
-@media (max-width:1119.98px){.c2{display:flex;flex-direction:column;gap:16px}.c2>.c2a{order:-1}.c2>.c2b{display:contents}.c2b>.rvcard{order:-2}.c2b>.card,.c2a>.card{margin-bottom:0}}
+@media (max-width:1119.98px){.c2{display:flex;flex-direction:column;gap:16px}.c2>.c2a{order:-1}.c2>.c2b{display:contents}.c2b>.rvcard{order:-2}.c2b>.cbcard{order:-3}.c2b>.card,.c2a>.card{margin-bottom:0}}
 
 /* Janela "Grupos de revisão" */
 body .dlg.rvcfgdlg{width:min(92vw,460px)}
@@ -761,6 +761,26 @@ body{text-wrap:pretty}
 
 /* Itens das listas de escolha em uma linha (nomes de disciplina nunca quebram) */
 .dd .ddi{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Simulação: ciclo em barra segmentada */
+.ringwrap.hasbar,.c2a .ringwrap.hasbar,.c2 .ringwrap.hasbar{flex-direction:column;align-items:stretch;flex-wrap:nowrap;gap:22px;width:100%}
+.cbar{width:100%;order:-1} /* sempre acima do "Agora", em qualquer tela */
+.cbh{margin-bottom:10px;text-align:center;color:var(--mut);font-size:.875rem;font-variant-numeric:tabular-nums}
+.cbcard{padding-top:16px;padding-bottom:14px}
+/* Número da disciplina dentro do quadradinho (mesma numeração da barra do ciclo) */
+
+.dot.dotn{width:20px;height:20px;border-radius:var(--r-s);display:inline-grid;place-items:center;color:#fff;font-size:.75rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;flex:none}
+.cbp{margin-left:auto;font-weight:600;color:var(--m-p);font-variant-numeric:tabular-nums}
+.cbt{display:flex;gap:3px}
+.cbs{display:flex;flex-direction:column;gap:5px;min-width:6px;cursor:pointer}
+.cbl{position:relative;height:8px;margin-right:-3px}.cbs:last-child .cbl{margin-right:0}
+/* linha de cima contínua (passa por cima dos vãos), arredondada só nas pontas */
+.cbl::before{content:'';position:absolute;left:0;right:0;top:50%;height:4px;margin-top:-2px;background:var(--rbg)}.cbs:first-child .cbl::before{border-radius:999px 0 0 999px}.cbs:last-child .cbl::before{border-radius:0 999px 999px 0}
+.cbl>i{position:absolute;left:0;top:50%;height:4px;margin-top:-2px;border-radius:999px;background:var(--c)} /* cada trecho de progresso com pontas arredondadas, como no anel */
+.cbb{height:20px;display:grid;place-items:center;font-size:.75rem;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;color:color-mix(in srgb,var(--c) 55%,var(--ink));overflow:hidden;border-radius:0;background:color-mix(in srgb,var(--c) 32%,var(--card))}
+.cbs.on .cbb{background:var(--c);color:#fff;font-weight:700}
+/* blocos de baixo: retos entre si, arredondados só nas pontas da barra */
+.cbs:first-child .cbb{border-radius:999px 0 0 999px}.cbs:last-child .cbb{border-radius:0 999px 999px 0}.cbs:only-child .cbb,.cbs:only-child .cbl::before{border-radius:999px}
 </style>
 </head>
 <body>
@@ -936,19 +956,12 @@ const rowCtl=s=>{const n=esc(nm(s)),acts=gDone(s)?`<span class="x rdone sts" rol
  return `<span class="rtime"><span class="ctl">${CLOCKI}<span>${rowTime(s)}</span></span>${S.edit?'':`<span class="ctb">${acts}</span>`}</span>`};
 const CLOCKI='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>';
 /* Anel do ciclo: trilho e progresso com borda lisa (pathLength = circunferência, então as contas de traço continuam as mesmas) */
-const WAVY=(()=>{const R=87,A=0,N=20,K=360;let d='';for(let i=0;i<=K;i++){const t=2*Math.PI*i/K,r=R+A*Math.sin(N*t);d+=(i?'L':'M')+(95+r*Math.cos(t)).toFixed(2)+' '+(95+r*Math.sin(t)).toFixed(2)}return d})();
-function ring(){
- const A=actives(),can=!S.edit,T=total()||1,R1=64.5,W1=19,R2=87,W2=24,TW=10,C1=2*Math.PI*R1,C2=2*Math.PI*R2,gp=3,here=S.edit?null:selId();let a0=0,out='',lab='';
- const tr=`<circle r="${R2}" cx="95" cy="95" fill="none" stroke="var(--rbg)" stroke-width="${TW}"/>`;
- A.forEach(s=>{const fr=s.goal/T,c=col(s),p=Math.min(liveMin(s)/s.goal,1),l1=Math.max(fr*C1-gp,1),l2=Math.max(fr*C2-gp,1),o1=a0*C1,o2=a0*C2;
-  let seg=`<circle r="${R1}" cx="95" cy="95" fill="none" stroke="${c}"${s.id===here?'':` style="stroke:color-mix(in srgb,${c} 32%,var(--card))"`} stroke-width="${W1}" stroke-dasharray="${l1} ${C1}" stroke-dashoffset="${-o1}"/>`;
-  seg+=`<circle r="${R2}" cx="95" cy="95" fill="none" stroke="transparent" stroke-width="${W2}" stroke-dasharray="${l2} ${C2}" stroke-dashoffset="${-o2}"/><path d="${WAVY}" pathLength="${C2}" fill="none" stroke="${c}" stroke-width="${TW}" stroke-linecap="round" stroke-dasharray="${p*l2} ${C2}" stroke-dashoffset="${-o2}"${p>0?'':' visibility="hidden"'}/>`;
-  const th=(a0+fr/2)*2*Math.PI;out+=`<g class="arc${can?' clk':''}" style="--dx:${(Math.cos(th)*2).toFixed(2)}px;--dy:${(Math.sin(th)*2).toFixed(2)}px" data-col="${c}" data-tip="${esc(s.name)}|${fmt(shown(s.id))} / ${fmt(s.goal)}"${can?` data-act="pickarc" data-id="${s.id}"`:''}>${seg}</g>`;
-  if(A.length>1&&(fr*C1>=14||s.id===here)){const tm=th-Math.PI/2;lab+=`<text class="rpos${s.id===here?' on':''}" x="${(95+R1*Math.cos(tm)).toFixed(1)}" y="${(95+R1*Math.sin(tm)+3.6).toFixed(1)}" text-anchor="middle" aria-hidden="true">${A.indexOf(s)+1}</text>`}
-  a0+=fr});
- const d=A.reduce((a,s)=>a+Math.min(prog(s.id),s.goal),0);
- return `<svg viewBox="-8 -8 206 206" role="img" aria-label="${S.type==='review'?'Revisão':'Ciclo '+S.cycle}, ${Math.round(d/T*100)}% concluído"><g transform="rotate(-90 95 95)">${tr}${out}</g>${lab}${(()=>{return `<text x="95" y="76" text-anchor="middle" fill="var(--mut)" style="font-size:14px;font-weight:400">${S.type==='review'?'Revisei':'Ciclo '+S.cycle}</text><text x="95" y="102" text-anchor="middle" fill="var(--ink)" style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">${fmt(A.reduce((a,s)=>a+prog(s.id),0))}</text><text x="95" y="120" text-anchor="middle" fill="var(--mut)" style="font-size:11px">de ${fmt(total())}</text>`})()}</svg>`;
-}
+/* Ciclo em barra segmentada: um bloco por disciplina (largura proporcional à meta), preenchido conforme o tempo estudado */
+function cbar(){
+ const A=actives(),T=total()||1,here=S.edit?null:selId(),can=!S.edit,d=A.reduce((a,s)=>a+Math.min(prog(s.id),s.goal),0),rev=S.type==='review';
+ /* Duas camadas, como o anel: em cima a linha reta do progresso (gomo externo); embaixo os blocos das disciplinas (a da vez em cor cheia) */
+ const segs=A.map((s,ix)=>{const c=col(s),p=Math.min(liveMin(s)/s.goal,1);return `<div class="cbs arc${s.id===here?' on':''}" style="flex:${s.goal} 1 0;--c:${c}" data-col="${c}" data-tip="${esc(s.name)}|${fmt(shown(s.id))} / ${fmt(s.goal)}"${can?` data-act="pickarc" data-id="${s.id}"`:''}><span class="cbl"><i style="width:calc(${p.toFixed(3)} * (100% - 3px))"${p>0?'':' hidden'}></i></span><span class="cbb">${A.length>1?ix+1:''}</span></div>`}).join('');
+ return `<div class="cbar" role="img" aria-label="${rev?'Revisão':'Ciclo '+S.cycle}, ${Math.round(d/T*100)}% concluído"><div class="cbh">${fmt(A.reduce((a,s)=>a+prog(s.id),0))} de ${fmt(total())}</div><div class="cbt">${segs}</div></div>`}
 
 function syncSel(){const A=actives();if(!A.length)return;
  if(!A.find(s=>s.id===S.sel.subj)){const to=(current()||A[0]).id;stashCur();loadSubj(to)}
@@ -1051,14 +1064,15 @@ function viewCiclo(){
  if(!cur){
   h+=rev?`<div class="done"><div><b>${A.length?'Revisão concluída.':'Nada para revisar.'}</b><div class="mut">${A.length?'Você cumpriu todas as metas desta revisão.':'Os grupos escolhidos não têm tópicos registrados.'}</div></div><button class="btn" data-act="rvend">Concluir revisão</button></div>`:''}
  let info='';const nw=A.find(x=>x.id===selId())||cur;
- const pre=h;h='';h+=`<div class="card"><div class="ringwrap">${ring()}<div class="now"><div class="mut">${nw&&selId()===nw.id&&(S.timer.running||el()>0)?(S.timer.running?(rev?'Revisando agora':'Estudando agora'):(rev?'Revisão em pausa':'Estudo em pausa')):nw&&prog(nw.id)>=nw.goal?'<span class="metaok mok6">Sessão concluída ✓</span>':'Agora'}${nw&&A.length>1&&!(prog(nw.id)>=nw.goal)?`<span class="nwpos"> · ${A.indexOf(nw)+1} de ${A.length}</span>`:''}</div><b class="nwn">${nw?`<span class="dot" style="background:${col(nw)}"></span><span class="snt" title="${esc(nm(nw))}">${esc(nm(nw))}</span>`:'Tudo em dia'}</b>${nwBtn(nw)}${(()=>{if(!nw||A.length<2)return '';const i=A.indexOf(nw),nx=[...A.slice(i+1),...A.slice(0,i)].find(s=>prog(s.id)<s.goal);return `<div class="nwnext"><span class="mut">Depois</span>${nx?`<span class="dot" style="background:${col(nx)}"></span><span class="nwnn">${esc(nm(nx))}</span>`:`<span>${rev?'fim da revisão':'fim do ciclo'}</span>`}</div>`})()}${info}</div></div></div>`;
+ const pre=h;h='';h+=`<div class="card"><div class="ringwrap hasbar"><div class="now"><div class="mut">${nw&&selId()===nw.id&&(S.timer.running||el()>0)?(S.timer.running?(rev?'Revisando agora':'Estudando agora'):(rev?'Revisão em pausa':'Estudo em pausa')):nw&&prog(nw.id)>=nw.goal?'<span class="metaok mok6">Sessão concluída ✓</span>':'Agora'}${nw&&A.length>1&&!(prog(nw.id)>=nw.goal)?`<span class="nwpos"> · ${A.indexOf(nw)+1} de ${A.length}</span>`:''}</div><b class="nwn">${nw?`<span class="dot" style="background:${col(nw)}"></span><span class="snt" title="${esc(nm(nw))}">${esc(nm(nw))}</span>`:'Tudo em dia'}</b>${nwBtn(nw)}${(()=>{if(!nw||A.length<2)return '';const i=A.indexOf(nw),nx=[...A.slice(i+1),...A.slice(0,i)].find(s=>prog(s.id)<s.goal);return `<div class="nwnext"><span class="mut">Depois</span>${nx?`<span class="dot" style="background:${col(nx)}"></span><span class="nwnn">${esc(nm(nx))}</span>`:`<span>${rev?'fim da revisão':'fim do ciclo'}</span>`}</div>`})()}${info}</div></div></div>`;
  const ringC=!rev&&!cur?cycleEnd():h;h='';const rs=nw;
  if(rs&&!rev){const own=prog(rs.id)>=rs.goal?CS().filter(x=>x.subj===rs.id&&!x.review&&x.topic&&x.cycle===S.cycle).slice(-1)[0]:null,l=own||lastSess(rs.id);if(l){const G=grp(rs.id),recs=CS().filter(x=>G.includes(x.subj)&&!x.review&&x.topic&&(x.ses||x.id)===(l.ses||l.id));
   const p=recs.map(r=>{const t=topicOf(rs,r.topic);if(!t)return '';const pl=(r.items||[]).map(itKey).filter(Boolean).map(l=>`<div class="rvit">${itemLine(l,t.id)}</div>`).join('');return `<div class="rvtp"><div class="rvtn">${esc(t.name)}</div>${pl?`<div class="rvits">${pl}</div>`:''}</div>`}).join('');
   if(p&&prog(rs.id)<rs.goal){const dn=false;h+=`<div class="card rvcard${!dn?' pvbox'+(S.rvaClosed?'':' open'):''}">${dn?`<h2 class="rvt rvtr" style="--sc:${col(rs)};color:color-mix(in srgb,var(--sc) 45%,var(--ink))"><span class="rvm"><span class="dot" style="background:${col(rs)}"></span><span class="snt" title="${esc(rs.name)}">${esc(rs.name)}</span></span>O que você estudou nessa sessão</h2>`:`<div class="pvh" data-act="rvatog"><button class="x mtog${S.rvaClosed?'':' on'}" data-act="rvatog" aria-expanded="${!S.rvaClosed}" aria-label="Expandir ou recolher">${CHEV}</button><h2 class="rvt" style="--sc:${col(rs)};color:color-mix(in srgb,var(--sc) 45%,var(--ink))">Revise antes de começar a sessão de <span class="rvm"><span class="dot" style="background:${col(rs)}"></span><span class="snt" title="${esc(rs.name)}">${esc(rs.name)}</span></span></h2></div>`}${dn||!S.rvaClosed?`<div class="rvlist${dn?'':' pvb'}">${p}</div>`:''}</div>`}}}
  if(rev&&rs&&prog(rs.id)<rs.goal)h+=`<div class="card rvcard"><h2 class="rvt" style="--sc:${col(rs)};color:color-mix(in srgb,var(--sc) 45%,var(--ink))">Tópicos para revisar de <span class="rvm"><span class="dot" style="background:${col(rs)}"></span><span class="snt" title="${esc(rs.name)}">${esc(rs.name)}</span></span></h2><div class="rvlist">${revList(rs,winTopics(rs.id))}</div></div>`;
  if(S.edit&&!edPop())h+=sessCard();
- h+=`<div class="card"><div class="chead"><h2>Disciplinas</h2>${S.edit?'':'<button class="btn g s" data-act="edopen">Editar ciclo</button>'}</div>${A.map(s=>{const c=col(s),sl=selId()===s.id;return `<div class="row srow${sl?' cur':''}"><div class="grow"${S.edit?'':` data-act="pickrow" data-id="${s.id}"`}><div class="rtop"><span class="rname"><span class="dot" style="background:${c}"></span>${S.edit?`<span class="rnt" title="${esc(nm(s))}">${esc(nm(s))}</span>`:`<button class="rnt rpick" data-act="pickrow" data-id="${s.id}" title="${esc(nm(s))}" aria-pressed="${sl}">${esc(nm(s))}</button>`}</span>${rowCtl(s)}</div><div class="bar"><i style="width:${barW(s)}%;background:${barC(s)}"></i></div></div></div>`}).join('')}</div>`;
+ h+=`<div class="card cbcard">${cbar()}</div>`;
+ h+=`<div class="card"><div class="chead"><h2>Disciplinas</h2>${S.edit?'':'<button class="btn g s" data-act="edopen">Editar ciclo</button>'}</div>${A.map((s,ix)=>{const c=col(s),sl=selId()===s.id;return `<div class="row srow${sl?' cur':''}"><div class="grow"${S.edit?'':` data-act="pickrow" data-id="${s.id}"`}><div class="rtop"><span class="rname"><span class="dot dotn" style="background:${c}" aria-hidden="true">${A.length>1?ix+1:''}</span>${S.edit?`<span class="rnt" title="${esc(nm(s))}">${esc(nm(s))}</span>`:`<button class="rnt rpick" data-act="pickrow" data-id="${s.id}" title="${esc(nm(s))}" aria-pressed="${sl}">${esc(nm(s))}</button>`}</span>${rowCtl(s)}</div><div class="bar"><i style="width:${barW(s)}%;background:${barC(s)}"></i></div></div></div>`}).join('')}</div>`;
  if(rev)h+=`<div class="fl"><button class="btn g" data-act="rvcancel">Cancelar revisão</button></div>`;
  return pre+`<div class="c2"><div class="c2a">${ringC}${rvBan}</div><div class="c2b">${h}</div></div>`;
 }
