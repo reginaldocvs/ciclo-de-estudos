@@ -758,6 +758,9 @@ body .dlg.rvcfgdlg{width:min(92vw,460px)}
 
 /* Regra do app: nunca deixar uma palavra sozinha na última linha de um texto */
 body{text-wrap:pretty}
+
+/* Itens das listas de escolha em uma linha (nomes de disciplina nunca quebram) */
+.dd .ddi{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
@@ -825,7 +828,9 @@ function pruneOrphans(){const all=(S.sessions||[]).concat(...Object.values(S.pla
  S.subjects.forEach(s0=>{if(s0.of)return;(s0.topics||[]).forEach(t=>{const old=t.links||[],out=[];(used[t.id]||[]).forEach(u=>{if(out.some(o=>sameIt(o,u)))return;const ex=old.find(o=>sameIt(o,u));out.push(ex?{id:ex.id,kind:ex.kind,url:ex.url,title:ex.title,...(ex.note?{note:ex.note}:{}),...(ex.q?{q:ex.q}:{})}:u)});t.links=out;delete t.hide})})}
 const myEds=()=>(S.editais||[]).filter(e=>e.plan===S.plan);
 const inCycle=()=>S.subjects.filter(s=>!s.off);
-const actives=()=>S.type==='review'?S.subjects.filter(s=>{const b=s.of?S.subjects.find(x=>x.id===s.of):s;return b&&!b.hid&&tl(s,winTopics(s.id)).length}):inCycle();
+/* Uma disciplina só está fora do plano se a original estiver escondida e não houver nenhuma cópia dela no ciclo */
+const gone=s=>!!s.hid&&!S.subjects.some(x=>x.of===s.id);
+const actives=()=>S.type==='review'?S.subjects.filter(s=>{const b=s.of?S.subjects.find(x=>x.id===s.of):s;return b&&!gone(b)&&tl(s,winTopics(s.id)).length}):inCycle();
 const current=()=>actives().find(s=>prog(s.id)<s.goal);
 const total=()=>actives().reduce((a,s)=>a+s.goal,0);
 const normUrl=u=>{u=u.trim();return /\s/.test(u)||!u?'':/^https?:\/\//i.test(u)?u:'https://'+u};
@@ -1213,13 +1218,13 @@ function viewRev(){
  return `<div class="rvw"><div class="rvmain">`+nxt+(rest?`<div class="card"><h2>Na fila</h2>${rest}</div>`:'')+`${fu.length?`<h2 class="sec">Revisões futuras</h2>${fuc}`:''}${dn.length?`<h2 class="sec">Concluídas</h2>${dnc}`:''}</div><aside class="rvside">${cal}</aside></div>`;
 }
 const MINUS='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>';
-const nmAvail=()=>S.subjects.filter(s=>!s.of&&s.hid&&s.ed===S.sel.af).length;
+const nmAvail=()=>S.subjects.filter(s=>!s.of&&gone(s)&&s.ed===S.sel.af).length;
 function newMatCard(){
  const eds=myEds(),af=eds.some(e=>e.id===S.sel.af)?S.sel.af:(eds[0]?eds[0].id:''),all=af?S.subjects.filter(s=>!s.of&&s.ed===af).sort((a,b)=>a.name.localeCompare(b.name,'pt',{sensitivity:'base'})):[];
- const nn=(S.sel.nn||'').trim().toLowerCase(),op=af&&ui.dd==='nm',ex=all.find(s=>s.name.toLowerCase()===nn&&(!S.sel.nnid||s.id===S.sel.nnid)),av=all.filter(s=>s.hid).length;
+ const nn=(S.sel.nn||'').trim().toLowerCase(),op=af&&ui.dd==='nm',ex=all.find(s=>s.name.toLowerCase()===nn&&(!S.sel.nnid||s.id===S.sel.nnid)),av=all.filter(gone).length;
  return `<div class="ov top" data-act="addclose"></div><div class="dlg top addm" role="dialog" aria-modal="true" aria-label="Adicionar disciplina"><div class="mhead"><h2>Adicionar disciplina</h2><button class="x" data-act="addclose" title="Fechar" aria-label="Fechar">${CLOSEI}</button></div><div style="padding:16px">
  ${eds.length>1?`<div class="fl" style="align-items:center">${selField('af',eds.map(e=>[e.id,e.name]),af,'aff','Edital',false,'Edital')}</div>`:''}
- ${af?`<form autocomplete="off" data-f="mat" class="fl" style="margin-top:12px"><div class="cb"><input id="nm-in" name="n" data-nmi autocomplete="off" value="${esc(S.sel.nn||'')}" placeholder="${S.sel.nnnew?'Crie uma nova disciplina':'Disciplina'}" required aria-label="Disciplina" ${af?'':'disabled'} ${S.sel.nnid||S.sel.nnall?'readonly':''}><button type="button" class="x chev${op?' on':''}" ${af?'data-act="dd" data-id="nm"':'disabled'} title="Escolher disciplina" aria-label="Escolher disciplina">${CHEV}</button>${ui.nmnote?'<div class="nmnote" role="status">Todas as disciplinas foram adicionadas.</div>':''}${op?`<div class="dd">${S.sel.nnid||S.sel.nnall?'<button type="button" class="ddi ital" data-act="nmnew">Criar uma nova disciplina</button>':''}${all.map(s=>`<button type="button" class="ddi${ex&&ex.id===s.id?' cur':''}${s.hid?'':' dis'}" ${s.hid?`data-act="nmpick" data-id="${s.id}"`:'disabled aria-disabled="true"'}>${esc(s.name)}</button>`).join('')}</div>`:''}</div>${tmField('ng',S.sel.ng||'1h30','name="g"')}<button class="btn">Adicionar</button>${av?'<button type="button" class="btn btn-or addm-all" data-act="addall" aria-label="Adicionar todas as disciplinas do plano">Adicionar todas</button>':''}</form>${av?'<div class="orrow"><button type="button" class="btn btn-or" data-act="addall">Adicionar todas as disciplinas do plano</button></div>':''}`:''}</div></div>`}
+ ${af?`<form autocomplete="off" data-f="mat" class="fl" style="margin-top:12px"><div class="cb"><input id="nm-in" name="n" data-nmi autocomplete="off" value="${esc(S.sel.nn||'')}" placeholder="${S.sel.nnnew?'Crie uma nova disciplina':'Disciplina'}" required aria-label="Disciplina" ${af?'':'disabled'} ${S.sel.nnid||S.sel.nnall?'readonly':''}><button type="button" class="x chev${op?' on':''}" ${af?'data-act="dd" data-id="nm"':'disabled'} title="Escolher disciplina" aria-label="Escolher disciplina">${CHEV}</button>${ui.nmnote?'<div class="nmnote" role="status">Todas as disciplinas foram adicionadas.</div>':''}${op?`<div class="dd">${S.sel.nnid||S.sel.nnall?'<button type="button" class="ddi ital" data-act="nmnew">Criar uma nova disciplina</button>':''}${all.map(s=>`<button type="button" class="ddi${ex&&ex.id===s.id?' cur':''}${gone(s)?'':' dis'}" ${gone(s)?`data-act="nmpick" data-id="${s.id}"`:'disabled aria-disabled="true"'}>${esc(s.name)}</button>`).join('')}</div>`:''}</div>${tmField('ng',S.sel.ng||'1h30','name="g"')}<button class="btn">Adicionar</button>${av?'<button type="button" class="btn btn-or addm-all" data-act="addall" aria-label="Adicionar todas as disciplinas do plano">Adicionar todas</button>':''}</form>${av?'<div class="orrow"><button type="button" class="btn btn-or" data-act="addall">Adicionar todas as disciplinas do plano</button></div>':''}`:''}</div></div>`}
 function viewMat(){
  const grip=s=>`<button class="x grip" id="g-${s.id}" data-grip="${s.id}" title="Arrastar" aria-label="Arrastar">${GRIP}</button>`;
  const delb=s=>`<button class="x" data-act="${s.of?'del':'hide'}" data-id="${s.id}" title="Remover" aria-label="Remover">${TRASH}</button>`;
@@ -1322,7 +1327,9 @@ const plansHtml=()=>{const pe=ui.ple&&S.plans.find(x=>x.id===ui.ple&&x.id===S.pl
 function subFlow(){const ms=$('msub');if(!ms)return;ms.classList.remove('flow');const s=ms.querySelector('.s1');if(s&&s.getBoundingClientRect().height>1.5*parseFloat(getComputedStyle(ms).lineHeight))ms.classList.add('flow')}
 function fitNames(){document.querySelectorAll('.nwn').forEach(b=>{const e=b.querySelector('.snt');b.style.fontSize='';if(!e)return;let fs=parseFloat(getComputedStyle(b).fontSize);const min=parseFloat(getComputedStyle(document.documentElement).fontSize)*1.05;while(e.scrollWidth>e.clientWidth+.5&&fs>min){fs=Math.max(min,fs-1);b.style.fontSize=fs+'px'}})}
 function posDD(){document.querySelectorAll('.dlg .dd').forEach(d=>{const a=d.parentElement.getBoundingClientRect(),vh=innerHeight,lim=vh*0.7;
- Object.assign(d.style,{position:'fixed',left:a.left+'px',width:a.width+'px',right:'auto',zIndex:70,maxHeight:''});
+ /* a lista pode ser mais larga que o campo, para o nome caber inteiro numa linha, sem sair da tela */
+ Object.assign(d.style,{position:'fixed',left:a.left+'px',width:'max-content',minWidth:a.width+'px',maxWidth:Math.min(320,innerWidth-16)+'px',right:'auto',zIndex:70,maxHeight:''});
+ {const w=d.offsetWidth;if(a.left+w>innerWidth-8)d.style.left=Math.max(8,innerWidth-8-w)+'px'}
  const need=Math.min(d.scrollHeight,lim),below=vh-a.bottom-8,above=a.top-8;
  if(need>below&&above>below)Object.assign(d.style,{top:'auto',bottom:(vh-a.top+4)+'px',marginTop:'0',maxHeight:Math.min(lim,above)+'px'});
  else Object.assign(d.style,{top:(a.bottom+4)+'px',bottom:'auto',marginTop:'0',maxHeight:Math.min(lim,below)+'px'})})}
@@ -1669,7 +1676,7 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='sdd')ui.dd=ui.dd==='s:'+p?null:'s:'+p;
  if(a==='nmpick'){S.sel.nnall=false;S.sel.nnnew=false;const s0=S.subjects.find(x=>x.id===p);if(s0){S.sel.nn=s0.name;S.sel.nnid=s0.id;S.sel.ng=tmFmt(s0.goal)}ui.dd=null;ui.focus='nm-in'}
  if(a==='nmnew'){S.sel.nn='';S.sel.nnid=null;S.sel.nnall=false;S.sel.nnnew=true;ui.dd=null;ui.focus='nm-in'}
- if(a==='addall'){const af=myEds().some(e=>e.id===S.sel.af)?S.sel.af:'',g=tmParse(S.sel.ng)||90;S.subjects.filter(s=>!s.of&&s.hid&&(!af||s.ed===af)).forEach(s=>{delete s.hid;s.off=true;s.goal=g;S.subjects.push(S.subjects.splice(S.subjects.indexOf(s),1)[0])});ui.addm=null;ui.dd=null}
+ if(a==='addall'){const af=myEds().some(e=>e.id===S.sel.af)?S.sel.af:'',g=tmParse(S.sel.ng)||90;S.subjects.filter(s=>!s.of&&gone(s)&&(!af||s.ed===af)).forEach(s=>{delete s.hid;s.off=true;s.goal=g;S.subjects.push(S.subjects.splice(S.subjects.indexOf(s),1)[0])});ui.addm=null;ui.dd=null}
  if(a==='spick'&&p==='hrod'){ui.hrod=+q;ui.dd=null;render();return}
  if(a==='spick'&&(p==='hfs'||p==='hfc')){ui[p]=q||'';ui.hn=30;ui.dd=null;render();return}
  if(a==='sset'){ui.ss=p==='all'?'all':+p;render();return}
@@ -1838,7 +1845,7 @@ document.addEventListener('submit',e=>{
  if(k==='man'){S.sel.mt=f.get('m')||S.sel.mt||'';S.sel.md=f.get('d')||'';const mm=regMin(),nn=regErr();if(nn){ui.msg=nn.msg;ui.focus=nn.focus}else if(!canReg(mm)){ui.msg='Informe o tempo estudado.'}else if(mm>0||hasG()){addSession(mm);S.sel.mt='';S.timer={running:false,start:0,acc:0};S.sx=false}else ui.msg='Informe o tempo ou o tópico estudado.'}
  if(k==='plnew'){let n=(f.get('n')||'').trim();if(n){const base=n;for(let i=2;S.plans.some(x=>x.name.trim().toLowerCase()===n.toLowerCase());i++)n=base+' ('+i+')';const pl={id:uid(),name:n};S.plans.push(pl);S.planData[pl.id]=freshPlan();switchPlan(pl.id);S.editais.push({id:uid(),name:n,plan:pl.id});ui.pl=true;ui.ple=pl.id;tab='ciclo'}}
  if(k==='mat'){const n=(f.get('n')||S.sel.nn||'').trim(),g=tmParse(f.get('g'))||90,af=myEds().some(e=>e.id===S.sel.af)?S.sel.af:'';
-  if(af&&S.sel.nnall){S.subjects.filter(s=>!s.of&&s.hid&&s.ed===af).forEach(s=>{delete s.hid;s.off=true;s.goal=g;S.subjects.push(S.subjects.splice(S.subjects.indexOf(s),1)[0])});S.sel.nn='';S.sel.nnall=false;ui.addm=null;ui.dd=null}
+  if(af&&S.sel.nnall){S.subjects.filter(s=>!s.of&&gone(s)&&s.ed===af).forEach(s=>{delete s.hid;s.off=true;s.goal=g;S.subjects.push(S.subjects.splice(S.subjects.indexOf(s),1)[0])});S.sel.nn='';S.sel.nnall=false;ui.addm=null;ui.dd=null}
   else if(n&&af){let s0=S.sel.nnid?S.subjects.find(x=>x.id===S.sel.nnid):null;if(!s0||s0.name.toLowerCase()!==n.toLowerCase())s0=S.subjects.find(x=>!x.of&&x.ed===af&&x.name.toLowerCase()===n.toLowerCase());
    if(s0){if(s0.off){delete s0.hid;s0.goal=g;S.subjects.push(S.subjects.splice(S.subjects.indexOf(s0),1)[0])}}
    else{const eds=myEds(),eid=eds.some(x=>x.id===S.sel.af)?S.sel.af:eds.some(x=>x.id===S.sel.ne)?S.sel.ne:(eds[0]||(()=>{const d={id:uid(),name:'Meu edital',plan:S.plan};S.editais.push(d);return d})()).id,o={id:uid(),name:n,goal:g,topics:[],ed:eid,off:true};o.ci=nextCi();S.subjects.push(o)}
