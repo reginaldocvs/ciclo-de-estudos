@@ -784,6 +784,10 @@ body{text-wrap:pretty}
 .cbm{align-self:center;width:12px;height:7px;background:var(--c);clip-path:polygon(0 0,100% 0,50% 100%);visibility:hidden}.cbs.on .cbm{visibility:visible}.cbs.on .cbb{color:#fff;font-weight:800}
 /* blocos de baixo: retos entre si, arredondados só nas pontas da barra */
 .cbs:first-child .cbb{border-radius:999px 0 0 999px}.cbs:last-child .cbb{border-radius:0 999px 999px 0}.cbs:only-child .cbb,.cbs:only-child .cbl::before{border-radius:999px}
+
+/* Quadradinhos de disciplina sempre com cara de quadrado: canto proporcional ao tamanho (25%), em todo o app,
+   inclusive os numerados, os vazados (fora do ciclo) e o da dica ao passar o mouse */
+.dot,.dot.dotn,#tip .tsw{border-radius:25%}
 </style>
 </head>
 <body>
