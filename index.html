@@ -342,20 +342,18 @@ input::placeholder,textarea::placeholder{color:var(--mut);opacity:1}
 .mname{display:block}
 .c2>*,.pvh .rvt,.rvt,.now{min-width:0}.ringwrap>.now{max-width:100%}@media (max-width:600px){.ringwrap>.now{width:100%}}
 .rvm .tag,.edn~.tag{flex:none}
-.sbrand .navtog{margin-left:auto;width:34px;height:34px;flex:none;color:var(--mut);border-radius:12px}.sbrand .navtog:hover{background:var(--track);color:var(--ink)}.navtog svg{width:20px;height:20px}.navtog .ntc{transition:transform .2s;transform-origin:15px 12px}
+
 .shell{transition:grid-template-columns .22s ease}
 @media (min-width:860.02px){
  .navmini .shell{grid-template-columns:76px minmax(0,1fr)}
  .navmini .side{padding:18px 10px 16px;align-items:center}
  .navmini .sbrand{flex-direction:column;gap:10px;padding:0}
  .navmini .sbrand .bnm{display:none}
- .navmini .sbrand .navtog{margin-left:0}
- .navmini .navtog .ntc{transform:scaleX(-1)}
  .navmini .sidenav{width:100%;align-items:center}
  .navmini .sidenav button{justify-content:center;width:48px;height:48px;padding:0}
  .navmini .sidenav button>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 }
-@media (prefers-reduced-motion:reduce){.shell,.navtog .ntc{transition:none}}
+@media (prefers-reduced-motion:reduce){.shell{transition:none}}
 /* Modo foco */
 .dlg.fmd{inset:0;width:auto;height:auto;max-width:none;max-height:none;margin:0;padding:24px 16px;border-radius:0;box-shadow:none;background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:auto;z-index:60}
 .fmtop{position:absolute;top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));display:flex;gap:6px}
@@ -410,8 +408,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--m-p);outline-of
 .sidenav button:hover{background:color-mix(in srgb,var(--ink) 8%,transparent);color:var(--ink)}
 .sidenav button[aria-current=page],.sidenav button[data-nav=pl].on{background:var(--m-sc);color:var(--m-onsc);font-weight:600}
 .sidenav svg,.tabbar svg{width:24px;height:24px}
-.sbrand .navtog{width:40px;height:40px;border-radius:999px;display:grid;place-items:center;padding:0}
-.sbrand .navtog:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
+
+
 @media (min-width:860.02px){
  .navmini .shell{grid-template-columns:96px minmax(0,1fr)}
  .navmini .side{padding:20px 2px;align-items:center}
@@ -731,20 +729,28 @@ html.mlock{overflow:hidden}
 @media (prefers-reduced-motion:reduce){.btn,.x,.tbig,.fab,.seg,.row.srow,.sidenav button,.tabbar svg,.navmini .sidenav svg{transition:none}}
 
 /* Topo do menu: centro do logo alinhado ao centro das letras do título da página (29px). */
-/* Menu recolhido sem "pulo": logo, botão e ícones ficam exatamente onde estão no menu expandido.
-   Só o texto some; o botão de recolher fica ao lado do logo, com 17px de cada lado (do logo e do conteúdo). */
+/* Menu lateral no computador: rail de 80px; ao passar o mouse abre empurrando o conteúdo com um wipe linear
+   (a coluna cresce da esquerda para a direita, as pílulas se alargam junto e os nomes aparecem). */
 @media (min-width:860.02px){
- html.navmini .shell{grid-template-columns:118px minmax(0,1fr)}
- html.navmini .side{padding:29px 12px 20px;align-items:stretch}
+ html.navmini .shell{grid-template-columns:80px minmax(0,1fr);transition:grid-template-columns .24s linear}
+ html.navmini.navpeek .shell{grid-template-columns:240px minmax(0,1fr)}
+ html.navmini .side{padding:29px 12px 20px;align-items:stretch;overflow:hidden}
  html.navmini .sbrand{flex-direction:row;gap:10px;padding:0 8px}
- html.navmini .sbrand .navtog{margin-left:7px}
+ html.navmini .sbrand .bnm{display:block;opacity:0;transition:opacity .24s linear}
+ html.navmini.navpeek .sbrand .bnm{opacity:1}
  html.navmini .sidenav{gap:2px;align-items:flex-start}
- html.navmini .sidenav button{flex-direction:row;justify-content:flex-start;width:56px;height:56px;min-height:0;padding:0 16px;gap:0;border-radius:999px}
- html.navmini .sidenav button>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
- html.navmini .sidenav svg{padding:0;background:none!important}
+ html.navmini .sidenav button{flex-direction:row;justify-content:flex-start;width:56px;height:56px;min-height:0;padding:0 16px;gap:12px;border-radius:999px;overflow:hidden;transition:width .24s linear,background-color .2s var(--emph),color .2s var(--emph)}
+ html.navmini.navpeek .sidenav button{width:100%}
+ html.navmini .sidenav button>span{position:static;width:auto;height:auto;clip:auto;overflow:visible;white-space:nowrap;flex:none}
+ html.navmini .sidenav button>span{opacity:0;transition:opacity .24s linear}html.navmini.navpeek .sidenav button>span{opacity:1}
+ html.navmini .sidenav svg{padding:0;background:none!important;flex:none}
  html.navmini .sidenav button:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)!important}
  html.navmini .sidenav button[aria-current=page],html.navmini .sidenav button[data-nav=pl].on{background:var(--m-sc)!important;color:var(--m-onsc)}
 }
+/* Menu lateral (computador) e barra inferior (celular) sempre nas cores do tema escuro, nos dois temas */
+@media (min-width:860.02px){.side{--m-p:#84D2E7;--m-onp:#003641;--m-sc:#334A51;--m-onsc:#CEE7EF;--m-c-lowest:#090F11;--m-c:#1B2123;--m-c-high:#252B2D;--m-c-highest:#303638;--m-ov:#3F484B;--bg:#0E1416;--card:var(--m-c);--ink:#DEE3E6;--mut:#BFC8CB;--track:var(--m-c-highest);--ac:var(--m-p);--line:var(--m-ov);background:var(--bg);color:var(--ink);color-scheme:dark}}
+.tabbar{--m-p:#84D2E7;--m-onp:#003641;--m-sc:#334A51;--m-onsc:#CEE7EF;--m-c-lowest:#090F11;--m-c:#1B2123;--m-c-high:#252B2D;--m-c-highest:#303638;--m-ov:#3F484B;--bg:#0E1416;--card:var(--m-c);--ink:#DEE3E6;--mut:#BFC8CB;--track:var(--m-c-highest);--ac:var(--m-p);--line:var(--m-ov);color-scheme:dark}
+@media (prefers-reduced-motion:reduce){html.navmini .shell,html.navmini .sidenav button,html.navmini .sidenav button>span,html.navmini .sbrand .bnm{transition:none}}
 
 /* Telas muito estreitas: botões da disciplina à direita, ocupando a altura do nome e do tempo; o tempo fica com a largura toda e nada vaza do cartão */
 @media (max-width:380px){
@@ -808,9 +814,9 @@ body{text-wrap:pretty}
 </style>
 </head>
 <body>
-<script>try{if(localStorage.getItem('ciclo-nav-mini')==='1')document.documentElement.classList.add('navmini')}catch(e){}</script>
+<script>document.documentElement.classList.add('navmini')</script>
 <div class="shell">
-<aside class="side"><div class="sbrand"><svg class="logo" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="lgs" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#54E1EF"/><stop offset="1" stop-color="#3FA9BB"/></linearGradient></defs><rect width="512" height="512" rx="112" fill="url(#lgs)"/><path d="M155 91 L228 100 L199 167 Z" fill="#D9FF6F" stroke="#D9FF6F" stroke-width="14" stroke-linejoin="round"/><path d="M248 216 C222 200 192 198 170 206 L170 302 C194 294 224 296 248 312 Z" fill="#fff"/><path d="M264 216 C290 200 320 198 342 206 L342 302 C318 294 288 296 264 312 Z" fill="#fff" fill-opacity=".85"/><g fill="none" stroke-width="38" stroke-linecap="round"><path d="M113.561 212.48 C125.732 172.592 154.2 139.812 191.206 121.899" stroke="#D9FF6F"/><path d="M299.024 113.41 C346.864 127.825 384.554 165.658 398.771 213.583" stroke="#fff"/><path d="M398.504 299.307 C384.134 346.655 346.813 384.018 299.492 398.448" stroke="#fff" opacity=".8"/><path d="M213.623 398.783 C165.243 384.446 127.142 346.189 113.023 297.716" stroke="#fff" opacity=".6"/></g></svg><span class="bnm"><span>Ciclo</span> <span>de&nbsp;Estudos</span></span><button type="button" class="x navtog" data-act="navmini" aria-expanded="true" aria-label="Recolher menu" title="Recolher menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/><path class="ntc" d="M16 10l-2 2 2 2"/></svg></button></div><nav class="sidenav" aria-label="Seções"><button type="button" data-tab="ciclo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/><circle cx="12" cy="12" r="2.5"/></svg><span>Ciclo</span></button><button type="button" data-tab="rev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.5 21H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"/><path d="M16 3v4M8 3v4M4 11h12"/><path d="M20 14l2 2h-3M20 18l2-2"/><path d="M19 16a3 3 0 1 0 2 5.236"/></svg><span>Revisão</span></button><button type="button" data-act="plopen" data-nav="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4"/><path d="M10 12h6M10 16h6"/></svg><span>Planos</span></button><button type="button" data-tab="reg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7.5V12l3 2"/></svg><span>Histórico</span></button><button type="button" data-tab="st"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20v-6M12 20V5M19 20v-9"/></svg><span>Estatísticas</span></button><button type="button" data-tab="bk" class="navend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span>Configurações</span></button></nav></aside>
+<aside class="side"><div class="sbrand"><svg class="logo" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="lgs" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#54E1EF"/><stop offset="1" stop-color="#3FA9BB"/></linearGradient></defs><rect width="512" height="512" rx="112" fill="url(#lgs)"/><path d="M155 91 L228 100 L199 167 Z" fill="#D9FF6F" stroke="#D9FF6F" stroke-width="14" stroke-linejoin="round"/><path d="M248 216 C222 200 192 198 170 206 L170 302 C194 294 224 296 248 312 Z" fill="#fff"/><path d="M264 216 C290 200 320 198 342 206 L342 302 C318 294 288 296 264 312 Z" fill="#fff" fill-opacity=".85"/><g fill="none" stroke-width="38" stroke-linecap="round"><path d="M113.561 212.48 C125.732 172.592 154.2 139.812 191.206 121.899" stroke="#D9FF6F"/><path d="M299.024 113.41 C346.864 127.825 384.554 165.658 398.771 213.583" stroke="#fff"/><path d="M398.504 299.307 C384.134 346.655 346.813 384.018 299.492 398.448" stroke="#fff" opacity=".8"/><path d="M213.623 398.783 C165.243 384.446 127.142 346.189 113.023 297.716" stroke="#fff" opacity=".6"/></g></svg><span class="bnm"><span>Ciclo</span> <span>de&nbsp;Estudos</span></span></div><nav class="sidenav" aria-label="Seções"><button type="button" data-tab="ciclo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/><circle cx="12" cy="12" r="2.5"/></svg><span>Ciclo</span></button><button type="button" data-tab="rev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.5 21H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"/><path d="M16 3v4M8 3v4M4 11h12"/><path d="M20 14l2 2h-3M20 18l2-2"/><path d="M19 16a3 3 0 1 0 2 5.236"/></svg><span>Revisão</span></button><button type="button" data-act="plopen" data-nav="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4"/><path d="M10 12h6M10 16h6"/></svg><span>Planos</span></button><button type="button" data-tab="reg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7.5V12l3 2"/></svg><span>Histórico</span></button><button type="button" data-tab="st"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20v-6M12 20V5M19 20v-9"/></svg><span>Estatísticas</span></button><button type="button" data-tab="bk" class="navend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span>Configurações</span></button></nav></aside>
 <main>
 <header class="mbar"><p class="brand"><svg class="logo" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="lgm" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#54E1EF"/><stop offset="1" stop-color="#3FA9BB"/></linearGradient></defs><rect width="512" height="512" rx="112" fill="url(#lgm)"/><path d="M155 91 L228 100 L199 167 Z" fill="#D9FF6F" stroke="#D9FF6F" stroke-width="14" stroke-linejoin="round"/><path d="M248 216 C222 200 192 198 170 206 L170 302 C194 294 224 296 248 312 Z" fill="#fff"/><path d="M264 216 C290 200 320 198 342 206 L342 302 C318 294 288 296 264 312 Z" fill="#fff" fill-opacity=".85"/><g fill="none" stroke-width="38" stroke-linecap="round"><path d="M113.561 212.48 C125.732 172.592 154.2 139.812 191.206 121.899" stroke="#D9FF6F"/><path d="M299.024 113.41 C346.864 127.825 384.554 165.658 398.771 213.583" stroke="#fff"/><path d="M398.504 299.307 C384.134 346.655 346.813 384.018 299.492 398.448" stroke="#fff" opacity=".8"/><path d="M213.623 398.783 C165.243 384.446 127.142 346.189 113.023 297.716" stroke="#fff" opacity=".6"/></g></svg><span class="bnm"><span>Ciclo</span> <span>de&nbsp;Estudos</span></span></p><span id="sub"></span></header>
 <div class="pagehead"><h1 id="mtt"></h1><p id="msub"></p></div>
@@ -1717,13 +1723,17 @@ function delTopic(sub,q){const bs=sub.of?(S.subjects.find(x=>x.id===sub.of)||sub
   [[S.sel,S.paused],[S.alt&&S.alt.sel,S.alt&&S.alt.paused]].forEach(([sl,pzz])=>{if(sl&&sl.subj&&baseOf(sl.subj)===bs.id&&sl.groups)sl.groups=strip(sl.groups);if(pzz)Object.keys(pzz).forEach(k=>{if(baseOf(k)===bs.id&&pzz[k].groups)pzz[k].groups=strip(pzz[k].groups)})});
   Object.keys(S.checked||{}).forEach(k=>{if(k.indexOf(':'+bs.id+':'+q+':')>0)delete S.checked[k]})}
 /* Navegação lateral recolhível: só ícones, com o nome no title e no aria-label */
-function navMini(on){const r=document.documentElement;if(on===undefined)on=!r.classList.contains('navmini');r.classList.toggle('navmini',on);try{localStorage.setItem('ciclo-nav-mini',on?'1':'0')}catch(e){}
+function navMini(on){const r=document.documentElement;if(on===undefined)on=!r.classList.contains('navmini');r.classList.toggle('navmini',on);
  document.querySelectorAll('.sidenav button').forEach(x=>{const t=(x.textContent||'').trim();if(on)x.title=t;else x.removeAttribute('title')});
- const b=document.querySelector('.navtog');if(b){const l=on?'Expandir menu':'Recolher menu';b.setAttribute('aria-expanded',String(!on));b.setAttribute('aria-label',l);b.title=l}
  document.querySelectorAll('.sidenav button').forEach(x=>{const s=x.querySelector('span');if(on){x.title=s?s.textContent:'';x.setAttribute('aria-label',x.title)}else{x.removeAttribute('title');x.removeAttribute('aria-label')}});
  setTimeout(()=>dispatchEvent(new Event('resize')),260)}
+/* Menu lateral: fica recolhido (só ícones) e abre, empurrando o conteúdo, enquanto o mouse está sobre ele */
+const NP={on:false},npOk=()=>matchMedia('(hover:hover) and (pointer:fine)').matches;
+const npSet=v=>{NP.on=v;document.documentElement.classList.toggle('navpeek',v)};
+document.addEventListener('mouseover',e=>{if(!npOk())return;const inS=!!(e.target.closest&&e.target.closest('.side'));if(inS!==NP.on)npSet(inS)});
+document.addEventListener('mouseout',e=>{if(!e.relatedTarget&&NP.on)npSet(false)});
 document.addEventListener('click',e=>{if(S.snd!==false)acInit();
- {const nt=e.target.closest&&e.target.closest('[data-act=navmini]');if(nt){navMini();return}}
+ 
  {const ua=e.target.closest&&e.target.closest('[data-act]');if(ua&&ua.dataset.act==='undo'){doUndo();return}if(ua&&ua.dataset.act==='redo'){doRedo();return}if(ui.undo&&ua)hideUndo()}
  if(e.target.closest&&e.target.closest('.plrow input'))return;
  const tfk=e.target.dataset&&e.target.dataset.tf;
