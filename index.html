@@ -1133,18 +1133,17 @@ const rvInt=()=>{const n=+S.rvint;return n>=1&&n<=60&&n===Math.floor(n)?n:7};
 const RG={gm:null};
 /* Dia válido de estudo = dia com pelo menos uma sessão (não de revisão) com tópico e aula; assim nenhum grupo fecha sem conteúdo. */
 function rgValidDates(){const st=S.rgStart||'',m=new Set();CS().forEach(x=>{if(!x.review&&!x.rid&&x.date&&(!st||x.date>=st)&&sesHasIt(x))m.add(x.date)});return m}
+/* Grupos de revisão: os já revisados ou em revisão ficam como estão. Os demais são remontados, em ordem, com os dias de estudo
+   válidos que sobram; assim mudar a data de um registro (ou apagá-lo) leva o dia para o grupo certo. Cada grupo mantém o tamanho que tinha. */
 function syncRg(){
  if(S.rgStart===undefined)S.rgStart=S.sessions.length?today():'';
  if(!Array.isArray(S.rgs))S.rgs=[];if(!Array.isArray(S.rvlog))S.rvlog=[];
- const have=rgValidDates(),assigned=new Set();S.rgs.forEach(g=>g.dates.forEach(d=>assigned.add(d)));
- const fresh=[...have].filter(d=>!assigned.has(d)).sort(),orphan=[];
- S.rgs.forEach(g=>g.dates.forEach(d=>{if(!have.has(d))orphan.push({g,d})}));
- const lockd=g=>(S.reviewed&&S.reviewed[g.id])||(S.rv&&S.rv.src&&S.rv.src.includes(g.id)),open=orphan.filter(o=>!lockd(o.g));
- while(fresh.length&&open.length){const o=open.shift(),i=o.g.dates.indexOf(o.d);o.g.dates[i]=fresh.shift();o.g.dates.sort()}
- const last=S.rgs[S.rgs.length-1];
- if(last&&last.dates.length<last.len){orphan.filter(o=>o.g===last).forEach(o=>{const i=last.dates.indexOf(o.d);if(i>=0)last.dates.splice(i,1)});if(!last.dates.length)S.rgs.pop()}
- fresh.forEach(d=>{let g=S.rgs[S.rgs.length-1];if(!g||g.dates.length>=g.len){g={id:'g'+uid(),idx:S.rgs.reduce((a,x)=>Math.max(a,x.idx),0)+1,len:rvInt(),dates:[]};S.rgs.push(g)}g.dates.push(d);g.dates.sort()});
- RG.gm=null}
+ const have=rgValidDates(),lockd=g=>(S.reviewed&&S.reviewed[g.id])||(S.rv&&S.rv.src&&S.rv.src.includes(g.id));
+ const keep=S.rgs.filter(lockd),used=new Set(keep.flatMap(g=>g.dates)),free=[...have].filter(d=>!used.has(d)).sort(),out=[...keep];
+ let i=0,idx=keep.reduce((a,x)=>Math.max(a,x.idx),0);
+ S.rgs.filter(g=>!lockd(g)).forEach(g=>{if(i>=free.length)return;g.dates=free.slice(i,i+g.len);i+=g.dates.length;g.idx=++idx;out.push(g)});
+ while(i<free.length){const n=rvInt();out.push({id:'g'+uid(),idx:++idx,len:n,dates:free.slice(i,i+n)});i+=n}
+ S.rgs=out;RG.gm=null}
 /* Novo intervalo vale também para o grupo em formação (o último, ainda aberto). Se ele já tiver
    mais dias que o novo intervalo, fica com os primeiros n e o restante vai para grupo(s) novo(s).
    Retorna null se não havia grupo em formação, senão quantos dias foram movidos. */
