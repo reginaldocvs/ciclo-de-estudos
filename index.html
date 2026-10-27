@@ -782,6 +782,36 @@ body .dlg.rvcfgdlg{width:min(92vw,460px)}
 .stp input::-webkit-outer-spin-button,.stp input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .rvsum{margin:8px 0 0;padding:12px 14px;border-radius:var(--r-m);background:color-mix(in srgb,var(--m-p) 8%,transparent);color:var(--mut);font-size:.875rem}.rvsum b{color:var(--ink);font-weight:600;white-space:nowrap}.rvs1{display:inline-block}.rvsum.flow .rvs1{display:inline}
 .rvcfgdlg .fl.rvcfa{display:flex;justify-content:flex-end;margin-top:16px}
+/* Revisão por tópico */
+.trvc>h2{margin:0 0 8px}
+.trvcf{display:flex;align-items:center;gap:6px;margin:0 0 4px}
+.trvh{font-size:.9375rem;font-weight:600;margin:14px 0 2px}
+.trvs{padding:6px 0;border-top:1px solid var(--m-ov)}
+.trvsh{display:flex;align-items:center;gap:8px;min-width:0;margin:6px 0 2px}
+.trvr{padding:8px 0 8px 18px}
+.trvrh{display:flex;align-items:flex-start;gap:12px;min-width:0}
+.trvrh>.btn{flex:none;margin-top:2px}
+.trvcf b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.trvmore{align-self:flex-start;margin-top:2px}
+.trvadd .btn,.trvadd .lnk{white-space:nowrap}
+.trvn{font-weight:600}
+.trvm{font-size:.85rem}
+.trvr .rvits{margin-top:6px}
+.trve{padding:10px 0 4px}
+.trvg{border-top:1px solid var(--m-ov);margin-top:10px}
+.trvgh{font:inherit;display:flex;align-items:center;gap:8px;width:100%;min-height:44px;background:none;border:0;padding:4px 0;cursor:pointer;color:var(--ink);font-weight:600;text-align:left}
+.trvl{display:flex;flex-direction:column;gap:8px;padding:0 0 10px}
+.trvli{display:flex;align-items:center;gap:8px;min-width:0;font-size:.9rem}
+.trvd{flex:none;font-variant-numeric:tabular-nums;font-size:.85rem}
+.trvok{display:flex;flex-direction:column;gap:2px;min-width:0;margin:0 0 14px}
+.trvf{display:flex;gap:8px;flex-wrap:wrap}
+.trvhint{font-size:.85rem;margin:8px 0 0}
+.trvdlg .stp .trvrm{background:none;color:var(--mut);margin-left:4px}
+.trvadd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 0 0;border-top:1px solid var(--m-ov)}
+.trvbelow{margin-top:18px}
+.rcy .rctp{position:absolute;top:0;right:1px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--m-tc);color:var(--m-ontc);font-size:11px;font-weight:700;line-height:16px;text-align:center;font-variant-numeric:tabular-nums}
+.rcl.rcl2{margin-top:-2px}
+.rcl .rctp.lg{display:inline-block;min-width:16px;height:16px;padding:0 4px;margin-right:6px;border-radius:999px;background:var(--m-tc);color:var(--m-ontc);font-size:11px;font-weight:700;line-height:16px;text-align:center}
 @media (max-width:360px){.rvrow{gap:8px}.stp{gap:0}.stp .x{width:32px;height:32px;min-width:32px}.stp input{width:2.2em}}
 
 /* Regra do app: nunca deixar uma palavra sozinha na última linha de um texto */
@@ -848,11 +878,11 @@ let S=load(KEY),tab='ciclo';const ui={open:new Set()};
 /* Disciplina da vez na ordem do ciclo, ao abrir o app e ao voltar para a aba Ciclo; nunca durante um estudo, edição ou revisão */
 function toCurrent(tabSw){if(S.edit||S.sx||(tabSw&&S.rv)||(S.timer&&(S.timer.running||S.timer.acc>0)))return;const c=current();if(c&&c.id!==S.sel.subj){S.sel.subj=c.id;S.sel.topic='';S.sel.groups=null}}
 function tabReset(){
- ui.rcg=ui.rcm=ui.rgview=null;                                         // Revisão: grupo selecionado, mês do calendário, janela do grupo
+ ui.rcg=ui.rcm=ui.rgview=ui.trvk=ui.trvcfg=ui.trviv=null;                                        // Revisão: grupo selecionado, mês do calendário, janela do grupo
  ui.hq=ui.hd1=ui.hd2=ui.hfs=ui.hfc='';ui.hn=30;ui.hrod=null;            // Histórico: busca, período, filtros, quantidade e rodada
  ui.ss=ui.sp=null;                                                     // Estatísticas: rodada e período
  ui.dd=null;ui.nv=ui.qi=ui.rx=null;ui.rowPick=null;                                   // menus abertos, anotações, questões e listas expandidas
- [...ui.open].forEach(k=>{if(/^(rfo|hc|hci):/.test(k))ui.open.delete(k)})}  // revisões futuras e blocos do Histórico
+ [...ui.open].forEach(k=>{if(/^(rfo|hc|hci):/.test(k)||k==='trvnx'||k==='trvfx')ui.open.delete(k)})}  // revisões futuras e blocos do Histórico
 if(!S||!S.subjects){const o=load('ciclo-estudos-v1');S=seed();if(o&&o.subjects){S.subjects=o.subjects.map(s=>({id:s.id,name:s.name,goal:s.goal,topics:[]}));S.cycle=o.cycle||1;S.progress=o.progress||{};S.completed=Math.max(S.cycle-1,0)}}
 /* LJ = último JSON que esta aba gravou ou leu em KEY; serve para notar gravações de outra aba. */
 let LJ=null;try{LJ=localStorage.getItem(KEY)}catch(e){}
@@ -870,7 +900,7 @@ function setMode(m){S.mode=S.mode||'study';if(m==='review'&&!S.rv)m='study';if(S
  S.type=m==='review'?'review':'regular';S.reviewSrc=m==='review'?S.rv.src.slice():[]}
 function endReview(){setMode('study');if(S.alt&&S.alt.lay)S.rvLayout=S.alt.lay;S.alt=null;S.rv=null}
 const CS=()=>S.sessions.filter(x=>(x.set||1)===(S.set||1));
-const inCtx=x=>(x.set||1)===(S.set||1)&&(S.type==='review'?!!S.rv&&x.rid===S.rv.id:!x.rid&&x.cycle===S.cycle);
+const inCtx=x=>!x.trv&&(x.set||1)===(S.set||1)&&(S.type==='review'?!!S.rv&&x.rid===S.rv.id:!x.rid&&x.cycle===S.cycle);
 const pkey=x=>x.blk||x.subj;
 function progTarget(x){if(x.rid){if(!S.rv||S.rv.id!==x.rid)return null;return S.mode==='review'?S.progress:(S.alt&&S.alt.progress)}if((x.set||1)!==(S.set||1))return null;if(x.cycle!==S.cycle){const h=(S.hist||{})[x.cycle];return h&&h.prog&&h.type!=='review'?h.prog:null}return S.mode==='review'?(S.alt&&S.alt.progress):S.progress}
 const col=s=>{const b=s.of?(S.subjects.find(x=>x.id===s.of)||s):s;return COLORS[(b.ci!==undefined?b.ci:Math.max(S.subjects.indexOf(b),0))%COLORS.length]};
@@ -1116,7 +1146,9 @@ function viewCiclo(){
  if(!S.edit)syncSel();
  const A=actives(),cur=current();let rvBan='',h=(ui.note?`<div class="mut" style="text-align:center;margin-bottom:10px">${esc(ui.note)}</div>`:'');
  
- if(!rev){const AV=rgInfo().list.filter(o=>o.st==='disponivel'&&rgTopics(o.g).size);if(AV.length||S.rv)rvBan=`<div class="done rvrem"><div><b>${S.rv?'Revisão em andamento':'Revisão do '+rgLabel(AV.find(o=>o.g.id===rgNext())||AV[0])+' disponível'}</b><div class="mut">${S.rv?'Continue de onde parou na aba Revisão.':'Ela corre em paralelo ao ciclo'+(AV.length>1?'; depois dela, mais '+(AV.length-1)+' grupo'+(AV.length>2?'s':'')+' na fila.':'.')}</div></div><button class="lnk" data-tab="rev">${S.rv?'Continuar revisão':'Ir para a revisão'} ›</button></div>`}
+ if(!rev){const AV=rgInfo().list.filter(o=>o.st==='disponivel'&&rgTopics(o.g).size),nT=trvDue().length,tT=nT+' tópico'+pl_(nT)+' para revisar';
+  if(AV.length||S.rv)rvBan=`<div class="done rvrem"><div><b>${S.rv?'Revisão em andamento':'Revisão do '+rgLabel(AV.find(o=>o.g.id===rgNext())||AV[0])+' disponível'}</b><div class="mut">${S.rv?'Continue de onde parou na aba Revisão.':'Ela corre em paralelo ao ciclo'+(AV.length>1?'; depois dela, mais '+(AV.length-1)+' grupo'+(AV.length>2?'s':'')+' na fila.':'.')}${nT?' Também há '+tT+'.':''}</div></div><button class="lnk" data-tab="rev">${S.rv?'Continuar revisão':'Ir para a revisão'} ›</button></div>`;
+  else if(nT)rvBan=`<div class="done rvrem"><div><b>${tT.charAt(0).toUpperCase()+tT.slice(1)}</b><div class="mut">Revisão por tópico, em paralelo ao ciclo.</div></div><button class="lnk" data-tab="rev">Ir para a revisão ›</button></div>`}
  if(!cur){
   h+=rev?`<div class="done"><div><b>${A.length?'Revisão concluída.':'Nada para revisar.'}</b><div class="mut">${A.length?'Você cumpriu todas as metas desta revisão.':'Os grupos escolhidos não têm tópicos registrados.'}</div></div><button class="btn" data-act="rvend">Concluir revisão</button></div>`:''}
  let info='';const nw=A.find(x=>x.id===selId())||cur;
@@ -1138,7 +1170,7 @@ function sesRow(k,r,o){o=o||{};const f=r[0],s=subjAny(f.subj),t0=r.reduce((a,x)=
   const rk=k+'|'+id,lim=o.lim&&!(ui.rx&&ui.rx.has(rk))?o.lim:0,shown=lim?its.slice(0,lim):its;
   return `<div class="rtpb"><div class="rtpn">${esc(n)}${!t?' <span class="tag del">excluído</span>':''}</div>${its.length?`<div class="rits">${shown.map(e=>`<div class="rit"><span class="ritn" title="${esc(e.nm)}">${esc(e.nm)}</span>${e.t?`<span class="ritl" style="--qc:${s?col(s):'var(--mut)'}" aria-hidden="true"></span><span class="ritq">${qTag(e,s?col(s):'')}</span>`:''}</div>`).join('')}${lim&&its.length>lim?`<button class="ritm" data-act="ritmore" data-id="${esc(rk)}">+${its.length-lim} aula${its.length-lim===1?'':'s'}</button>`:''}</div>`:''}</div>`}).filter(Boolean):[];
  const NL=[];if(o.notes)r.forEach(x=>(x.items||[]).forEach(i=>{const it=itKey(i);if(!it)return;const nt=noteOf(x.topic,it);if(nt&&!NL.some(z=>z.k===x.topic+'|'+ik(it)))NL.push({k:x.topic+'|'+ik(it),lb:it.title||host(it.url)||KIND[it.kind]||'Aula',nt})}));const hop=NL.length&&ui.hnv&&ui.hnv.has(k);
- return `<div class="ritem${o.flush?' flush':''}"><div class="grow"><div class="hic">${NL.length?`<button class="x clip on" data-act="hnote" data-id="${k}" title="${NL.length===1?'1 anotação':NL.length+' anotações'}" aria-label="Ver anotações" aria-expanded="${hop?'true':'false'}">${NOTEI}</button>`:''}${s?`<button class="x" data-act="edit" data-id="${k}" title="Editar registro" aria-label="Editar registro">${PEN}</button>`:''}${o.del?`<button class="x" data-act="delreg" data-id="${k}" title="Excluir" aria-label="Excluir registro">${TRASH}</button>`:''}</div><div class="rsub snt" title="${esc(s?nm(s):'Disciplina removida')}" style="--sc:${s?col(s):'var(--mut)'};color:color-mix(in srgb,var(--sc) 45%,var(--ink))">${esc(s?nm(s):'Disciplina removida')}</div>${tps.length?`<div class="rtps">${tps.join('')}</div>`:''}<div class="rmeta"><span>${fmt(t0)}</span>${o.date&&f.date?`<span class="tag">${fd(f.date)}</span>`:''}<span class="tag">${f.rid||f.review?'revisão':((S.set||1)>1?'R'+(f.set||1)+' · ':'')+'ciclo '+f.cycle}</span></div>${hop?NL.map(z=>`<div class="nvw"><b>${esc(z.lb)}</b>\n${esc(z.nt)}</div>`).join(''):''}</div></div>`}
+ return `<div class="ritem${o.flush?' flush':''}"><div class="grow"><div class="hic">${NL.length?`<button class="x clip on" data-act="hnote" data-id="${k}" title="${NL.length===1?'1 anotação':NL.length+' anotações'}" aria-label="Ver anotações" aria-expanded="${hop?'true':'false'}">${NOTEI}</button>`:''}${s&&!f.trv?`<button class="x" data-act="edit" data-id="${k}" title="Editar registro" aria-label="Editar registro">${PEN}</button>`:''}${o.del?`<button class="x" data-act="delreg" data-id="${k}" title="Excluir" aria-label="Excluir registro">${TRASH}</button>`:''}</div><div class="rsub snt" title="${esc(s?nm(s):'Disciplina removida')}" style="--sc:${s?col(s):'var(--mut)'};color:color-mix(in srgb,var(--sc) 45%,var(--ink))">${esc(s?nm(s):'Disciplina removida')}</div>${tps.length?`<div class="rtps">${tps.join('')}</div>`:''}<div class="rmeta"><span>${fmt(t0)}</span>${o.date&&f.date?`<span class="tag">${fd(f.date)}</span>`:''}<span class="tag">${f.trv?'revisão do tópico':f.rid||f.review?'revisão':((S.set||1)>1?'R'+(f.set||1)+' · ':'')+'ciclo '+f.cycle}</span></div>${hop?NL.map(z=>`<div class="nvw"><b>${esc(z.lb)}</b>\n${esc(z.nt)}</div>`).join(''):''}</div></div>`}
 
 /* ===== Revisão por dias válidos de estudo ===== */
 const rvWait=()=>{const n=+S.rvwait;return n>=1&&n<=60&&n===Math.floor(n)?n:8};
@@ -1211,7 +1243,7 @@ function rcMarks(I){const td=today(),base=I.list.some(o=>o.g.dates.includes(td))
 function rcShow(id,force){const c=id&&document.querySelector('[data-gid="'+id+'"]'),sd=document.querySelector('.rvside');if(!c)return;if(!force&&!(sd&&getComputedStyle(sd).position==='sticky'))return;c.scrollIntoView({block:force?'center':'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
 function rcPick(id,show,mon){ui.rcg=id;if(id){const o=rcMarks(rgInfo()).list.find(o=>o.g.id===id);if(o&&o.st==='futuro')ui.open.add('rfo:'+id);if(mon&&o){const d=o.g.dates[0]||(o.mk&&o.mk.d);if(d)ui.rcm=d.slice(0,7)}}render();if(id&&show)requestAnimationFrame(()=>rcShow(id))}
 function rvCal(I){
- rcMarks(I);
+ rcMarks(I);const TM={};trvList().forEach(o=>{if(!o.fix)TM[o.due]=(TM[o.due]||0)+1}); /* revisões por tópico: quantos tópicos vencem em cada dia */
  const td=today(),mon=ui.rcm||td.slice(0,7),sel=ui.rcg&&I.list.some(o=>o.g.id===ui.rcg)?ui.rcg:null,G={},M={};
  I.list.forEach(o=>{o.g.dates.forEach(d=>G[d]=o);if(o.mk)(M[o.mk.d]=M[o.mk.d]||[]).push(o)});
  const nx=rgNext(I),av=I.list.filter(o=>o.st==='disponivel'||o.st==='andamento'),fu=I.list.find(o=>o.st==='futuro');
@@ -1224,8 +1256,8 @@ function rvCal(I){
   if(out)cls.push('out');if(x===td)cls.push('tdy');
   const bm=sel&&o&&o.g.id===sel,mm=sel&&ms.some(m=>m.g.id===sel),mine=bm||mm;if(sel){if(o)cls.push(bm?'sel':'bdim');if(ms.length&&!mm)cls.push('mdim');if((o||ms.length)&&!mine)cls.push('ndim')}
   const m=ms.find(m=>m.g.id===sel)||ms[0];
-  const lbl=[x===td?'hoje':'',o?'estudo do '+rgLabel(o):'',...ms.map(m=>rgLabel(m)+' '+KN[m.mk.k])].filter(Boolean).join(' · ');
-  return `<button class="${cls.join(' ')}"${st?` style="${st}"`:''} data-act="rcday" data-id="${x}" aria-label="${+x.slice(8)} de ${RCM[+x.slice(5,7)-1]}${lbl?' — '+lbl:''}"${mine?' aria-pressed="true"':''}><span class="rcbd" aria-hidden="true"></span><span class="rcdn">${+x.slice(8)}</span><span class="rcmk ${m?m.mk.k:''}" aria-hidden="true">${m?(m.mk.k==='ok'?RCOK:'<i></i>')+'G'+m.g.idx+(ms.length>1?'+':''):''}</span></button>`};
+  const lbl=[x===td?'hoje':'',o?'estudo do '+rgLabel(o):'',...ms.map(m=>rgLabel(m)+' '+KN[m.mk.k]),TM[x]?TM[x]+' tópico'+pl_(TM[x])+' para revisar':''].filter(Boolean).join(' · ');
+  return `<button class="${cls.join(' ')}"${st?` style="${st}"`:''} data-act="rcday" data-id="${x}" aria-label="${+x.slice(8)} de ${RCM[+x.slice(5,7)-1]}${lbl?' — '+lbl:''}"${mine?' aria-pressed="true"':''}><span class="rcbd" aria-hidden="true"></span><span class="rcdn">${+x.slice(8)}</span>${TM[x]?`<span class="rctp" aria-hidden="true">${TM[x]}</span>`:''}<span class="rcmk ${m?m.mk.k:''}" aria-hidden="true">${m?(m.mk.k==='ok'?RCOK:'<i></i>')+'G'+m.g.idx+(ms.length>1?'+':''):''}</span></button>`};
  /* Resumo: o grupo para revisar agora e o próximo previsto; tocar leva ao mês da marca com o grupo já selecionado */
  const sline=(o,t)=>`<button type="button" class="rcsl" data-act="rcgo" data-id="${o.g.id}" data-m="${o.mk.d.slice(0,7)}"><span class="rcmk ${o.mk.k}" aria-hidden="true"><i></i></span><span class="grow">${t}</span>${CHVR}</button>`;
  const nav=av.find(o=>o.g.id===nx)||av[0];
@@ -1239,7 +1271,7 @@ function rvCal(I){
  else if(I.list.length)pn='<div class="mut rchint">Toque num dia para destacar o grupo na lista.</div>';
  return `<div class="card hasinfo rcal">${infoBtn('rvcal','Calendário de revisões')}<h2 class="pvt">Calendário de revisões</h2>${sum?`<div class="rcsum">${sum}</div>`:''}<div class="rcn"><button class="x" data-act="rcm" data-id="-1" aria-label="Mês anterior">‹</button><b>${RCM[first.getMonth()]} ${first.getFullYear()}</b><button class="x" data-act="rcm" data-id="1" aria-label="Próximo mês">›</button></div>
  <div class="rcg rcg2">${['seg','ter','qua','qui','sex','sáb','dom'].map(w=>`<span class="rcw">${w}</span>`).join('')}${cells.map(cell).join('')}</div>
- <div class="rcl"><span><i class="rcx e"></i>Dias do grupo</span><span><span class="rcmk av"><i></i></span>Para revisar</span><span><span class="rcmk pr"><i></i></span>Previsto</span><span><span class="rcmk ok">${RCOK}</span>Revisado</span></div>
+ <div class="rcl"><span><i class="rcx e"></i>Dias do grupo</span><span><span class="rcmk av"><i></i></span>Para revisar</span><span><span class="rcmk pr"><i></i></span>Previsto</span><span><span class="rcmk ok">${RCOK}</span>Revisado</span></div>${Object.keys(TM).length?'<div class="rcl rcl2"><span><span class="rctp lg" aria-hidden="true">n</span>Tópicos para revisar no dia</span></div>':''}
  ${pn}</div>`}
 /* Disciplinas e tópicos de um grupo de revisão (pop-up do olho e cartões de revisões futuras) */
 function rgBody(o){const by=rgTopics(o.g),subs=[...by.keys()].map(id=>S.subjects.find(x=>x.id===id)).filter(Boolean);
@@ -1256,7 +1288,8 @@ const INFO={
  rvcal:()=>{const td=today(),st=rgInfo().list.some(o=>o.g.dates.includes(td));return {t:'Calendário de revisões',h:`<p>Os dias de estudo de cada grupo aparecem ligados numa faixa. Embaixo do número fica a marca da revisão do grupo: ● para revisar, ○ prevista e ✓ revisado.</p><p>Toque num dia para ver o grupo inteiro: período, disciplinas e tópicos.</p><p>A data prevista supõe que você estude todos os dias a partir de ${st?'amanhã':'hoje'}; se pular algum dia, ela se desloca.</p>`}},
  rodadas:()=>({t:'Rodadas',h:'<p>Uma rodada é uma volta completa pelo plano: ao iniciar uma nova, os ciclos recomeçam do 1 e as anteriores ficam guardadas para consulta.</p>'}),
  tema:()=>({t:'Aparência',h:'<p>Escolha o tema do app. No modo automático, ele acompanha o tema do seu dispositivo.</p>'}),
- edrev:()=>({t:'Editar revisão',h:'<p>Ajuste a meta, duplique disciplinas para ter mais sessões, remova as que sobrarem e arraste para mudar a ordem. Cada disciplina fica com pelo menos uma sessão, e sessões com tempo registrado não saem. Enquanto uma disciplina tiver itens por revisar, ela ganha sozinha uma sessão nova no fim; sem itens, as sessões vazias dela saem. Vale só para a revisão.</p>'})};
+ trv:()=>({t:'Revisão por tópico',h:`<p>Cada tópico que você estuda ganha a própria agenda de revisões, separada da revisão por grupos. Com os intervalos atuais (${trvIv().join(', ')} dias), cada revisão vem esse número de dias depois da anterior; a primeira conta a partir do estudo.</p><p>Se atrasar, o tópico continua em "Para revisar" e a próxima conta a partir do dia em que você revisou. Depois da última, ele fica em "Fixados".</p><p>Tópicos estudados antes de ${fd((S.trv&&S.trv.start)||today())} começam a contar a partir dessa data. Estudar o tópico de novo ou revisá-lo na revisão por grupos não muda esta agenda.</p>`}),
+edrev:()=>({t:'Editar revisão',h:'<p>Ajuste a meta, duplique disciplinas para ter mais sessões, remova as que sobrarem e arraste para mudar a ordem. Cada disciplina fica com pelo menos uma sessão, e sessões com tempo registrado não saem. Enquanto uma disciplina tiver itens por revisar, ela ganha sozinha uma sessão nova no fim; sem itens, as sessões vazias dela saem. Vale só para a revisão.</p>'})};
 const infoHtml=()=>{const f=INFO[ui.info];if(!f){ui.info=null;return ''}const o=f();return `<div class="ov top" data-act="infox"></div><div class="dlg top infodlg" role="dialog" aria-modal="true" aria-label="${o.t}"><div class="chead"><h2>${o.t}</h2><button class="x" data-act="infox" title="Fechar" aria-label="Fechar">${CLOSEI}</button></div><div class="infotx">${o.h}</div></div>`};
 /* Ajuste da regra dos grupos: mesmos nomes dos chips (Grupo, Revisar), botões − e + e um resumo que acompanha os números */
 /* Resumo em duas partes (até "e abre" e o resto), cada uma numa linha. Se alguma parte não couber numa linha, a frase volta a ser texto corrido (classe flow) */
@@ -1269,8 +1302,47 @@ const rvSumUpd=f=>{const g=k=>{const v=+(f.elements[k].value||0);return v>=1&&v<
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('.rvstep');if(!b)return;const f=b.closest('form'),i=f.elements[b.dataset.k];i.value=Math.min(60,Math.max(1,(+i.value||0)+ +b.dataset.d));rvSumUpd(f)});
 document.addEventListener('input',e=>{const f=e.target.closest&&e.target.closest('form[data-f=rvcfg]');if(f)rvSumUpd(f)});
 const rgPopHtml=()=>{const o=rgInfo().list.find(x=>x.g.id===ui.rgview);if(!o){ui.rgview=null;return ''}return `<div class="ov" data-act="rgvx"></div><div class="dlg rgpop" role="dialog" aria-modal="true" aria-label="${esc(rgLabel(o))}"><div class="chead"><h2>${esc(rgLabel(o))}</h2><button class="x" data-act="rgvx" title="Fechar" aria-label="Fechar">${CLOSEI}</button></div><div class="mut rgw">${o.g.dates.length} de ${o.g.len} dias de estudo${o.g.dates.length?' · '+fd(o.g.dates[0])+(o.g.dates.length>1?' a '+fd(o.g.dates[o.g.dates.length-1]):''):''}</div><div class="rgpb">${rgBody(o)}</div>${!S.rv&&o.g.id===rgNext()?`<button class="btn full" style="margin-top:14px" data-act="rvstart" data-id="${o.g.id}">Iniciar revisão do ${esc(rgLabel(o))}</button>`:''}</div>`};
+/* ===== Revisão por tópico (em paralelo à revisão por grupos) =====
+   Cada disciplina › tópico estudado tem a própria agenda: revisões depois de 21, 15, 30, 30 e 60 dias (ajustável),
+   cada intervalo contado a partir da revisão anterior feita de fato. Depois da última, o tópico fica "Fixado".
+   Tópicos estudados antes desta função existir começam a contar do dia em que ela foi ativada (S.trv.start).
+   Estudar o tópico de novo ou revisá-lo na revisão por grupos não mexe nesta agenda. */
+const TRV_DEF=[21,15,30,30,60];
+const trvIv=()=>{const v=S.trv&&S.trv.iv;return Array.isArray(v)&&v.length?v:TRV_DEF};
+function trvInit(){if(!S.trv||typeof S.trv!=='object')S.trv={};if(!S.trv.t)S.trv.t={};if(!S.trv.start)S.trv.start=today()}
+const trvBase=id=>{const s=subjAny(id);return s?(s.of||s.id):id};
+const ordN=n=>n+'ª';
+/* Todos os tópicos já estudados, com a situação da agenda de cada um */
+function trvList(){trvInit();const st=S.trv.start,first={},iv=trvIv(),td=today(),out=[];
+ S.sessions.forEach(x=>{if(x.review||x.rid||x.trv||x.tdel||!x.topic||!x.date)return;const b=trvBase(x.subj),k=b+'|'+x.topic;if(!first[k]||x.date<first[k].d)first[k]={d:x.date,b,t:x.topic}});
+ Object.entries(first).forEach(([k,f])=>{const s=subjAny(f.b),tp=s&&topicOf(s,f.t);if(!tp)return;
+  const h=((S.trv.t[k]||{}).h||[]).slice().sort(),n=h.length,d0=f.d<st?st:f.d,fix=n>=iv.length,due=fix?null:addD(n?h[n-1]:d0,iv[n]);
+  out.push({k,s,tp,d0,h,n,fix,due,late:due&&due<td?dDiff(td,due):0})});
+ return out}
+const trvDue=L=>(L||trvList()).filter(o=>!o.fix&&o.due<=today());
+/* Itens (aulas, links, questões) estudados no tópico, sem repetição */
+function trvItems(o){const out=[],b=o.s.of||o.s.id;S.sessions.forEach(x=>{if(x.review||x.rid||x.trv||x.topic!==o.tp.id||trvBase(x.subj)!==b)return;(x.items||[]).forEach(i=>{const it=itKey(i);if(it&&!out.some(z=>sameIt(z,it)))out.push(it)})});return out}
+function trvMark(k,d,m){trvInit();const r=S.trv.t[k]=S.trv.t[k]||{h:[]};r.h=(r.h||[]).concat(d).sort();
+ if(m>0){const [b,t]=k.split('|');S.sessions.push({id:uid(),ses:uid(),subj:b,topic:t,min:m,cycle:S.cycle,set:S.set||1,review:true,trv:k,trvd:d,kind:'aula',items:[],date:d})}}
+function trvUnmark(k,d){const r=S.trv&&S.trv.t&&S.trv.t[k];if(!r||!r.h)return;const i=r.h.indexOf(d);if(i>=0)r.h.splice(i,1)}
+const trvWhen=o=>o.late?`atrasada há ${o.late} dia${pl_(o.late)}`:o.due===today()?'vence hoje':'em '+fd(o.due);
+function trvSec(){const L=trvList(),td=today(),iv=trvIv(),due=L.filter(o=>!o.fix&&o.due<=td).sort((a,b)=>a.due<b.due?-1:a.due>b.due?1:0),nx=L.filter(o=>!o.fix&&o.due>td).sort((a,b)=>a.due<b.due?-1:a.due>b.due?1:0),fx=L.filter(o=>o.fix);
+ const by=new Map();due.forEach(o=>{const b=o.s.of||o.s.id;if(!by.has(b))by.set(b,[]);by.get(b).push(o)});
+ /* Tópico: nome, situação e botão numa linha; aulas embaixo, com a largura toda (as 3 primeiras, o resto em "ver mais") */
+ const row=o=>{const its=trvItems(o),rk='trv|'+o.k,all=ui.rx&&ui.rx.has(rk),sh=all?its:its.slice(0,3);return `<div class="trvr"><div class="trvrh"><div class="grow"><div class="trvn snt" title="${esc(o.tp.name)}">${esc(o.tp.name)}</div><div class="mut trvm">${ordN(o.n+1)} de ${iv.length} · ${trvWhen(o)}</div></div><button class="btn s g" data-act="trvok" data-id="${esc(o.k)}">Revisado</button></div>${sh.length?`<div class="rvits">${sh.map(l=>`<div class="rvit">${itemLine(l,o.tp.id)}</div>`).join('')}${its.length>sh.length?`<button type="button" class="lnk lsm trvmore" data-act="ritmore" data-id="${esc(rk)}">ver mais ${its.length-sh.length}</button>`:''}</div>`:''}</div>`};
+ const dueH=due.length?[...by.values()].map(os=>{const s=os[0].s;return `<div class="trvs"><div class="trvsh"><span class="dot" style="background:${col(s)}" aria-hidden="true"></span><b class="snt" title="${esc(nm(s))}">${esc(nm(s))}</b></div>${os.map(row).join('')}</div>`}).join(''):`<div class="mut trve">Nenhum tópico para revisar hoje.${nx[0]?` Próximo: ${esc(nx[0].tp.name)}, ${fd(nx[0].due)}.`:L.length?'':' Os tópicos entram aqui conforme você estuda.'}</div>`;
+ const opN=ui.open.has('trvnx'),opF=ui.open.has('trvfx');
+ const nxH=nx.length?`<div class="trvg"><button type="button" class="trvgh" data-act="trvtog" data-id="trvnx" aria-expanded="${opN}"><span class="grow">Próximas <span class="mut">(${nx.length})</span></span><span class="x mtog${opN?' on':''}" aria-hidden="true">${CHEV}</span></button>${opN?`<div class="trvl">${nx.map(o=>`<div class="trvli"><span class="dot" style="background:${col(o.s)}" aria-hidden="true"></span><span class="grow snt" title="${esc(o.tp.name)} · ${esc(nm(o.s))}">${esc(o.tp.name)} <span class="mut">· ${esc(nm(o.s))}</span></span><span class="mut trvd">${ordN(o.n+1)} · ${sdm(o.due)}</span></div>`).join('')}</div>`:''}</div>`:'';
+ const fxH=fx.length?`<div class="trvg"><button type="button" class="trvgh" data-act="trvtog" data-id="trvfx" aria-expanded="${opF}"><span class="grow">Fixados <span class="mut">(${fx.length})</span></span><span class="x mtog${opF?' on':''}" aria-hidden="true">${CHEV}</span></button>${opF?`<div class="trvl">${fx.map(o=>`<div class="trvli"><span class="dot" style="background:${col(o.s)}" aria-hidden="true"></span><span class="grow snt" title="${esc(o.tp.name)} · ${esc(nm(o.s))}">${esc(o.tp.name)} <span class="mut">· ${esc(nm(o.s))}</span></span><span class="mut trvd">${sdm(o.h[o.h.length-1])}</span></div>`).join('')}</div>`:''}</div>`:'';
+ return `<div class="card hasinfo trvc">${infoBtn('trv','Revisão por tópico')}<h2>Revisão por tópico</h2><div class="trvcf"><span class="mut">Intervalos: <b>${iv.join(' · ')}</b> dias</span><button type="button" class="kadj" data-act="trvcfg" title="Ajustar intervalos" aria-label="Ajustar intervalos das revisões por tópico">${GEAR}</button></div>${due.length?`<h3 class="trvh">Para revisar <span class="mut">(${due.length})</span></h3>`:''}${dueH}${nxH}${fxH}</div>`}
+/* Janela "Revisado": tempo (opcional) e data */
+const trvOkHtml=()=>{const o=trvList().find(x=>x.k===ui.trvk);if(!o){ui.trvk=null;return ''}return `<div class="ov top" data-act="trvokx"></div><div class="dlg top rvcfgdlg trvdlg" role="dialog" aria-modal="true" aria-label="Revisar tópico"><div class="chead"><h2>Revisar tópico</h2><button class="x" data-act="trvokx" title="Fechar" aria-label="Fechar">${CLOSEI}</button></div><div class="trvok"><b class="snt" title="${esc(o.tp.name)}">${esc(o.tp.name)}</b><div class="mut">${esc(nm(o.s))} · ${ordN(o.n+1)} revisão de ${trvIv().length}</div></div><form autocomplete="off" novalidate data-f="trvok"><div class="fl trvf">${tmField('trv',ui.trvm||'','name="m"')}<input type="date" name="d" class="regdate" value="${today()}" max="${today()}" aria-label="Data da revisão" title="Data da revisão"></div><p class="mut trvhint">O tempo é opcional; se informado, entra no Histórico e nas Estatísticas.</p><div class="fl rvcfa"><button type="button" class="btn g" data-act="trvokx">Cancelar</button><button class="btn">Revisado</button></div></form></div>`};
+/* Janela dos intervalos: cópia de trabalho em ui.trviv até salvar */
+const trvSumTxt=a=>{let s=0;const c=a.map(n=>s+=(+n||0));return `${a.length} revis${a.length===1?'ão':'ões'}: ${c.length>1?c.slice(0,-1).join(', ')+' e '+c[c.length-1]:c[0]} dias depois do estudo, se feitas em dia.`};
+const trvCfgHtml=()=>{const a=ui.trviv||(ui.trviv=trvIv().slice());return `<div class="ov top" data-act="trvcfgx"></div><div class="dlg top rvcfgdlg trvdlg" role="dialog" aria-modal="true" aria-label="Intervalos das revisões por tópico"><div class="chead"><h2>Intervalos</h2><button class="x" data-act="trvcfgx" title="Fechar" aria-label="Fechar">${CLOSEI}</button></div><form autocomplete="off" novalidate data-f="trvcfg">${a.map((v,i)=>`<div class="rvrow"><div class="rvlb"><b>${ordN(i+1)} revisão</b><span class="mut">${i?'após a '+ordN(i):'após o estudo'}</span></div><div class="stp"><button type="button" class="x" data-act="tvstep" data-id="${i}:-1" aria-label="Diminuir a ${ordN(i+1)} revisão">−</button><input data-tv="${i}" type="number" inputmode="numeric" min="1" max="365" step="1" value="${v}" aria-label="${ordN(i+1)} revisão: dias"><button type="button" class="x" data-act="tvstep" data-id="${i}:1" aria-label="Aumentar a ${ordN(i+1)} revisão">+</button>${a.length>1?`<button type="button" class="x trvrm" data-act="tvdel" data-id="${i}" title="Remover esta revisão" aria-label="Remover a ${ordN(i+1)} revisão">${CLOSEI}</button>`:''}</div></div>`).join('')}<div class="trvadd">${a.length<10?'<button type="button" class="btn s g" data-act="tvadd">Adicionar revisão</button>':''}<button type="button" class="lnk" data-act="tvdef">Restaurar padrão</button></div><p class="rvsum" id="trvsum">${trvSumTxt(a)}</p><div class="fl rvcfa"><button type="button" class="btn g" data-act="trvcfgx">Cancelar</button><button class="btn">Salvar</button></div></form></div>`};
+document.addEventListener('input',e=>{const d=e.target.dataset;if(!d||d.tv===undefined||!ui.trviv)return;ui.trviv[+d.tv]=e.target.value.replace(/\D/g,'').slice(0,3);const p=document.getElementById('trvsum');if(p)p.textContent=trvSumTxt(ui.trviv)});
 function viewRev(){
- if(S.rv)return viewCiclo();
+ if(S.rv)return viewCiclo()+(S.edit?'':`<div class="trvbelow">${trvSec()}</div>`); /* durante a revisão por grupos, a por tópico continua disponível logo abaixo */
  if(S.edit&&!edPop())return sessCard();
  const I=rgInfo();
  const body=rgBody;
@@ -1288,7 +1360,7 @@ function viewRev(){
  /* Próxima revisão só aparece quando há grupo pronto; os demais ficam em Revisões futuras */
  const nxt=top||av.length?`<div class="card rvnext"><h2>Próxima revisão</h2>${top||'<div class="empty">Os grupos disponíveis não têm tópicos registrados.</div>'}</div>`:I.list.length?'':'<div class="card"><div class="empty">Nenhum grupo ainda. Eles se formam conforme você estuda.</div></div>';
  const cal=rvCal(I);
- return `<div class="rvw"><div class="rvmain">`+nxt+(rest?`<div class="card"><h2>Na fila</h2>${rest}</div>`:'')+`${fu.length?`<h2 class="sec">Revisões futuras</h2>${fuc}`:''}${dn.length?`<h2 class="sec">Concluídas</h2>${dnc}`:''}</div><aside class="rvside">${cal}</aside></div>`;
+ return `<div class="rvw"><div class="rvmain">`+nxt+(rest?`<div class="card"><h2>Na fila</h2>${rest}</div>`:'')+trvSec()+`${fu.length?`<h2 class="sec">Revisões futuras</h2>${fuc}`:''}${dn.length?`<h2 class="sec">Concluídas</h2>${dnc}`:''}</div><aside class="rvside">${cal}</aside></div>`;
 }
 const MINUS='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>';
 const nmAvail=()=>S.subjects.filter(s=>!s.of&&gone(s)&&s.ed===S.sel.af).length;
@@ -1399,7 +1471,7 @@ function viewConfig(){const t=S.theme||'auto',o=[['auto','Automático'],['light'
 
 /* ===== Vários ciclos de estudo (um por concurso) ===== */
 const PEN='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>';
-const PF=['mode','alt','rv','reviewed','reviews','rvLayout','cycle','type','progress','sessions','checked','reviewEvery','sinceReview','regDone','reviewSrc','completed','sel','timer','paused','hist','draft','edit','sx','set','reopen','rgs','rvint','rvlog','rgStart','rvwait','bump','bumpMig','rod','rodBack'];
+const PF=['mode','alt','rv','reviewed','reviews','rvLayout','cycle','type','progress','sessions','checked','reviewEvery','sinceReview','regDone','reviewSrc','completed','sel','timer','paused','hist','draft','edit','sx','set','reopen','rgs','rvint','rvlog','rgStart','rvwait','bump','bumpMig','rod','rodBack','trv'];
 function snapPlan(){const p={};PF.forEach(k=>{if(k in S)p[k]=S[k]});p.layout=S.subjects.map(s=>({id:s.id,goal:s.goal,off:!!s.off,hid:!!s.hid,of:s.of||null}));return p}
 function applyPlan(p){
  const bases=S.subjects.filter(s=>!s.of),by={};bases.forEach(b=>by[b.id]=b);
@@ -1462,7 +1534,7 @@ function render0(){
  {const sb=$('sub');if(sb)sb.innerHTML=`<button class="x gear${tab==='bk'?' on':''}" data-tab="bk" title="Configurações" aria-label="Configurações">${GEAR}</button>`}
  document.body.classList.toggle('wide',tab==='ciclo'||tab==='rev');$('app').innerHTML=tab==='ciclo'?viewCiclo():tab==='rev'?viewRev():tab==='reg'?viewReg():tab==='st'?viewStats():viewConfig();
  const fmv=!!S.sx&&!S.edit&&fmOk();
- $('modal').innerHTML=(ui.pl?plansHtml()+(ui.pdadd&&ui.pdd?pdAddHtml():''):'')+(ui.ed&&(tab==='ciclo'||(tab==='rev'&&S.rv))?editHtml()+(ui.addm?newMatCard():''):'')+(S.sx&&!S.edit?(fmv&&!ui.sxo?fmHtml():sessCard()):'')+(edPop()?sessCard():'')+(ui.rview?regViewHtml():'')+(ui.rgview&&tab==='rev'?rgPopHtml():'')+(ui.rvcfg&&tab==='rev'?rvcfgHtml():'')+(ui.info?infoHtml():'')+(welcomeOn()?welcomeHtml():'');if(tipEl)tipEl.style.display='none';fmSync(fmv);
+ $('modal').innerHTML=(ui.pl?plansHtml()+(ui.pdadd&&ui.pdd?pdAddHtml():''):'')+(ui.ed&&(tab==='ciclo'||(tab==='rev'&&S.rv))?editHtml()+(ui.addm?newMatCard():''):'')+(S.sx&&!S.edit?(fmv&&!ui.sxo?fmHtml():sessCard()):'')+(edPop()?sessCard():'')+(ui.rview?regViewHtml():'')+(ui.rgview&&tab==='rev'?rgPopHtml():'')+(ui.rvcfg&&tab==='rev'?rvcfgHtml():'')+(ui.trvk&&tab==='rev'?trvOkHtml():'')+(ui.trvcfg&&tab==='rev'?trvCfgHtml():'')+(ui.info?infoHtml():'')+(welcomeOn()?welcomeHtml():'');if(tipEl)tipEl.style.display='none';fmSync(fmv);
  [$('app'),$('modal')].forEach(c=>{if(c&&c.querySelectorAll)c.querySelectorAll('button[aria-label]:not([title])').forEach(b=>{b.title=b.getAttribute('aria-label')})});
  [$('app'),$('modal')].forEach(c=>{if(c&&c.querySelectorAll)c.querySelectorAll('form,input:not([type=checkbox]):not([type=file]):not([type=hidden]),textarea').forEach(x=>x.setAttribute('autocomplete','off'))});
  scrLoad(scr);ui.rtab=tab;fitNames();
@@ -1476,7 +1548,7 @@ const GEAR='<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="
 /* Ícone Fechar/Remover (Material Symbols Rounded "close"), no mesmo traço dos demais ícones */
 const CLOSEI='<svg class="ci" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>';
 const TRASH='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>';
-const UNDO_MSG={rreopen:'Meta reiniciada',rundo:'Nova rodada desfeita',delreg:'Registro excluído',reopen:'Ciclo reaberto',rvcancel:'Revisão cancelada',pldel:'Plano excluído',plset:'Nova rodada iniciada',sdel:'Disciplina excluída',del:'Bloco removido',rvdel:'Sessão removida da revisão',hide:'Disciplina removida do ciclo',dt:'Tópico excluído',dl:'Aula/link excluída',delgrp:'Tópico removido',delrow:'Aula/link removida',pdsave:'Disciplina editada',next:'Novo ciclo iniciado',rzero:'Cronômetro reiniciado'};
+const UNDO_MSG={rreopen:'Meta reiniciada',rundo:'Nova rodada desfeita',delreg:'Registro excluído',reopen:'Ciclo reaberto',rvcancel:'Revisão cancelada',pldel:'Plano excluído',plset:'Nova rodada iniciada',sdel:'Disciplina excluída',del:'Bloco removido',trvok:'Revisão do tópico registrada',rvdel:'Sessão removida da revisão',hide:'Disciplina removida do ciclo',dt:'Tópico excluído',dl:'Aula/link excluída',delgrp:'Tópico removido',delrow:'Aula/link removida',pdsave:'Disciplina editada',next:'Novo ciclo iniciado',rzero:'Cronômetro reiniciado'};
 function hideUndo(){clearTimeout(ui.undoT);ui.undo=null;const t=document.getElementById('undo');if(t)t.remove()}
 const UST=[],RST=[];
 function pushU(msg,snap){UST.push({snap:snap||JSON.stringify(S),msg});if(UST.length>10)UST.shift();RST.length=0}
@@ -1684,11 +1756,11 @@ const monOf=s=>{const d=pd(s);d.setDate(d.getDate()-((d.getDay()+6)%7));return y
 const addD=(s,n)=>{const d=pd(s);d.setDate(d.getDate()+n);return ymd(d)};
 function viewReg(){
  const map=new Map();S.sessions.forEach(x=>{const k=x.ses||x.id;if(!map.has(k))map.set(k,[]);map.get(k).push(x)});
- const baseOf=x=>{const s0=subjAny(x.subj);return s0?(s0.of||s0.id):x.subj},grpKey=f=>f.rid?'r'+f.rid:(f.review?'o':'c')+(f.set||1)+'.'+f.cycle;
+ const baseOf=x=>{const s0=subjAny(x.subj);return s0?(s0.of||s0.id):x.subj},grpKey=f=>f.trv?'t'+(f.set||1)+'.T':f.rid?'r'+f.rid:(f.review?'o':'c')+(f.set||1)+'.'+f.cycle;
  const all=[...map.entries()].reverse();
  const sOpts=[['','Disciplinas']].concat(uniq(all.map(([k,r])=>baseOf(r[0]))).map(id=>{const s0=S.subjects.find(x=>x.id===id);return [id,s0?s0.name:'Disciplina removida']}).sort((a,b)=>a[1].localeCompare(b[1],'pt')));
  const rvName=rid=>{const r=(S.reviews||[]).find(x=>x.id===rid)||(S.rv&&S.rv.id===rid?S.rv:null);return 'Revisão'+(r?' · '+(r.lbl||('ciclo'+(r.src.length>1?'s ':' ')+r.src.join(', '))):'')};
- const cOpts=[['','Ciclos']].concat(uniq(all.map(([k,r])=>grpKey(r[0]))).map(g=>{if(g[0]==='r')return [g,rvName(g.slice(1))];const [r,c]=g.slice(1).split('.');return [g,((S.set||1)>1?'R'+r+' · ':'')+(g[0]==='o'?'Revisão ':'Ciclo ')+c]}));
+ const cOpts=[['','Ciclos']].concat(uniq(all.map(([k,r])=>grpKey(r[0]))).map(g=>{if(g[0]==='r')return [g,rvName(g.slice(1))];const [r,c]=g.slice(1).split('.');return [g,((S.set||1)>1?'R'+r+' · ':'')+(g[0]==='t'?'Revisão por tópico':(g[0]==='o'?'Revisão ':'Ciclo ')+c)]}));
  const fs=sOpts.some(o=>o[0]===ui.hfs)?ui.hfs||'':'',fc=cOpts.some(o=>o[0]===ui.hfc)?ui.hfc||'':'';
  const hq=nrmS(ui.hq||'').trim(),hw=hq?hq.split(/\s+/):[],d1=ui.hd1||'',d2=ui.hd2||'';
  const hay=r=>{const s0=subjAny(r[0].subj),P=[s0?nm(s0):''];r.forEach(x=>{const t=s0&&x.topic?topicOf(s0,x.topic):null;P.push(t?t.name:'',x.tn||'');(x.items||[]).forEach(i=>{const it=itKey(i);P.push(i.name||'',it&&it.title||'',it&&it.url?host(it.url):'')})});return nrmS(P.join(' '))};
@@ -1704,7 +1776,7 @@ function viewReg(){
  /* Uma rodada por vez: começa na atual; o ciclo mais recente dela abre na primeira visita */
  const RS=uniq(B.map(b=>b.set)),rsel=RS.includes(ui.hrod)?ui.hrod:(RS.includes(S.set||1)?(S.set||1):RS[0]),BR=B.filter(b=>b.set===rsel);
  if(cic&&BR.length&&!ui.open.has('hci:'+rsel)){ui.open.add('hci:'+rsel);ui.open.add('hc:'+BR[0].g)}
- const blk=b=>{const op=ui.open.has('hc:'+b.g),lb=b.g[0]==='r'?rvName(b.g.slice(1)):(b.g[0]==='o'?'Revisão ':'Ciclo ')+(b.g[0]==='r'?'':b.g.split('.')[1]),mn=b.recs.reduce((a,x)=>a+x.min,0),per=b.d0?(b.d0===b.d1?f2(b.d0):f2(b.d0)+' a '+f2(b.d1)):'';
+ const blk=b=>{const op=ui.open.has('hc:'+b.g),lb=b.g[0]==='r'?rvName(b.g.slice(1)):b.g[0]==='t'?'Revisão por tópico':(b.g[0]==='o'?'Revisão ':'Ciclo ')+b.g.split('.')[1],mn=b.recs.reduce((a,x)=>a+x.min,0),per=b.d0?(b.d0===b.d1?f2(b.d0):f2(b.d0)+' a '+f2(b.d1)):'';
   const sb=uniq(b.recs.map(baseOf)).map(id=>{const rs=b.recs.filter(x=>baseOf(x)===id),s0=subjAny(id),t=studyTree(rs);return `<div class="hcs"><div class="hcsn"><span class="dot" style="background:${s0?col(s0):'var(--mut)'}"></span><b class="snt" title="${esc(s0?nm(s0):'Disciplina removida')}">${esc(s0?nm(s0):'Disciplina removida')}</b><span class="mut">${fmt(rs.reduce((a,x)=>a+x.min,0))}</span></div>${t?`<div class="rvlist hcst">${t}</div>`:'<div class="mut hcst">Sem tópico registrado</div>'}</div>`}).join('');
   return `<div class="hcb${op?' open':''}"><div class="pvh hch" data-act="hctog" data-id="${esc(b.g)}"><button class="x mtog${op?' on':''}" data-act="hctog" data-id="${esc(b.g)}" aria-expanded="${op}" aria-label="${op?'Recolher':'Ver'} ${esc(lb)}">${CHEV}</button><span class="hct"><b>${esc(lb)}</b><span class="mut"> · ${fmt(mn)}${per?' · '+per:''}</span></span></div>${op?`<div class="hcbody">${sb}</div>`:''}</div>`};
  const rpick=RS.length>1?`<div class="hrsel">${selField('hrod',RS.map(r=>[String(r),'Rodada '+r+(r===(S.set||1)?' · atual':'')]),String(rsel),'','Escolher rodada')}</div>`:'';
@@ -1771,7 +1843,7 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
   if(old[0].review){S.edit.rvg=sesGroups(old.filter(x=>x.topic),s0).map(g=>({...g,rows:g.rows.filter(r=>r.name||r.link)}))}else{ui.edPrev={subj:S.sel.subj};S.sel.subj=s0.id;S.sel.groups=sesGroups(old,s0)}}
  if(a==='canceledit'){const w=S.edit&&S.edit.rvg;S.edit=null;if(!w)S.sel.groups=null}
  if(a==='saveedit'&&saveEdit()===false){render();return}
- if(a==='delreg'){if(!ask('delreg:'+p,t))return;const old=S.sessions.filter(x=>(x.ses||x.id)===p);if(old.length){old.forEach(x=>(x.chk||[]).forEach(k=>delete S.checked[k]));if(!old[0].review)pruneLinks(old,[],p);{const P=progTarget(old[0]),k=pkey(old[0]);if(P){P[k]=Math.max(0,(P[k]||0)-old.reduce((a,x)=>a+x.min,0));const left=S.sessions.some(x=>(x.ses||x.id)!==p&&pkey(x)===k&&x.cycle===old[0].cycle&&!x.rid&&!x.review&&(x.set||1)===(old[0].set||1));if(old[0].rid&&P===S.progress){const sk=S.subjects.find(x=>x.id===k),lr=S.sessions.some(x=>(x.ses||x.id)!==p&&x.rid===old[0].rid&&pkey(x)===k);P[k]=lr&&sk?Math.max(P[k],sk.goal):0}
+ if(a==='delreg'){if(!ask('delreg:'+p,t))return;const old=S.sessions.filter(x=>(x.ses||x.id)===p);if(old.length&&old[0].trv){trvUnmark(old[0].trv,old[0].trvd);S.sessions=S.sessions.filter(x=>(x.ses||x.id)!==p)}else if(old.length){old.forEach(x=>(x.chk||[]).forEach(k=>delete S.checked[k]));if(!old[0].review)pruneLinks(old,[],p);{const P=progTarget(old[0]),k=pkey(old[0]);if(P){P[k]=Math.max(0,(P[k]||0)-old.reduce((a,x)=>a+x.min,0));const left=S.sessions.some(x=>(x.ses||x.id)!==p&&pkey(x)===k&&x.cycle===old[0].cycle&&!x.rid&&!x.review&&(x.set||1)===(old[0].set||1));if(old[0].rid&&P===S.progress){const sk=S.subjects.find(x=>x.id===k),lr=S.sessions.some(x=>(x.ses||x.id)!==p&&x.rid===old[0].rid&&pkey(x)===k);P[k]=lr&&sk?Math.max(P[k],sk.goal):0}
  if(!left&&!old[0].rid&&!old[0].review){P[k]=0;const pc=old[0].cycle!==S.cycle,B=pc?((S.hist||{})[old[0].cycle]||{}).bump:S.bump;if(B)delete B[k]}}}S.sessions=S.sessions.filter(x=>(x.ses||x.id)!==p)}if(S.edit&&S.edit.ses===p){const w=S.edit.rvg;S.edit=null;if(!w)S.sel.groups=null}}
  if(a==='next'&&S.type!=='review'){ask('next:',t);advance()}
  if(a==='rvstart'&&!S.rv&&p&&p===rgNext()){const o=rgInfo().list.find(o=>o.g.id===p&&o.st==='disponivel'&&rgTopics(o.g).size),src=o?[o.g.id]:[];if(src.length){const lbl='Grupo '+o.g.idx;setMode('study');S.rv={id:uid(),src,start:today(),lbl};ui.rgview=null;S.alt={};setMode('review');scrollTo(0,0)}}
@@ -1809,7 +1881,7 @@ if(a==='rgpick'){if(e.target.closest('button,a,label'))return;rcPick(ui.rcg===p?
  if(a==='rodtog'){const b=S.rodBack;S.rodOpen=!(S.rodOpen!=null?S.rodOpen:!!(b&&b.to===(S.set||1)&&!S.sessions.some(x=>(x.set||1)===(S.set||1))));save();render();return}
  if(a==='spick'){if(p==='af'){ui.nmph=null;S.sel.nnnew=false;S.sel.af=q;S.sel.nn='';S.sel.nnid=null;S.sel.nnall=false}else if(p==='ne'){S.sel.ne=q}else if(p==='ss'){reqSwitch(q)}else if(p.startsWith('k-')){const [,gi,ri]=p.split('-'),g=grps().find(x=>x.id===gi),r=g&&g.rows.find(x=>x.id===ri);if(r)r.kind=q==='questoes'?'questoes':'aula'}ui.dd=null}
  if(a==='tdd')ui.dd=ui.dd==='t:'+p?null:'t:'+p;
- if(a==='tpick'){if(p.startsWith('goal-')){const s=S.subjects.find(x=>x.id===p.slice(5));if(s)s.goal=+q}else if(p==='man')S.sel.mt=tmFmt(+q);else if(p==='ng')S.sel.ng=tmFmt(+q);else if(p==='edit'&&S.edit)S.edit.min=String(+q);ui.dd=null;ui.focus='tf-'+p}
+ if(a==='tpick'){if(p.startsWith('goal-')){const s=S.subjects.find(x=>x.id===p.slice(5));if(s)s.goal=+q}else if(p==='man')S.sel.mt=tmFmt(+q);else if(p==='ng')S.sel.ng=tmFmt(+q);else if(p==='trv')ui.trvm=tmFmt(+q);else if(p==='edit'&&S.edit)S.edit.min=String(+q);ui.dd=null;ui.focus='tf-'+p}
  if(a==='pick'){const g=grps().find(x=>x.id===p),s0=S.subjects.find(x=>x.id===S.sel.subj),tp=s0&&topicOf(s0,q);if(g&&tp){g.nt=tp.name;ui.focus='n-'+g.id}ui.dd=null}
  if(a==='addrow')addRow(p);
  if(a==='delrow'){const g=grps().find(x=>x.id===p),w0=g&&g.rows.find(x=>x.id===q);if(w0&&((w0.name||'').trim()||(w0.link||'').trim())&&!ask('delrow:'+p+':'+q,t))return;if(g){g.rows=g.rows.filter(x=>x.id!==q);if(!g.rows.length)g.rows.push({id:uid(),kind:'aula',name:'',link:''})}}
@@ -1848,6 +1920,15 @@ if(a==='rgpick'){if(e.target.closest('button,a,label'))return;rcPick(ui.rcg===p?
  if(a==='bkout'){bkOut();return}
  if(a==='bkin'){bkIn();return}
  if(a==='rvcfg'){ui.rvcfg=true;ui.rvcfgmsg=null}
+ if(a==='trvok'){ui.trvk=p;ui.trvm=''}
+ if(a==='trvokx')ui.trvk=null;
+ if(a==='trvtog'){if(ui.open.has(p))ui.open.delete(p);else ui.open.add(p)}
+ if(a==='trvcfg'){ui.trvcfg=true;ui.trviv=trvIv().slice()}
+ if(a==='trvcfgx'){ui.trvcfg=null;ui.trviv=null}
+ if(a==='tvstep'&&ui.trviv){const i=+p,d=+q;ui.trviv[i]=Math.min(365,Math.max(1,(+ui.trviv[i]||0)+d))}
+ if(a==='tvdel'&&ui.trviv&&ui.trviv.length>1)ui.trviv.splice(+p,1);
+ if(a==='tvadd'&&ui.trviv&&ui.trviv.length<10)ui.trviv.push(+ui.trviv[ui.trviv.length-1]||30);
+ if(a==='tvdef'&&ui.trviv)ui.trviv=TRV_DEF.slice();
  if(a==='rvcfgx'){ui.rvcfg=null;ui.rvcfgmsg=null}
  if(a==='info')ui.info=p;
  if(a==='infox')ui.info=null;
@@ -1888,14 +1969,14 @@ if(a==='rgpick'){if(e.target.closest('button,a,label'))return;rcPick(ui.rcg===p?
   S.subjects=S.subjects.filter(s=>s.id!==p);delete S.progress[p]}
  save();render();if(a==='edit'&&!edPop())scrollTo(0,0);if(ui.undoNext){showUndo(ui.undoNext);ui.undoNext=null}
 });
-document.addEventListener('change',e=>{if(e.target.classList&&e.target.classList.contains('regdate')){S.sel.md=e.target.value;save();return}
+document.addEventListener('change',e=>{if(e.target.classList&&e.target.classList.contains('regdate')&&!e.target.closest('[data-f=trvok]')){S.sel.md=e.target.value;save();return}
  const d=e.target.dataset,v=e.target.value;
- if('tm' in d){const mn=tmParse(v);if(d.goal){const s=S.subjects.find(x=>x.id===d.goal);if(s&&mn>=1){s.goal=mn;save()}e.target.value=tmFmt(s?s.goal:mn)}else{e.target.value=mn?tmFmt(mn):'';const k=d.tf;if(k==='man')S.sel.mt=e.target.value;else if(k==='ng')S.sel.ng=e.target.value}return}
+ if('tm' in d){const mn=tmParse(v);if(d.goal){const s=S.subjects.find(x=>x.id===d.goal);if(s&&mn>=1){s.goal=mn;save()}e.target.value=tmFmt(s?s.goal:mn)}else{e.target.value=mn?tmFmt(mn):'';const k=d.tf;if(k==='man')S.sel.mt=e.target.value;else if(k==='ng')S.sel.ng=e.target.value;else if(k==='trv')ui.trvm=e.target.value}return}
  if(d.chk)S.checked[d.chk]=e.target.checked;
  else return;
  save();render();
 });
-function tmSync(t){t.dataset.v=parseInt(t.value.replace(/\D/g,''),10)||0;t.dataset.dirty='1';const mn=tmParse(t.value);if('em' in t.dataset&&S.edit)S.edit.min=String(mn);const k=t.dataset.tf;if(k==='man')S.sel.mt=t.value;else if(k==='ng')S.sel.ng=t.value}
+function tmSync(t){t.dataset.v=parseInt(t.value.replace(/\D/g,''),10)||0;t.dataset.dirty='1';const mn=tmParse(t.value);if('em' in t.dataset&&S.edit)S.edit.min=String(mn);const k=t.dataset.tf;if(k==='man')S.sel.mt=t.value;else if(k==='ng')S.sel.ng=t.value;else if(k==='trv')ui.trvm=t.value}
 document.addEventListener('keydown',e=>{const t=e.target;if(!t.dataset||!('tm' in t.dataset)||e.ctrlKey||e.metaKey||e.altKey)return;
  let v=t.value||'0h00';if(!/^\d+h\d{2}$/.test(v))return;const a=t.selectionStart,b=t.selectionEnd,hi=v.indexOf('h');if(t.value!==v){t.value=v}
  const put=(nv,c)=>{e.preventDefault();t.value=nv;try{t.setSelectionRange(c,c)}catch(x){}tmSync(t)};
@@ -1907,9 +1988,9 @@ document.addEventListener('keydown',e=>{const t=e.target;if(!t.dataset||!('tm' i
 },true);
 document.addEventListener('focusout',e=>{const t=e.target;if(t.dataset&&'tm' in t.dataset&&t.dataset.dirty){delete t.dataset.dirty;t.dispatchEvent(new Event('change',{bubbles:true}))}});
 document.addEventListener('focusin',e=>{const t=e.target;if(t.dataset&&'tm' in t.dataset)t.dataset.v=parseInt(t.value.replace(/\D/g,''),10)||0});
-document.addEventListener('input',e=>{if(e.target.dataset&&'nmi' in e.target.dataset){e.target.setCustomValidity('');S.sel.nn=e.target.value;S.sel.nnid=null;S.sel.nnall=false;if(ui.nmnote){ui.nmnote=null;const n=document.querySelector&&document.querySelector('.nmnote');if(n)n.remove()}return}const t=e.target;if(t.dataset&&'tm' in t.dataset){const prev=+(t.dataset.v||0),del=e.inputType&&e.inputType.indexOf('delete')===0;let v=parseInt(t.value.replace(/\D/g,''),10)||0;if(del&&v===prev)v=Math.floor(prev/10);if(v>99999)v=prev;t.dataset.v=v;t.value=del&&v===0?'':Math.floor(v/100)+'h'+String(v%100).padStart(2,'0');if('em' in t.dataset&&S.edit)S.edit.min=String(Math.floor(v/100)*60+v%100);const k=t.dataset.tf;if(k==='man')S.sel.mt=t.value;else if(k==='ng')S.sel.ng=t.value;return}
+document.addEventListener('input',e=>{if(e.target.dataset&&'nmi' in e.target.dataset){e.target.setCustomValidity('');S.sel.nn=e.target.value;S.sel.nnid=null;S.sel.nnall=false;if(ui.nmnote){ui.nmnote=null;const n=document.querySelector&&document.querySelector('.nmnote');if(n)n.remove()}return}const t=e.target;if(t.dataset&&'tm' in t.dataset){const prev=+(t.dataset.v||0),del=e.inputType&&e.inputType.indexOf('delete')===0;let v=parseInt(t.value.replace(/\D/g,''),10)||0;if(del&&v===prev)v=Math.floor(prev/10);if(v>99999)v=prev;t.dataset.v=v;t.value=del&&v===0?'':Math.floor(v/100)+'h'+String(v%100).padStart(2,'0');if('em' in t.dataset&&S.edit)S.edit.min=String(Math.floor(v/100)*60+v%100);const k=t.dataset.tf;if(k==='man')S.sel.mt=t.value;else if(k==='ng')S.sel.ng=t.value;else if(k==='trv')ui.trvm=t.value;return}
  const d=e.target.dataset;if(S.edit&&'ed' in d)S.edit.date=e.target.value;if(d.gn){const g=grps().find(x=>x.id===d.gn);if(g){g.nt=e.target.value;if(g.err&&g.nt.trim()){g.err=false;const w=e.target.closest('.cb');if(w)w.classList.remove('err')}}}if(d.rac||d.rtq){const g=grps().find(x=>x.id===d.g),r=g&&g.rows.find(x=>x.id===(d.rac||d.rtq));const v=e.target.value.replace(/\D/g,'').slice(0,4);e.target.value=v;if(r){if(d.rac)r.ac=v;else r.tq=v;const qp=document.getElementById('qp-'+r.id);if(qp)qp.textContent=qPct(r)}}if(d.rq){const g=grps().find(x=>x.id===d.g),r=g&&g.rows.find(x=>x.id===d.rq);if(r){const was=!!(r.q||'').trim();r.q=e.target.value;const now=!!r.q.trim();const cb=document.querySelector('[data-act=clip][data-id="'+d.g+':'+d.rq+'"]');if(cb)cb.classList.toggle('on',!!(now||(r.link||'').trim()));if(was!==now){ui.focus='q-'+r.id;ui.caret=e.target.selectionStart;render()}}}if(d.rnt){const g=grps().find(x=>x.id===d.g),r=g&&g.rows.find(x=>x.id===d.rnt);if(r)r.note=e.target.value;const nb=document.querySelector('[data-act=rnote][data-id="'+d.g+':'+d.rnt+'"]');if(nb)nb.classList.toggle('on',!!e.target.value.trim())}if(d.rn){const g0=grps().find(x=>x.id===d.g),r0=g0&&g0.rows.find(x=>x.id===d.rn);if(r0&&r0.err&&e.target.value.trim()){r0.err=false;const lb=e.target.closest('.aname');if(lb)lb.classList.remove('err')}}if(d.rn||d.rl){const g=grps().find(x=>x.id===d.g),r=g&&g.rows.find(x=>x.id===(d.rn||d.rl));if(r){if(d.rn)r.name=e.target.value;else{const was=!!((r.link||'').trim()||(r.q||'').trim());r.link=e.target.value;const now=!!(r.link.trim()||(r.q||'').trim());const cb=document.querySelector('[data-act=clip][data-id="'+d.g+':'+d.rl+'"]');if(cb)cb.classList.toggle('on',now);if(was!==now){ui.focus='l-'+r.id;ui.caret=e.target.selectionStart;render()}}}}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(welcomeOn()){ui.wskip=true;render()}else if(ui.info){ui.info=null;render()}else if(ui.rvcfg){ui.rvcfg=null;ui.rvcfgmsg=null;render()}else if(ui.rgview){ui.rgview=null;render()}else if(ui.pdadd){ui.pdadd=null;render()}else if(ui.rview){ui.rview=null;render()}else if(ui.dd){ui.dd=null;render()}else if(ui.addm){ui.addm=null;render()}else if(ui.pl){ui.pl=null;render()}else if(ui.ed){ui.ed=null;render()}else if(S.sx&&!S.edit){fmExit();save();render();if(ui.undoNext){showUndo(ui.undoNext);ui.undoNext=null}}else if(edPop()){const w=S.edit.rvg;S.edit=null;if(!w)S.sel.groups=null;ui.msg='';save();render()}}const gd=e.target.dataset&&e.target.dataset.gn;if(e.key==='ArrowDown'&&gd&&ui.dd!==gd){e.preventDefault();ui.dd=gd;ui.focus='n-'+gd;ui.caret=e.target.selectionStart;render()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(welcomeOn()){ui.wskip=true;render()}else if(ui.info){ui.info=null;render()}else if(ui.rvcfg){ui.rvcfg=null;ui.rvcfgmsg=null;render()}else if(ui.trvk){ui.trvk=null;render()}else if(ui.trvcfg){ui.trvcfg=null;ui.trviv=null;render()}else if(ui.rgview){ui.rgview=null;render()}else if(ui.pdadd){ui.pdadd=null;render()}else if(ui.rview){ui.rview=null;render()}else if(ui.dd){ui.dd=null;render()}else if(ui.addm){ui.addm=null;render()}else if(ui.pl){ui.pl=null;render()}else if(ui.ed){ui.ed=null;render()}else if(S.sx&&!S.edit){fmExit();save();render();if(ui.undoNext){showUndo(ui.undoNext);ui.undoNext=null}}else if(edPop()){const w=S.edit.rvg;S.edit=null;if(!w)S.sel.groups=null;ui.msg='';save();render()}}const gd=e.target.dataset&&e.target.dataset.gn;if(e.key==='ArrowDown'&&gd&&ui.dd!==gd){e.preventDefault();ui.dd=gd;ui.focus='n-'+gd;ui.caret=e.target.selectionStart;render()}});
 document.addEventListener('paste',e=>{const t=e.target,d=t.dataset;if(!d||!d.rl)return;
  setTimeout(()=>{const g=grps().find(x=>x.id===d.g),r=g&&g.rows.find(x=>x.id===d.rl);if(r){r.link=t.value;save()}},0)});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.target.dataset.rn||e.target.dataset.rl)){e.preventDefault();const d=e.target.dataset;if(d.rl){const g=grps().find(x=>x.id===d.g),r=g&&g.rows.find(x=>x.id===d.rl);if(r)r.open=false}addRow(d.g);save();render()}});
@@ -1958,6 +2039,10 @@ document.addEventListener('focusin',e=>{if(e.target.id==='nm-in')e.target.placeh
 document.addEventListener('focusout',e=>{if(e.target.id==='nm-in')e.target.placeholder=S.sel.nnnew?'Crie uma nova disciplina':'Disciplina'});
 document.addEventListener('submit',e=>{
  e.preventDefault();const f=new FormData(e.target),k=e.target.dataset.f;
+ if(k==='trvok'){const key=ui.trvk,mm=tmParse(String(f.get('m')||'').trim())||0;let d=String(f.get('d')||'')||today();if(d>today())d=today();
+  if(key&&ask('trvok:'+key,null))trvMark(key,d,mm);ui.trvk=null;ui.trvm='';save();render();if(ui.undoNext){showUndo(ui.undoNext);ui.undoNext=null}return}
+ if(k==='trvcfg'){const a=(ui.trviv||[]).map(v=>parseInt(v,10));if(!a.length||a.some(n=>!(n>=1&&n<=365))){toast('Cada intervalo precisa ter de 1 a 365 dias.');return}
+  trvInit();if(a.join()===TRV_DEF.join())delete S.trv.iv;else S.trv.iv=a;ui.trvcfg=null;ui.trviv=null;save();render();toast('Intervalos salvos: '+a.join(' · ')+' dias.');return}
  if(k==='man'){S.sel.mt=f.get('m')||S.sel.mt||'';S.sel.md=f.get('d')||'';const mm=regMin(),nn=regErr();if(nn){ui.msg=nn.msg;ui.focus=nn.focus}else if(!canReg(mm)){ui.msg='Informe o tempo estudado.'}else if(mm>0||hasG()){addSession(mm);S.sel.mt='';S.timer={running:false,start:0,acc:0};S.sx=false}else ui.msg='Informe o tempo ou o tópico estudado.'}
  if(k==='plnew'){let n=(f.get('n')||'').trim();if(n){const base=n;for(let i=2;S.plans.some(x=>x.name.trim().toLowerCase()===n.toLowerCase());i++)n=base+' ('+i+')';const pl={id:uid(),name:n};S.plans.push(pl);S.planData[pl.id]=freshPlan();switchPlan(pl.id);S.editais.push({id:uid(),name:n,plan:pl.id});ui.pl=true;ui.ple=pl.id;tab='ciclo'}}
  if(k==='mat'){const n=(f.get('n')||S.sel.nn||'').trim(),g=tmParse(f.get('g'))||90,af=myEds().some(e=>e.id===S.sel.af)?S.sel.af:'';
@@ -1999,7 +2084,7 @@ try{history.scrollRestoration='manual'}catch(e){}
 function bootReset(){scrollTo(0,0);['hmode','rvaClosed','rodOpen'].forEach(k=>delete S[k]);S.edit=null;
  const clr=c=>{if(!c)return;c.timer={running:false,start:0,acc:0};c.sx=false;c.paused={};c.draft=[];if(c.sel)Object.assign(c.sel,{topic:'',groups:null,mt:'',mtMs:0,md:'',nt:'',lk:''})};
  clr(S);clr(S.alt);save()}
-try{norm();bootReset();setMode('study');toCurrent()}catch(x){}
+try{norm();trvInit();bootReset();setMode('study');toCurrent()}catch(x){}
 render();
 if(document.documentElement.classList.contains('navmini'))navMini(true);
 try{syInit()}catch(x){}
