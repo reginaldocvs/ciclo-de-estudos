@@ -832,6 +832,16 @@ const uniq=a=>[...new Set(a)];
 const load=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
 const seed=()=>({subjects:[],cycle:1,type:'regular',progress:{},sessions:[],checked:{},reviewEvery:5,sinceReview:0,regDone:[],reviewSrc:[],completed:0,sel:{subj:null,topic:''},timer:{running:false,start:0,acc:0}});
 let S=load(KEY),tab='ciclo';const ui={open:new Set()};
+/* Trocar de aba deixa a aba de destino como nova: some o que foi mexido só para ver (seleções, filtros, meses, blocos abertos,
+   anotações e listas expandidas). Preferências salvas no plano (modo do Histórico, cartões recolhidos) continuam. */
+/* Disciplina da vez na ordem do ciclo, ao abrir o app e ao voltar para a aba Ciclo; nunca durante um estudo, edição ou revisão */
+function toCurrent(tabSw){if(S.edit||S.sx||(tabSw&&S.rv)||(S.timer&&(S.timer.running||S.timer.acc>0)))return;const c=current();if(c&&c.id!==S.sel.subj){S.sel.subj=c.id;S.sel.topic='';S.sel.groups=null}}
+function tabReset(){
+ ui.rcg=ui.rcm=ui.rgview=null;                                         // Revisão: grupo selecionado, mês do calendário, janela do grupo
+ ui.hq=ui.hd1=ui.hd2=ui.hfs=ui.hfc='';ui.hn=30;ui.hrod=null;            // Histórico: busca, período, filtros, quantidade e rodada
+ ui.ss=ui.sp=null;                                                     // Estatísticas: rodada e período
+ ui.dd=null;ui.nv=ui.qi=ui.rx=null;                                    // menus abertos, anotações, questões e listas expandidas
+ [...ui.open].forEach(k=>{if(/^(rfo|hc|hci):/.test(k))ui.open.delete(k)})}  // revisões futuras e blocos do Histórico
 if(!S||!S.subjects){const o=load('ciclo-estudos-v1');S=seed();if(o&&o.subjects){S.subjects=o.subjects.map(s=>({id:s.id,name:s.name,goal:s.goal,topics:[]}));S.cycle=o.cycle||1;S.progress=o.progress||{};S.completed=Math.max(S.cycle-1,0)}}
 /* LJ = último JSON que esta aba gravou ou leu em KEY; serve para notar gravações de outra aba. */
 let LJ=null;try{LJ=localStorage.getItem(KEY)}catch(e){}
@@ -1001,7 +1011,7 @@ const regHint=mn=>{const s=curS();return s?`<span class="nw">Faltam <b>${hms(rem
 function stashCur(){if(!S.sel.subj)return;S.timer={running:false,start:0,acc:0};S.sx=false;S.sel.mt='';S.sel.groups=null}
 function sesGroups(old,s0){return old.map(r=>{const t=r.topic?topicOf(s0,r.topic)||(r.tn?{name:r.tn}:null):null,rows=(r.items||[]).map(i=>{const it=i.ref!==undefined?(mkItem(i.kind,i.ref)||{}):{title:i.name,url:i.link};const tl0=t&&t.links&&t.links.find(x=>it.title!==undefined&&sameIt(x,{kind:'aula',url:it.url||'',title:it.title||''}));return {id:uid(),kind:'aula',name:it.title||'',link:it.url||'',q:(tl0&&tl0.q)||i.q||'',...(+i.tq>0?{ac:String(i.ac||0),tq:String(i.tq)}:{})}});if(!rows.length)rows.push({id:uid(),kind:'aula',name:'',link:'',q:''});return {id:uid(),nt:t?t.name:'',rows}})}
 function loadSubj(to){S.sel.subj=to;S.sel.topic='';S.timer={running:false,start:0,acc:0};S.sel.groups=null;S.sx=false;S.sel.mt=''}
-function runThen(th){const cs=curS();if(th==='rplay'&&cs&&el()>=(cs.goal-prog(cs.id))*60000-500){if(gDone(cs))return;th='rreg'}if(th==='rplay'){ui.sxo=false;S.timer.running=true;S.timer.start=Date.now();if(!S.timer.d0)S.timer.d0=today();S.sx=true;S.sel.mt=''}else if(th==='rreg'){S.sx='manual';prefill(S.timer.acc)}}
+function runThen(th){const cs=curS();if(th==='rplay'&&cs&&el()>=(cs.goal-prog(cs.id))*60000-500){if(gDone(cs))return;th='rreg'}if(th==='rplay'){ui.sxo=false;S.timer.running=true;S.timer.start=Date.now();if(!S.timer.d0)S.timer.d0=today();S.sx=true;S.sel.mt=''}else if(th==='rreg'){S.sx='manual';prefill(S.timer.acc);drLoad()}}
 /* Trocar de disciplina: com estudo em andamento a troca é ignorada (o fundo já fica inerte enquanto o modo foco ou o registro estão abertos) */
 const reqSwitch=(to,th)=>{if(!to||S.edit)return;if(to===S.sel.subj){if(th)runThen(th);return}if(studyActive())return;loadSubj(to);if(th)runThen(th)};
 const tipEl=document.createElement?document.createElement('div'):null;
@@ -1044,7 +1054,12 @@ function sessCard(){
    pelo formulário na mesma camada (fmRegHtml, montado pelo sessCard). on = camada na tela agora. */
 const FM={wl:null,on:false};
 /* O tempo só conta dentro do modo foco: sair dele sem registrar descarta o tempo (com Desfazer) */
-function fmExit(){if(el()>0)ui.undoNext={snap:JSON.stringify(S),msg:'Tempo descartado'};S.timer={running:false,start:0,acc:0};S.sx=false;S.sel.mt='';S.sel.groups=null;ui.sxo=false}
+/* Rascunho do registro: fechar a janela sem registrar guarda o que foi preenchido (tópicos, itens, tempo digitado e data) por disciplina;
+   abrir o registro dela de novo traz tudo de volta. Some ao registrar e ao recarregar a página. */
+const drKey=()=>(S.type==='review'?'r:':'')+S.sel.subj;
+function drSave(){if(!S.sel.subj||S.edit)return;const mt=(S.sel.mt||'').trim(),own=mt&&mt!==S.sel.mtAuto?mt:'';ui.rd=ui.rd||{};if(hasG()||own)ui.rd[drKey()]={groups:JSON.parse(JSON.stringify(S.sel.groups)),mt:own,md:S.sel.md||''};else delete ui.rd[drKey()]}
+function drLoad(){const d=ui.rd&&ui.rd[drKey()];if(!d)return;S.sel.groups=JSON.parse(JSON.stringify(d.groups));if(d.mt&&!el())S.sel.mt=d.mt;if(d.md)S.sel.md=d.md}
+function fmExit(){drSave();if(el()>0)ui.undoNext={snap:JSON.stringify(S),msg:'Tempo descartado'};S.timer={running:false,start:0,acc:0};S.sx=false;S.sel.mt='';S.sel.groups=null;ui.sxo=false}
 const fmOk=()=>{if(S.sx!==true||S.edit)return false;syncSel();return !!curS()};
 async function fmWake(){if(!FM.on||FM.wl||!navigator.wakeLock||document.visibilityState!=='visible')return;
  try{const w=await navigator.wakeLock.request('screen');if(!FM.on){w.release().catch(()=>{});return}FM.wl=w;w.addEventListener('release',()=>{if(FM.wl===w)FM.wl=null})}catch(x){}}
@@ -1564,7 +1579,7 @@ function buildRecs(s,rv,keep){const recs=[];
   recs.push({topic:t?t.id:null,kind:rows[0]?rows[0].kind:'aula',items:rows.map(recItem)})});
  if(!recs.length)recs.push({topic:null,kind:'aula',items:[]});return recs}
 const sesDate=()=>{const d=S.sel.md||S.timer.d0||today();return d>today()?today():d};
-function addSession(m){
+function addSession(m){if(ui.rd)delete ui.rd[drKey()];
  const sid=S.sel.subj,s=S.subjects.find(x=>x.id===sid);m=Math.max(0,+m||0);if(!s)return;pushU('Sessão registrada');
  const rv=S.type==='review',ro=!rv&&S.reopen&&S.reopen[sid],ses=ro&&ro.cycle===S.cycle&&ro.set===(S.set||1)?ro.ses:uid(),pend=rv?rvPend(s):null,chk=rv?pend.flatMap(o=>o.rows.map(r=>r.k)):null,recs=rv?(pend.length?pend.map(o=>{const its=o.rows.filter(r=>!r.l.self);return {topic:o.t.id,kind:its[0]?its[0].l.kind:'aula',items:its.map(r=>({kind:'aula',name:r.l.title||'',link:r.l.url||'',...(r.l.q?{q:r.l.q}:{})}))}}):[{topic:null,kind:'aula',items:[]}]):buildRecs(s,rv);
  {const p0=prog(sid);S.progress[sid]=rv?p0+m:Math.max(p0+m,s.goal);if(!rv&&S.progress[sid]>p0+m){S.bump=S.bump||{};S.bump[sid]=(S.bump[sid]||0)+S.progress[sid]-p0-m}}if(ro){delete S.reopen[sid]}
@@ -1692,7 +1707,7 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  const out=ui.dd&&!e.target.closest('.dd,[data-act="dd"],[data-act="tdd"],[data-act="sdd"]');if(out)ui.dd=null;
  const t=e.target.closest('[data-tab],[data-act]');if(!t&&e.target.closest&&e.target.closest('form button:not([type=button])')){if(out||ui.nmnote){ui.nmnote=null;setTimeout(render,0)}return}
  if(!t){if(ui.nmnote){ui.nmnote=null;render()}else if(out)render();return}
- if(t.dataset.tab){tab=t.dataset.tab;render();save();return}
+ if(t.dataset.tab){const nw=t.dataset.tab!==tab;if(nw)tabReset();tab=t.dataset.tab;if(nw&&tab==='ciclo')toCurrent(1);render();save();if(nw){scrollTo(0,0);const sd=document.querySelector('.rvside');if(sd)sd.scrollTop=0}return} /* aba nova começa do topo */
  const a=t.dataset.act,[p,q]=(t.dataset.id||'').split(':'),sub=S.subjects.find(x=>x.id===p);
  ui.msg=null;if(a!=='dd')ui.nmnote=null;ui.note=null;
  if(a==='theme'){S.theme=p==='light'||p==='dark'?p:'auto';save();render();return}
@@ -1727,7 +1742,7 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='hmore'){ui.hn=(ui.hn||30)+30;render();return}
  if(a==='rcm'){const d=pd((ui.rcm||today().slice(0,7))+'-01');d.setMonth(d.getMonth()+(+p));ui.rcm=ymd(d).slice(0,7);render();return}
  if(a==='rcg'){rcPick(ui.rcg===p?null:p);return}
- if(a==='rcday'){const I=rcMarks(rgInfo()),o=I.list.find(o=>o.g.dates.includes(p))||I.list.find(o=>o.mk&&o.mk.d===p);rcPick(o&&ui.rcg!==o.g.id?o.g.id:null,'auto');return}
+ if(a==='rcday'){const I=rcMarks(rgInfo()),o=I.list.find(o=>o.g.dates.includes(p))||I.list.find(o=>o.mk&&o.mk.d===p);if(o&&ui.rcg===o.g.id)return;rcPick(o?o.g.id:null,'auto');return} /* outro dia do mesmo grupo mantém a seleção; dia sem grupo limpa */
  if(a==='rcgo'){const b=document.querySelector('.rcsl[data-id="'+p+'"]');if(b&&b.dataset.m)ui.rcm=b.dataset.m;rcPick(p,'auto');return}
 if(a==='rcvl'){rcShow(p,true);return}
 if(a==='rgpick'){if(e.target.closest('button,a,label'))return;rcPick(ui.rcg===p?null:p,'',true);return}
@@ -1795,7 +1810,7 @@ if(a==='rgpick'){if(e.target.closest('button,a,label'))return;rcPick(ui.rcg===p?
  if(a==='rplay'&&!S.edit){const ps=S.subjects.find(x=>x.id===p);if(ps&&gDone(ps)&&!(p===S.sel.subj&&S.timer.running)){render();return}}
  if((a==='rplay'||a==='rreg')&&!S.edit&&S.subjects.some(x=>x.id===p)){
   if(p===S.sel.subj&&a==='rplay'&&S.timer.running){S.timer.acc=el();S.timer.running=false;S.sx=true;ui.sxo=false;S.sel.mt=''}
-  else if(p===S.sel.subj&&a==='rreg'){S.timer.acc=el();S.timer.running=false;S.sx='manual';prefill(S.timer.acc)}
+  else if(p===S.sel.subj&&a==='rreg'){S.timer.acc=el();S.timer.running=false;S.sx='manual';prefill(S.timer.acc);drLoad()}
   else reqSwitch(p,a)}
  if(a==='rreopen'&&!S.edit&&S.type!=='review'){ui.rview=null;const sub=S.subjects.find(x=>x.id===p);if(sub&&gDone(sub)&&ask('rreopen:'+p,t)){const prev=S.sessions.filter(x=>!x.review&&x.subj===p&&x.cycle===S.cycle&&(x.set||1)===(S.set||1)).pop();S.progress[p]=0;if(S.bump)delete S.bump[p];if(prev){S.reopen=S.reopen||{};S.reopen[p]={ses:prev.ses||prev.id,cycle:S.cycle,set:S.set||1}}}}
  if(a==='fmoff'&&S.sx){fmExit()}
@@ -1929,7 +1944,7 @@ try{history.scrollRestoration='manual'}catch(e){}
 function bootReset(){scrollTo(0,0);['hmode','rvaClosed','rodOpen'].forEach(k=>delete S[k]);S.edit=null;
  const clr=c=>{if(!c)return;c.timer={running:false,start:0,acc:0};c.sx=false;c.paused={};c.draft=[];if(c.sel)Object.assign(c.sel,{topic:'',groups:null,mt:'',mtMs:0,md:'',nt:'',lk:''})};
  clr(S);clr(S.alt);save()}
-try{norm();bootReset();setMode('study');if(!S.edit&&!S.sx&&!(S.timer&&(S.timer.running||S.timer.acc>0))){const c=current();if(c&&c.id!==S.sel.subj){S.sel.subj=c.id;S.sel.topic='';S.sel.groups=null}}}catch(x){}
+try{norm();bootReset();setMode('study');toCurrent()}catch(x){}
 render();
 if(document.documentElement.classList.contains('navmini'))navMini(true);
 try{syInit()}catch(x){}
