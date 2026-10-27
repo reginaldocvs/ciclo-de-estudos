@@ -619,7 +619,6 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 .rcpn>.rcx.e{flex:none;margin:0;background:color-mix(in srgb,var(--c) 48%,var(--card))}
 .rcpt{font-size:.875rem;color:var(--mut)}.rcpt b{color:var(--ink);font-weight:600}
 .rcpn>.btn{flex:none}.rcpn>.x{flex:none;margin:-8px -8px -8px -4px}
-@media (min-width:600.02px){.rcvl{display:none}}
 /* Grupo selecionado no calendário, destacado na lista */
 .card.rgsel{box-shadow:0 0 0 2px var(--m-p)}
 .rga.rgsel{background:color-mix(in srgb,var(--m-p) 8%,transparent);border-radius:var(--r-m);margin-inline:-10px;padding-inline:10px}
@@ -825,8 +824,11 @@ body .dlg.rvcfgdlg{width:min(92vw,460px)}
 /* Aba Revisão em três visões */
 .rvbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .rvbar .sper{margin:0}
-.rvcalb{display:none}
-@media (max-width:600px){.rvcalb{display:inline-grid}.rvw>.rvside{display:none}}
+/* Calendário só pelo ícone (janela no computador, painel no celular); as visões usam a largura toda, com limite confortável */
+.rvw.rvone{display:block;max-width:1100px}
+.rvone .rvmain{max-width:760px}
+.rvone .rvmain.rvtd{max-width:none}
+@media (min-width:1000px){.rvtd{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;align-items:start}.rvtd>.card{margin-bottom:0}}
 h2 .mut,h3 .mut{font-weight:400;font-size:.95rem}
 .rvtoday .trvr{padding-left:0}
 .trvrh .x.mtog{flex:none;margin:-2px 0 0 -6px}
@@ -847,7 +849,27 @@ h2 .mut,h3 .mut{font-weight:400;font-size:.95rem}
 .nw{white-space:nowrap}
 .trvb svg{display:none}
 @media (max-width:600px){.trvb{width:40px;height:40px;min-height:40px;padding:0;display:grid;place-items:center;border-radius:999px}.trvb svg{display:block;width:20px;height:20px}.trvb>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}}
-.rvcaldlg{width:min(94vw,420px);max-height:85vh;max-height:85dvh;overflow:auto}
+.rvcaldlg{width:min(94vw,420px);max-height:92vh;max-height:92dvh;overflow:auto}
+/* Calendário: estreito, tudo empilhado (resumo, grade, legenda, escolha); largo, grade à esquerda e o resto à direita, para caber sem rolar */
+.rccols{display:flex;flex-direction:column}
+.rcright{display:contents}
+.rcright>.rcsum{order:-1}
+@media (min-width:760px){
+ .rvcaldlg{width:min(94vw,800px)}
+ .rccols{display:grid;grid-template-columns:minmax(0,1fr) 260px;column-gap:28px;align-items:start}
+ .rcright{display:flex;flex-direction:column}
+ .rcright>.rcsum{margin:0 -8px 4px}
+ .rcright>.rcl{margin-top:8px}
+ .rcright>.rcpn,.rcright>.rchint{margin-top:10px}
+ .rcright>.rcpn{flex-wrap:wrap;align-items:flex-start}
+ .rcright>.rcpn>.rcpt{flex:1 1 60%;min-width:0}
+ .rcright>.rcpn>.rcx.e{margin-top:4px}
+ .rcright>.rcpn>.x{order:1;margin:-6px -8px 0 auto}
+ .rcright>.rcpn>.btn{order:2}
+ .rcright .rchint{text-align:left}
+ .rcleft>.rcn{margin-top:0}
+}
+@media (min-width:760px) and (max-height:620px){.rcy{padding:1px 0 0}.rcg.rcg2{row-gap:0}.rvcaldlg .chead{margin-bottom:4px}}
 .rvcaldlg .rcal{box-shadow:none;background:none;border:0;padding:0;margin:0}
 .rvcaldlg .rcal>.pvt,.rvcaldlg .rcal>.infob{display:none}
 .rctp.lg{display:inline-block;min-width:16px;height:16px;padding:0 4px;margin-right:6px;border-radius:999px;background:var(--m-tc);color:var(--m-ontc);font-size:11px;font-weight:700;line-height:16px;text-align:center}
@@ -1311,10 +1333,10 @@ function rvCal(I){
  const tdl=ui.rctd?trvList().filter(x=>!x.fix&&x.due===ui.rctd):[];
  if(tdl.length)pn+=`<div class="rcpn rctl"><div class="grow rcpt"><b>${sdm(ui.rctd)}</b>${(()=>{const by=new Map();tdl.forEach(x=>{const b=x.s.of||x.s.id;if(!by.has(b))by.set(b,{s:x.s,n:0});by.get(b).n++});return [...by.values()].map(({s,n})=>`<span class="rctd"><span class="dot" style="background:${col(s)}" aria-hidden="true"></span><span class="snt" title="${esc(nm(s))}">${esc(nm(s))}</span>${n>1?` <span class="mut">· ${n}</span>`:''}</span>`).join('')})()}</div><button class="btn s g" data-act="rvt" data-id="topicos">Ver tópicos</button><button class="x" data-act="rctdx" title="Limpar" aria-label="Limpar dia escolhido">${CLOSEI}</button></div>`;
  if(!pn&&(I.list.length||Object.keys(TM).length))pn='<div class="mut rchint">Toque num dia para ver o grupo ou os tópicos dele.</div>';
- return `<div class="card hasinfo rcal">${infoBtn('rvcal','Calendário de revisões')}<h2 class="pvt">Calendário de revisões</h2>${sum?`<div class="rcsum">${sum}</div>`:''}<div class="rcn"><button class="x" data-act="rcm" data-id="-1" aria-label="Mês anterior">‹</button><b>${RCM[first.getMonth()]} ${first.getFullYear()}</b><button class="x" data-act="rcm" data-id="1" aria-label="Próximo mês">›</button></div>
- <div class="rcg rcg2">${['seg','ter','qua','qui','sex','sáb','dom'].map(w=>`<span class="rcw">${w}</span>`).join('')}${cells.map(cell).join('')}</div>
+ return `<div class="card hasinfo rcal">${infoBtn('rvcal','Calendário de revisões')}<h2 class="pvt">Calendário de revisões</h2><div class="rccols"><div class="rcleft"><div class="rcn"><button class="x" data-act="rcm" data-id="-1" aria-label="Mês anterior">‹</button><b>${RCM[first.getMonth()]} ${first.getFullYear()}</b><button class="x" data-act="rcm" data-id="1" aria-label="Próximo mês">›</button></div>
+ <div class="rcg rcg2">${['seg','ter','qua','qui','sex','sáb','dom'].map(w=>`<span class="rcw">${w}</span>`).join('')}${cells.map(cell).join('')}</div></div><div class="rcright">${sum?`<div class="rcsum">${sum}</div>`:''}
  <div class="rcl"><span><i class="rcx e"></i>Dias do grupo</span><span><span class="rcmk av"><i></i></span>Para revisar</span><span><span class="rcmk pr"><i></i></span>Previsto</span><span><span class="rcmk ok">${RCOK}</span>Revisado</span>${Object.keys(TM).length?'<span><span class="rctp lg" aria-hidden="true">n</span>Tópicos para revisar</span>':''}</div>
- ${pn}</div>`}
+ ${pn}</div></div></div>`}
 /* Disciplinas e tópicos de um grupo de revisão (pop-up do olho e cartões de revisões futuras) */
 function rgBody(o){const by=rgTopics(o.g),subs=[...by.keys()].map(id=>S.subjects.find(x=>x.id===id)).filter(Boolean);
   return subs.length?subs.map(s=>`<div class="grp"><span class="dot" style="background:${col(s)}"></span><span class="snt" title="${esc(s.name)}">${esc(s.name)}</span></div>${tl(s,by.get(s.id)).map(t=>`<div class="mut rgt" title="${esc(t.name)}">• ${esc(t.name)}</div>`).join('')}`).join(''):'<div class="mut">Nenhum tópico registrado nestes dias.</div>'}
@@ -1408,9 +1430,9 @@ function viewRev(){
  const qd=av.filter(o=>o!==nxo),rest=qd.map(o=>{const i=av.indexOf(o),pv=av.slice(0,i).filter(hasC).pop()||nxo;return `<div class="rgq${ui.rcg===o.g.id?' rgsel':''}" data-gid="${o.g.id}" data-act="rgpick" data-id="${o.g.id}"><b>${rgLabel(o)}</b><button class="x rgeye" data-act="rgview" data-id="${o.g.id}" title="Ver disciplinas e tópicos" aria-label="Ver disciplinas e tópicos do ${rgLabel(o)}">${EYEP}</button><span class="mut grow">${hasC(o)?'disponível desde '+sdm(o.availDate)+(pv&&hasC(o)?' · depois do '+rgLabel(pv):''):'sem tópicos registrados'}</span></div>`}).join('');
  /* Próxima revisão só aparece quando há grupo pronto; os demais ficam em Revisões futuras */
  const nxt=top||av.length?`<div class="card rvnext"><h2>Próxima revisão</h2>${top||'<div class="empty">Os grupos disponíveis não têm tópicos registrados.</div>'}</div>`:I.list.length?'':'<div class="card"><div class="empty">Nenhum grupo ainda. Eles se formam conforme você estuda.</div></div>';
- const cal=rvCal(I),rt=ui.rvt||'hoje';
+ const rt=ui.rvt||'hoje';
  const main=rt==='hoje'?rvToday(I,nxo&&hasC(nxo)?nxo:null):rt==='topicos'?trvSec():nxt+(rest?`<div class="card"><h2>Na fila <span class="mut">(${qd.length})</span></h2><div class="rgql">${rest}</div></div>`:'')+`${fu.length?`<h2 class="sec">Revisões futuras</h2>${fuc}`:''}${dn.length?dnc:''}`;
- return `<div class="rvw"><div class="rvmain">${main}</div><aside class="rvside">${cal}</aside></div>`;
+ return `<div class="rvw rvone"><div class="rvmain${rt==='hoje'?' rvtd':''}">${main}</div></div>`;
 }
 /* Visão Hoje: tudo o que dá para revisar agora (a revisão de grupo da vez e os tópicos vencidos) e o que vence nos próximos 7 dias */
 function rvToday(I,gn){const td=today(),lim=addD(td,7),L=trvList(),byD=(a,b)=>a.due<b.due?-1:a.due>b.due?1:0,due=L.filter(o=>!o.fix&&o.due<=td).sort(byD);
