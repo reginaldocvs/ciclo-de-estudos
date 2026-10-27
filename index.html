@@ -616,7 +616,7 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 .rcl .rcmk{margin-right:6px}
 .rcl .rcx.e,.rvside .rcl .rcx.e{width:16px;height:10px;border-radius:999px}
 .rcpn{border-top:1px solid var(--m-ov);margin-top:12px;padding-top:12px;display:flex;align-items:center;gap:10px}
-.rcpn>.rcx.e{flex:none;margin:0;background:color-mix(in srgb,var(--c) 48%,var(--card))}
+.rcpn>.rcx.e{flex:none;margin:0;width:16px;height:16px;background:color-mix(in srgb,var(--c) 48%,var(--card))} /* mesma largura da bolinha de tópicos, para os textos das duas linhas alinharem */
 .rcpt{font-size:.875rem;color:var(--mut)}.rcpt b{color:var(--ink);font-weight:600}
 .rcpn>.btn{flex:none}.rcpn>.x{flex:none;margin:-8px -8px -8px -4px}
 /* Grupo selecionado no calendário, destacado na lista */
@@ -810,7 +810,7 @@ body .dlg.rvcfgdlg{width:min(92vw,460px)}
 .trvbelow{margin-top:18px}
 /* Dia escolhido por causa dos tópicos: anel na cor da marca dos tópicos */
 .rcy.tsel .rcdn{box-shadow:inset 0 0 0 2px var(--m-ontc)}
-.rcpn.rctl{flex-wrap:wrap;align-items:flex-start}
+.rcpn.rctl{flex-wrap:wrap;align-items:flex-start}.rcpn.rctl>.rctp.lg{flex:none;width:16px;min-width:16px;padding:0;margin:2px 0 0} /* número de tópicos no lugar do quadradinho do grupo, alinhando as duas linhas */
 .rctl .rcpt{display:flex;flex-direction:column;gap:2px;flex:1 1 60%;min-width:0;order:0}
 .rctl>.x{order:1;margin:-6px -8px 0 auto}
 .rctl>.btn{order:2}
@@ -828,6 +828,8 @@ body .dlg.rvcfgdlg{width:min(92vw,460px)}
 .rvw.rvone{display:block;max-width:1100px}
 .rvone .rvmain{max-width:760px}
 .rvone .rvmain.rvtd{max-width:none}
+.rvrule{display:flex;align-items:center;flex-wrap:wrap;gap:0 4px;font-size:.9rem;margin:0 0 12px}
+.trvc>.trvh:first-child{margin-top:0}
 @media (min-width:1000px){.rvtd{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;align-items:start}.rvtd>.card{margin-bottom:0}}
 h2 .mut,h3 .mut{font-weight:400;font-size:.95rem}
 .rvtoday .trvr{padding-left:0}
@@ -853,19 +855,23 @@ h2 .mut,h3 .mut{font-weight:400;font-size:.95rem}
 /* Calendário: estreito, tudo empilhado (resumo, grade, legenda, escolha); largo, grade à esquerda e o resto à direita, para caber sem rolar */
 .rccols{display:flex;flex-direction:column}
 .rcright{display:contents}
-.rcright>.rcsum{order:-1}
+/* Linha do resumo em duas linhas: a bolinha acompanha a primeira (o nome do grupo), a setinha fica no meio */
+.rcsl{align-items:flex-start}
+.rcsl>.rcmk{margin-top:4px;flex:none}
+.rcsl>svg{align-self:center}
+.rcright>.rcl{order:1}.rcright>.rcsum{order:2;margin-top:8px}.rcright>.rcpn,.rcright>.rchint{order:3}
+.rcright>.rcpn{flex-wrap:wrap;align-items:flex-start}
+.rcright>.rcpn>.rcpt{flex:1 1 60%;min-width:0}
+.rcright>.rcpn>.rcx.e{margin-top:4px}
+.rcright>.rcpn>.x{order:1;margin:-6px -8px 0 auto}
+.rcright>.rcpn>.btn{order:2}
 @media (min-width:760px){
  .rvcaldlg{width:min(94vw,800px)}
  .rccols{display:grid;grid-template-columns:minmax(0,1fr) 260px;column-gap:28px;align-items:start}
  .rcright{display:flex;flex-direction:column}
- .rcright>.rcsum{margin:0 -8px 4px}
- .rcright>.rcl{margin-top:8px}
+ .rcright>.rcl{order:-2;margin-top:4px}
+ .rcright>.rcsum{order:-1;margin:12px -8px 0}
  .rcright>.rcpn,.rcright>.rchint{margin-top:10px}
- .rcright>.rcpn{flex-wrap:wrap;align-items:flex-start}
- .rcright>.rcpn>.rcpt{flex:1 1 60%;min-width:0}
- .rcright>.rcpn>.rcx.e{margin-top:4px}
- .rcright>.rcpn>.x{order:1;margin:-6px -8px 0 auto}
- .rcright>.rcpn>.btn{order:2}
  .rcright .rchint{text-align:left}
  .rcleft>.rcn{margin-top:0}
 }
@@ -939,7 +945,7 @@ let S=load(KEY),tab='ciclo';const ui={open:new Set()};
 /* Disciplina da vez na ordem do ciclo, ao abrir o app e ao voltar para a aba Ciclo; nunca durante um estudo, edição ou revisão */
 function toCurrent(tabSw){if(S.edit||S.sx||(tabSw&&S.rv)||(S.timer&&(S.timer.running||S.timer.acc>0)))return;const c=current();if(c&&c.id!==S.sel.subj){S.sel.subj=c.id;S.sel.topic='';S.sel.groups=null}}
 function tabReset(){
- ui.rcg=ui.rcm=ui.rgview=ui.trvk=ui.trvcfg=ui.trviv=ui.rvt=ui.rvadj=ui.rvcalm=ui.rctd=null;                                      // Revisão: grupo selecionado, mês do calendário, janela do grupo
+ ui.rcg=ui.rcm=ui.rgview=ui.trvk=ui.trvcfg=ui.trviv=ui.rvt=ui.rvadj=ui.rvcalm=ui.rctd=null;                                    // Revisão: grupo selecionado, mês do calendário, janela do grupo
  ui.hq=ui.hd1=ui.hd2=ui.hfs=ui.hfc='';ui.hn=30;ui.hrod=null;            // Histórico: busca, período, filtros, quantidade e rodada
  ui.ss=ui.sp=null;                                                     // Estatísticas: rodada e período
  ui.dd=null;ui.nv=ui.qi=ui.rx=null;ui.rowPick=null;                                   // menus abertos, anotações, questões e listas expandidas
@@ -1302,7 +1308,7 @@ function rcMarks(I){const td=today(),base=I.list.some(o=>o.g.dates.includes(td))
 /* Seleção de grupo compartilhada entre o calendário e a lista: o cartão do grupo é destacado (e aberto, se recolhível) e,
    com o calendário fixo ao lado, rola até aparecer; tocar no cartão da lista leva o calendário ao mês do grupo */
 function rcShow(id,force){const c=id&&document.querySelector('[data-gid="'+id+'"]'),sd=document.querySelector('.rvside');if(!c)return;if(!force&&!(sd&&getComputedStyle(sd).position==='sticky'))return;c.scrollIntoView({block:force?'center':'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
-function rcPick(id,show,mon){ui.rcg=id;if(id&&tab==='rev'&&!S.rv)ui.rvt='grupos'; /* o cartão do grupo fica na visão Grupos */if(id){const o=rcMarks(rgInfo()).list.find(o=>o.g.id===id);if(o&&o.st==='futuro')ui.open.add('rfo:'+id);if(mon&&o){const d=o.g.dates[0]||(o.mk&&o.mk.d);if(d)ui.rcm=d.slice(0,7)}}render();if(id&&show)requestAnimationFrame(()=>rcShow(id))}
+function rcPick(id,show,mon,keepT){ui.rcg=id;if(!keepT)ui.rctd=null; /* grupo e tópicos só ficam abertos juntos quando vêm do mesmo dia tocado */if(id&&tab==='rev'&&!S.rv)ui.rvt='grupos'; /* o cartão do grupo fica na visão Grupos */if(id){const o=rcMarks(rgInfo()).list.find(o=>o.g.id===id);if(o&&o.st==='futuro')ui.open.add('rfo:'+id);if(mon&&o){const d=o.g.dates[0]||(o.mk&&o.mk.d);if(d)ui.rcm=d.slice(0,7)}}render();if(id&&show)requestAnimationFrame(()=>rcShow(id))}
 function rvCal(I){
  rcMarks(I);const TM={};trvList().forEach(o=>{if(!o.fix)TM[o.due]=(TM[o.due]||0)+1}); /* revisões por tópico: quantos tópicos vencem em cada dia */
  const td=today(),mon=ui.rcm||td.slice(0,7),sel=ui.rcg&&I.list.some(o=>o.g.id===ui.rcg)?ui.rcg:null,G={},M={};
@@ -1331,7 +1337,7 @@ function rvCal(I){
   pn=`<div class="rcpn" style="--c:${rgCol(g)}"><i class="rcx e" aria-hidden="true"></i><div class="grow rcpt"><b>${rgLabel(so)}</b> · ${per}${rv?' · '+rv:''}</div><button class="btn s g rcvl" data-act="rcvl" data-id="${g.id}">Ver na lista</button><button class="x" data-act="rcg" data-id="${g.id}" title="Limpar seleção" aria-label="Limpar seleção">${CLOSEI}</button></div>`}
  /* Dia com tópicos escolhido: quais vencem nele, com atalho para a visão Tópicos */
  const tdl=ui.rctd?trvList().filter(x=>!x.fix&&x.due===ui.rctd):[];
- if(tdl.length)pn+=`<div class="rcpn rctl"><div class="grow rcpt"><b>${sdm(ui.rctd)}</b>${(()=>{const by=new Map();tdl.forEach(x=>{const b=x.s.of||x.s.id;if(!by.has(b))by.set(b,{s:x.s,n:0});by.get(b).n++});return [...by.values()].map(({s,n})=>`<span class="rctd"><span class="dot" style="background:${col(s)}" aria-hidden="true"></span><span class="snt" title="${esc(nm(s))}">${esc(nm(s))}</span>${n>1?` <span class="mut">· ${n}</span>`:''}</span>`).join('')})()}</div><button class="btn s g" data-act="rvt" data-id="topicos">Ver tópicos</button><button class="x" data-act="rctdx" title="Limpar" aria-label="Limpar dia escolhido">${CLOSEI}</button></div>`;
+ if(tdl.length)pn+=`<div class="rcpn rctl"><span class="rctp lg" aria-hidden="true">${tdl.length}</span><div class="grow rcpt"><b>${sdm(ui.rctd)}</b>${(()=>{const by=new Map();tdl.forEach(x=>{const b=x.s.of||x.s.id;if(!by.has(b))by.set(b,{s:x.s,n:0});by.get(b).n++});return [...by.values()].map(({s,n})=>`<span class="rctd"><span class="dot" style="background:${col(s)}" aria-hidden="true"></span><span class="snt" title="${esc(nm(s))}">${esc(nm(s))}</span>${n>1?` <span class="mut">· ${n}</span>`:''}</span>`).join('')})()}</div><button class="btn s g" data-act="rvt" data-id="topicos">Ver tópicos</button><button class="x" data-act="rctdx" title="Limpar" aria-label="Limpar dia escolhido">${CLOSEI}</button></div>`;
  if(!pn&&(I.list.length||Object.keys(TM).length))pn='<div class="mut rchint">Toque num dia para ver o grupo ou os tópicos dele.</div>';
  return `<div class="card hasinfo rcal">${infoBtn('rvcal','Calendário de revisões')}<h2 class="pvt">Calendário de revisões</h2><div class="rccols"><div class="rcleft"><div class="rcn"><button class="x" data-act="rcm" data-id="-1" aria-label="Mês anterior">‹</button><b>${RCM[first.getMonth()]} ${first.getFullYear()}</b><button class="x" data-act="rcm" data-id="1" aria-label="Próximo mês">›</button></div>
  <div class="rcg rcg2">${['seg','ter','qua','qui','sex','sáb','dom'].map(w=>`<span class="rcw">${w}</span>`).join('')}${cells.map(cell).join('')}</div></div><div class="rcright">${sum?`<div class="rcsum">${sum}</div>`:''}
@@ -1348,7 +1354,8 @@ const infoBtn=(k,t)=>`<button class="x infob" data-act="info" data-id="${k}" tit
 const pl_=n=>n===1?'':'s';
 const infoBtnI=(k,t)=>infoBtn(k,t).replace('class="x infob"','class="x infob infoi"');
 const INFO={
- rvdias:()=>{const N=rvInt(),W=rvWait();return {t:'Como funciona a revisão',h:`<p>A revisão é feita por <b>grupos de dias com estudo</b>. A cada ${N} dia${pl_(N)} em que você registra estudo com tópico e aula, forma-se um grupo. Dias sem estudo, ou só com tempo registrado, não contam; sessões de revisão também não.</p><p>Depois do último dia do grupo, ele espera <b>${W} dia${pl_(W)} corrido${pl_(W)}</b>, contando todos os dias do calendário, e então fica disponível para revisar.</p><p>Os grupos são revisados em ordem: o próximo só pode ser iniciado depois que o anterior for concluído. A revisão corre em paralelo ao ciclo.</p><p>Para mudar esses números, use a engrenagem ao lado do texto. Os dias de estudo valem para o grupo em formação e os próximos; os dias corridos valem para todos os grupos ainda não revisados.</p>`}},
+ rvdias:()=>{const N=rvInt(),W=rvWait();return {t:'Como funciona a revisão',h:`<p>A aba Revisão junta dois sistemas, que andam em paralelo ao ciclo e um ao outro:</p><p><b>Por grupos</b>: a cada ${N} dia${pl_(N)} de estudo forma-se um grupo; ${W} dia${pl_(W)} depois ele fica disponível e você revisa tudo o que estudou nesses dias, um grupo de cada vez.</p><p><b>Por tópico</b>: cada tópico estudado volta para revisão depois de ${trvIv().join(', ')} dias, cada intervalo contado da revisão anterior.</p><p><b>Hoje</b> reúne o que dá para revisar agora nos dois sistemas e o que vence nos próximos 7 dias. <b>Grupos</b> e <b>Tópicos</b> mostram cada sistema por inteiro. O ícone de calendário mostra as datas, e a engrenagem ajusta os números dos dois.</p>`}},
+ rvgrp:()=>{const N=rvInt(),W=rvWait();return {t:'Revisão por grupos',h:`<p>A revisão é feita por <b>grupos de dias com estudo</b>. A cada ${N} dia${pl_(N)} em que você registra estudo com tópico e aula, forma-se um grupo. Dias sem estudo, ou só com tempo registrado, não contam; sessões de revisão também não.</p><p>Depois do último dia do grupo, ele espera <b>${W} dia${pl_(W)} corrido${pl_(W)}</b>, contando todos os dias do calendário, e então fica disponível para revisar.</p><p>Os grupos são revisados em ordem: o próximo só pode ser iniciado depois que o anterior for concluído. A revisão corre em paralelo ao ciclo.</p><p>Para mudar esses números, use a engrenagem no topo da aba. Os dias de estudo valem para o grupo em formação e os próximos; os dias corridos valem para todos os grupos ainda não revisados.</p>`}},
  rvcal:()=>{const td=today(),st=rgInfo().list.some(o=>o.g.dates.includes(td));return {t:'Calendário de revisões',h:`<p>Os dias de estudo de cada grupo aparecem ligados numa faixa. Embaixo do número fica a marca da revisão do grupo: ● para revisar, ○ prevista e ✓ revisado.</p><p>Toque num dia para ver o grupo inteiro: período, disciplinas e tópicos.</p><p>A data prevista supõe que você estude todos os dias a partir de ${st?'amanhã':'hoje'}; se pular algum dia, ela se desloca.</p>`}},
  rodadas:()=>({t:'Rodadas',h:'<p>Uma rodada é uma volta completa pelo plano: ao iniciar uma nova, os ciclos recomeçam do 1 e as anteriores ficam guardadas para consulta.</p>'}),
  tema:()=>({t:'Aparência',h:'<p>Escolha o tema do app. No modo automático, ele acompanha o tema do seu dispositivo.</p>'}),
@@ -1391,14 +1398,17 @@ function trvMark(k,d,m){trvInit();const r=S.trv.t[k]=S.trv.t[k]||{h:[]};r.h=(r.h
  if(m>0){const [b,t]=k.split('|');S.sessions.push({id:uid(),ses:uid(),subj:b,topic:t,min:m,cycle:S.cycle,set:S.set||1,review:true,trv:k,trvd:d,kind:'aula',items:[],date:d})}}
 function trvUnmark(k,d){const r=S.trv&&S.trv.t&&S.trv.t[k];if(!r||!r.h)return;const i=r.h.indexOf(d);if(i>=0)r.h.splice(i,1)}
 const trvWhen=o=>o.late?`atrasada há ${o.late} dia${pl_(o.late)}`:o.due===today()?'vence hoje':'em '+fd(o.due);
-function trvSec(){const L=trvList(),td=today(),iv=trvIv(),due=L.filter(o=>!o.fix&&o.due<=td).sort((a,b)=>a.due<b.due?-1:a.due>b.due?1:0),nx=L.filter(o=>!o.fix&&o.due>td).sort((a,b)=>a.due<b.due?-1:a.due>b.due?1:0),fx=L.filter(o=>o.fix);
+function trvSec(inTab){const L=trvList(),td=today(),iv=trvIv(),due=L.filter(o=>!o.fix&&o.due<=td).sort((a,b)=>a.due<b.due?-1:a.due>b.due?1:0),nx=L.filter(o=>!o.fix&&o.due>td).sort((a,b)=>a.due<b.due?-1:a.due>b.due?1:0),fx=L.filter(o=>o.fix);
  const by=new Map();due.forEach(o=>{const b=o.s.of||o.s.id;if(!by.has(b))by.set(b,[]);by.get(b).push(o)});
  const dueH=due.length?[...by.values()].map(os=>{const s=os[0].s;return `<div class="trvs"><div class="trvsh"><span class="dot" style="background:${col(s)}" aria-hidden="true"></span><b class="snt" title="${esc(nm(s))}">${esc(nm(s))}</b></div>${os.map(o=>trvRow(o)).join('')}</div>`}).join(''):`<div class="mut trve">Nenhum tópico para revisar hoje.${nx[0]?` Próximo: ${esc(nx[0].tp.name)}, ${fd(nx[0].due)}.`:L.length?'':' Os tópicos entram aqui conforme você estuda.'}</div>`;
  const li=(o,r)=>`<div class="trvli"><span class="dot" style="background:${col(o.s)}" aria-hidden="true"></span><span class="grow snt" title="${esc(o.tp.name)} · ${esc(nm(o.s))}">${esc(o.tp.name)} <span class="mut">· ${esc(nm(o.s))}</span></span><span class="mut trvd">${r}</span></div>`;
  const opF=ui.open.has('trvfx');
  const nxH=nx.length?`<h3 class="trvh">Próximas <span class="mut">(${nx.length})</span></h3><div class="trvl">${nx.map(o=>li(o,ordN(o.n+1)+' · '+sdm(o.due))).join('')}</div>`:'';
  const fxH=fx.length?`<div class="trvg"><button type="button" class="trvgh" data-act="trvtog" data-id="trvfx" aria-expanded="${opF}"><span class="grow">Fixados <span class="mut">(${fx.length})</span></span><span class="x mtog${opF?' on':''}" aria-hidden="true">${CHEV}</span></button>${opF?`<div class="trvl">${fx.map(o=>li(o,sdm(o.h[o.h.length-1]))).join('')}</div>`:''}</div>`:'';
- return `<div class="card hasinfo trvc">${infoBtn('trv','Revisão por tópico')}<h2>Revisão por tópico</h2><div class="mut trvcf">Intervalos: ${iv.join(' · ')} dias</div>${due.length?`<h3 class="trvh">Para revisar <span class="mut">(${due.length})</span></h3>`:''}${dueH}${nxH}${fxH}</div>`}
+ const body=`${due.length?`<h3 class="trvh">Para revisar <span class="mut">(${due.length})</span></h3>`:''}${dueH}${nxH}${fxH}`;
+ /* Na visão Tópicos a regra fica numa linha acima do cartão, como na visão Grupos; durante a revisão por grupos, o cartão leva título e ⓘ */
+ if(inTab)return `<div class="rvrule mut">Intervalos: <span class="nw">${iv.join(' · ')} dias</span>${infoBtnI('trv','Revisão por tópico')}</div><div class="card trvc">${body}</div>`;
+ return `<div class="card hasinfo trvc">${infoBtn('trv','Revisão por tópico')}<h2>Revisão por tópico</h2><div class="mut trvcf">Intervalos: ${iv.join(' · ')} dias</div>${body}</div>`}
 /* Linha de um tópico vencido: nome, situação e "Revisado"; as aulas ficam recolhidas atrás da setinha. sub=true mostra a disciplina na linha (visão Hoje) */
 function trvRow(o,sub){const its=trvItems(o),op=ui.open.has('tdi:'+o.k),iv=trvIv();
  return `<div class="trvr"><div class="trvrh">${its.length?`<button type="button" class="x mtog${op?' on':''}" data-act="trvtog" data-id="tdi:${esc(o.k)}" aria-expanded="${op}" title="${op?'Recolher aulas':'Ver aulas'}" aria-label="${op?'Recolher':'Ver'} aulas de ${esc(o.tp.name)}">${CHEV}</button>`:'<span class="mtogsp" aria-hidden="true"></span>'}<div class="grow"><div class="trvn snt" title="${esc(o.tp.name)}">${esc(o.tp.name)}</div>${sub?`<div class="mut trvm snt" title="${esc(nm(o.s))}"><span class="dot" style="background:${col(o.s)}" aria-hidden="true"></span>${esc(nm(o.s))}</div>`:''}<div class="mut trvm">${ordN(o.n+1)} de ${iv.length} · ${trvWhen(o)}</div></div><button class="btn s g trvb" data-act="trvok" data-id="${esc(o.k)}" title="Marcar como revisado" aria-label="Marcar ${esc(o.tp.name)} como revisado">${DONEI}<span>Revisado</span></button></div>${op&&its.length?`<div class="rvits">${its.map(l=>`<div class="rvit">${itemLine(l,o.tp.id)}</div>`).join('')}</div>`:''}</div>`}
@@ -1431,7 +1441,9 @@ function viewRev(){
  /* Próxima revisão só aparece quando há grupo pronto; os demais ficam em Revisões futuras */
  const nxt=top||av.length?`<div class="card rvnext"><h2>Próxima revisão</h2>${top||'<div class="empty">Os grupos disponíveis não têm tópicos registrados.</div>'}</div>`:I.list.length?'':'<div class="card"><div class="empty">Nenhum grupo ainda. Eles se formam conforme você estuda.</div></div>';
  const rt=ui.rvt||'hoje';
- const main=rt==='hoje'?rvToday(I,nxo&&hasC(nxo)?nxo:null):rt==='topicos'?trvSec():nxt+(rest?`<div class="card"><h2>Na fila <span class="mut">(${qd.length})</span></h2><div class="rgql">${rest}</div></div>`:'')+`${fu.length?`<h2 class="sec">Revisões futuras</h2>${fuc}`:''}${dn.length?dnc:''}`;
+ /* Cada visão começa pela regra do seu sistema, com o ⓘ que a explica */
+ const N=rvInt(),Wt=rvWait(),rule=`<div class="rvrule mut">Grupos de ${N} dia${pl_(N)} de estudo · revisão ${Wt} dia${pl_(Wt)} depois${infoBtnI('rvgrp','Revisão por grupos')}</div>`;
+ const main=rt==='hoje'?rvToday(I,nxo&&hasC(nxo)?nxo:null):rt==='topicos'?trvSec(true):rule+nxt+(rest?`<div class="card"><h2>Na fila <span class="mut">(${qd.length})</span></h2><div class="rgql">${rest}</div></div>`:'')+`${fu.length?`<h2 class="sec">Revisões futuras</h2>${fuc}`:''}${dn.length?dnc:''}`;
  return `<div class="rvw rvone"><div class="rvmain${rt==='hoje'?' rvtd':''}">${main}</div></div>`;
 }
 /* Visão Hoje: tudo o que dá para revisar agora (a revisão de grupo da vez e os tópicos vencidos) e o que vence nos próximos 7 dias */
@@ -1954,8 +1966,8 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='sper'){ui.sp=p==='all'?'all':+p;render();return}
  if(a==='hmore'){ui.hn=(ui.hn||30)+30;render();return}
  if(a==='rcm'){const d=pd((ui.rcm||today().slice(0,7))+'-01');d.setMonth(d.getMonth()+(+p));ui.rcm=ymd(d).slice(0,7);render();return}
- if(a==='rcg'){rcPick(ui.rcg===p?null:p);return}
- if(a==='rcday'){const I=rcMarks(rgInfo()),o=I.list.find(o=>o.g.dates.includes(p))||I.list.find(o=>o.mk&&o.mk.d===p);ui.rctd=trvList().some(x=>!x.fix&&x.due===p)?p:null;if(o&&ui.rcg===o.g.id){render();return}rcPick(o?o.g.id:null,'auto');return} /* outro dia do mesmo grupo mantém a seleção; dia sem grupo limpa; dia com tópicos mostra quais vencem nele */
+ if(a==='rcg'){rcPick(ui.rcg===p?null:p,'',false,true);return}
+ if(a==='rcday'){const I=rcMarks(rgInfo()),o=I.list.find(o=>o.g.dates.includes(p))||I.list.find(o=>o.mk&&o.mk.d===p);ui.rctd=trvList().some(x=>!x.fix&&x.due===p)?p:null;if(o&&ui.rcg===o.g.id){render();return}rcPick(o?o.g.id:null,'auto',false,true);return} /* uma linha por vez; as duas só juntas quando o dia tocado tem grupo e tópicos */ /* outro dia do mesmo grupo mantém a seleção; dia sem grupo limpa; dia com tópicos mostra quais vencem nele */
  if(a==='rctdx'){ui.rctd=null;render();return}
  if(a==='rcgo'){const b=document.querySelector('.rcsl[data-id="'+p+'"]');if(b&&b.dataset.m)ui.rcm=b.dataset.m;rcPick(p,'auto');return}
 if(a==='rcvl'){if(ui.rvcalm){ui.rvcalm=null;ui.rvt='grupos';render()}rcShow(p,true);return}
