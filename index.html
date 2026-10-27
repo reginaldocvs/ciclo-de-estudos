@@ -200,9 +200,14 @@ body:not(.wide) #app{max-width:940px}
 #msub{margin:4px 0 0;color:var(--mut);font-weight:500}
 /* Indicadores do ciclo no subtítulo: chips tonais, valor em destaque */
 #msub:has(.kchs){margin-top:10px;container-type:inline-size}.kchs{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.kch{display:inline-flex;align-items:baseline;gap:5px;padding:5px 12px;border-radius:var(--r-s);background:var(--card);color:var(--m-p);font-size:.875rem;line-height:1.3;white-space:nowrap}
+.kch{display:inline-flex;align-items:baseline;gap:6px;padding:5px 12px;border-radius:var(--r-s);background:var(--card);color:var(--m-p);font-size:.875rem;line-height:1.3;white-space:nowrap}
 .kadj{position:relative;display:inline-grid;place-items:center;width:28px;height:28px;border:0;background:none;color:var(--m-p);padding:0;border-radius:999px;cursor:pointer;align-self:center}.kadj::after{content:'';position:absolute;inset:-8px}.kadj:hover{background:color-mix(in srgb,var(--m-p) 10%,transparent)}.kadj svg{width:18px;height:18px}
 .kch b{color:var(--m-p);font-weight:600;font-variant-numeric:tabular-nums}
+/* Ícone de relógio no rótulo "Total": do tamanho do texto; o rótulo continua texto comum para a base da linha alinhar com os outros chips */
+.kci svg{width:1em;height:1em;vertical-align:-.14em;margin-right:4px}
+/* Traço entre rótulo e valor quando os dois ficam na mesma linha; some quando o valor desce para baixo do rótulo */
+.kch>b::before{content:"";display:inline-block;width:1px;height:.95em;margin-right:6px;background:var(--m-ov);vertical-align:-.12em}
+@container (max-width:420px){.kchs:not(:has(.kadj)) .kch>b::before{display:none}}
 .kch.zero{background:none;box-shadow:inset 0 0 0 1px var(--m-ov)}
 .kch.ok{background:var(--m-okc);color:var(--m-onokc)}.kch.ok b{color:var(--m-onokc)}
 /* Espaço apertado: três colunas, rótulo em cima e valor embaixo */
@@ -1305,9 +1310,10 @@ function dayStats(){const td=today(),by={};S.sessions.forEach(x=>{if(x.date&&x.m
 const TTL={ciclo:'Ciclo',rev:'Revisão',reg:'Histórico',st:'Estatísticas',bk:'Configurações'};
 function applyTheme(){const r=document.documentElement,t=S.theme||'auto';try{if(t==='light'||t==='dark'){r.setAttribute('data-theme',t);r.dataset.ownTheme='1'}else if(r.dataset.ownTheme){r.removeAttribute('data-theme');delete r.dataset.ownTheme}}catch(e){}}
 function chrome(){const mt=$('mtt'),ms=$('msub');if(!mt||!ms)return;let t=TTL[tab]||'',s='',sh=null,th=null;
- if(tab==='ciclo'){const st=dayStats();t=((S.plans||[]).find(x=>x.id===S.plan)||{}).name||'Ciclo de Estudos';const A=actives(),T=total()||1,d=A.reduce((a,x)=>a+Math.min(prog(x.id),x.goal),0),nd=A.filter(x=>gDone(x)).length,fin=S.type!=='review'&&inCycle().length&&!current();
+ if(tab==='ciclo'){const st=dayStats();t=((S.plans||[]).find(x=>x.id===S.plan)||{}).name||'Ciclo de Estudos';const A=actives(),T=total()||1,d=A.reduce((a,x)=>a+Math.min(prog(x.id),x.goal),0),fin=S.type!=='review'&&inCycle().length&&!current();
   const ch=(l,v,c)=>`<span class="kch${c?' '+c:''}"><span>${l}</span> <b>${v}</b></span>`;
-  sh=`<span class="kchs${(S.set||1)>1&&S.cycle>9?' lng':''}">`+ch('Hoje',fmt(st.today),st.today?'':'zero')+ch(((S.set||1)>1?'R'+S.set+' · ':'')+'Ciclo '+S.cycle,fin?'concluído':Math.round(d/T*100)+'%',fin?'ok':'')+ch('Sessões',nd+' de '+A.length)+'</span>'}
+  const tt=S.sessions.reduce((a,x)=>a+(x.min>0?+x.min:0),0);
+  sh=`<span class="kchs${(S.set||1)>1&&S.cycle>9?' lng':''}">`+ch('Hoje',fmt(st.today),st.today?'':'zero')+ch(((S.set||1)>1?'R'+S.set+' · ':'')+'Ciclo '+S.cycle,fin?'concluído':Math.round(d/T*100)+'%',fin?'ok':Math.round(d/T*100)?'':'zero')+ch(`<span class="kci">${CLOCKI}Total</span>`,fmt(tt),tt?'':'zero')+'</span>'}
  else if(tab==='rev'){if(S.rv)s='Revisando '+(S.rv.lbl||('o ciclo '+S.rv.src.join(', ')))+'.';else{const N=rvInt(),W=rvWait();/* A regra dos grupos em dois chips, no mesmo estilo dos indicadores do Ciclo, com o ajuste ao lado */
   const ch=(l,v)=>`<span class="kch"><span>${l}</span> <b>${v}</b></span>`;
   sh=`<span class="kchs">${ch('Grupo',N+' dia'+pl_(N)+' de estudo')}${ch('Revisar',W+' dia'+pl_(W)+' depois')}<button type="button" class="kadj" data-act="rvcfg" title="Ajustar dias de estudo e dias corridos" aria-label="Ajustar dias de estudo e dias corridos">${GEAR}</button></span>`}th=esc(t)+infoBtnI('rvdias','Revisão')}
