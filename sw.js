@@ -2,7 +2,7 @@
    - Página (navegação): rede primeiro, sempre conferindo se há versão nova; sem rede, a última cópia salva.
    - Arquivos do app, fontes e SDK do Firebase: cópia salva na hora, atualizada em segundo plano.
    - Firestore e login do Google nunca passam por aqui. */
-const CACHE = 'ciclo-v1';
+const CACHE = 'ciclo-v2'; // v2: ícones novos (logo do livro com seta)
 const CORE = ['./', 'index.html', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 const CDN = ['https://fonts.googleapis.com/', 'https://fonts.gstatic.com/', 'https://www.gstatic.com/firebasejs/'];
 
