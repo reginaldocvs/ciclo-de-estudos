@@ -613,11 +613,15 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 .rcsl .rcmk svg,.rcl .rcmk svg{width:11px;height:11px}
 .rcl .rcmk{margin-right:6px}
 .rcl .rcx.e,.rvside .rcl .rcx.e{width:16px;height:10px;border-radius:999px}
-.rcpn{border-top:1px solid var(--m-ov);margin-top:12px;padding-top:12px}
-.rcph{display:flex;align-items:center;gap:8px;justify-content:space-between}
-.rcph .x{margin:-8px -8px -8px 0}
-.rcpn .rgpb{margin-top:8px}
-.rcpn .rcst{margin-top:12px}
+.rcpn{border-top:1px solid var(--m-ov);margin-top:12px;padding-top:12px;display:flex;align-items:center;gap:10px}
+.rcpn>.rcx.e{flex:none;margin:0;background:color-mix(in srgb,var(--c) 48%,var(--card))}
+.rcpt{font-size:.875rem;color:var(--mut)}.rcpt b{color:var(--ink);font-weight:600}
+.rcpn>.btn{flex:none}.rcpn>.x{flex:none;margin:-8px -8px -8px -4px}
+@media (min-width:600.02px){.rcvl{display:none}}
+/* Grupo selecionado no calendário, destacado na lista */
+.card.rgsel{box-shadow:0 0 0 2px var(--m-p)}
+.rga.rgsel{background:color-mix(in srgb,var(--m-p) 8%,transparent);border-radius:var(--r-m);margin-inline:-10px;padding-inline:10px}
+[data-act=rgpick]{cursor:pointer}
 .rchint{font-size:.85rem;margin-top:10px;text-align:center}
 /* ---------- Modo foco ---------- */
 .fmt{font-weight:500;letter-spacing:-.01em}
@@ -683,7 +687,7 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 /* ===== Revisão: calendário numa coluna própria (fixa no computador, largura limitada nas telas menores) ===== */
 .rvw{display:grid;grid-template-columns:minmax(0,1fr);gap:0 16px}
 .rvmain{min-width:0}.rvmain>.sec:first-child{margin-top:0}
-.rvside{min-width:0;width:100%;max-width:420px;justify-self:center}
+.rvside{min-width:0;width:100%}
 .rvside>.card{margin-bottom:0}
 /* Legenda do calendário sempre numa linha; encolhe o texto e os espaços quando fica apertado */
 .rvside{container-type:inline-size}
@@ -695,6 +699,8 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 @media (min-width:600.02px){
  .rvw{grid-template-columns:minmax(0,1fr) clamp(280px,29vw,380px);align-items:start} /* largura pela tela, não pela área de conteúdo: não muda ao abrir ou recolher o menu */
  .rvside{max-width:none;position:sticky;top:28px;will-change:transform;contain:layout paint}
+ /* Nunca mais alto que a janela: assim continua fixo ao rolar, e o que passar (painel do grupo) rola dentro do cartão */
+ .rvside{max-height:calc(100dvh - 64px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;border-radius:28px} /* 64 = 28 do topo + o respiro do fim da página */
 }
 /* A partir de 1120px, as mesmas colunas da aba Ciclo (cartão da direita entre 320 e 380px) */
 @media (min-width:1120px){.rvw{grid-template-columns:minmax(0,1fr) minmax(320px,380px)}}
@@ -1169,12 +1175,15 @@ const sdm=d=>fd(d).slice(0,5);
 /* Dia da marca de cada grupo: revisado (data da revisão), para revisar (data em que abriu) ou previsto (supõe estudo todos os dias) */
 function rcMarks(I){const td=today(),base=I.list.some(o=>o.g.dates.includes(td))?addD(td,1):td;
  I.list.forEach(o=>{const r=S.reviewed&&S.reviewed[o.g.id];o.mk=o.st==='concluido'?(/^\d{4}-/.test(r||'')?{d:r,k:'ok'}:null):o.st==='disponivel'||o.st==='andamento'?{d:o.availDate,k:'av'}:{d:o.availDate||addD(addD(base,o.g.len-o.g.dates.length-1),rvWait()),k:'pr'}});return I}
+/* Seleção de grupo compartilhada entre o calendário e a lista: o cartão do grupo é destacado (e aberto, se recolhível) e,
+   com o calendário fixo ao lado, rola até aparecer; tocar no cartão da lista leva o calendário ao mês do grupo */
+function rcShow(id,force){const c=id&&document.querySelector('[data-gid="'+id+'"]'),sd=document.querySelector('.rvside');if(!c)return;if(!force&&!(sd&&getComputedStyle(sd).position==='sticky'))return;c.scrollIntoView({block:force?'center':'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
+function rcPick(id,show,mon){ui.rcg=id;if(id){const o=rcMarks(rgInfo()).list.find(o=>o.g.id===id);if(o&&o.st==='futuro')ui.open.add('rfo:'+id);if(mon&&o){const d=o.g.dates[0]||(o.mk&&o.mk.d);if(d)ui.rcm=d.slice(0,7)}}render();if(id&&show)requestAnimationFrame(()=>rcShow(id))}
 function rvCal(I){
  rcMarks(I);
  const td=today(),mon=ui.rcm||td.slice(0,7),sel=ui.rcg&&I.list.some(o=>o.g.id===ui.rcg)?ui.rcg:null,G={},M={};
  I.list.forEach(o=>{o.g.dates.forEach(d=>G[d]=o);if(o.mk)(M[o.mk.d]=M[o.mk.d]||[]).push(o)});
  const nx=rgNext(I),av=I.list.filter(o=>o.st==='disponivel'||o.st==='andamento'),fu=I.list.find(o=>o.st==='futuro');
- const tagOf=o=>o.st==='concluido'?'Revisado':o.st==='andamento'?'Em andamento':o.st==='disponivel'?(o.g.id===nx||!nx?'Para revisar':'Na fila'):o.closed?'Fechado':'Em formação';
  const first=pd(mon+'-01'),start=monOf(ymd(first)),cells=[];let d=start;
  const lastS=ymd(new Date(first.getFullYear(),first.getMonth()+1,0));
  while(d<=lastS||cells.length%7){cells.push(d);d=addD(d,1)}
@@ -1191,12 +1200,12 @@ function rvCal(I){
  const nav=av.find(o=>o.g.id===nx)||av[0];
  const sum=(nav?sline(nav,`<b>G${nav.g.idx} ${nav.st==='andamento'?'em revisão':'para revisar'}</b> · desde ${sdm(nav.availDate)}`):'')+(fu&&fu.mk?sline(fu,`<b>G${fu.g.idx} previsto</b> · ${sdm(fu.mk.d)}${fu.closed?'':', se estudar todo dia'}`):'');
  /* Painel do grupo selecionado */
+ /* Grupo selecionado: uma linha só com as datas (período e revisão); disciplinas e tópicos ficam no cartão do grupo na lista, que é destacado */
  let pn='';const so=sel&&I.list.find(o=>o.g.id===sel);
- if(so){const g=so.g,n=g.dates.length,prev=I.list[I.list.indexOf(so)-1],fl=g.len-n;
-  const per=n?`Estudado ${n>1?'de '+sdm(g.dates[0])+' a '+sdm(g.dates[n-1]):'em '+sdm(g.dates[0])} · ${n} de ${g.len} dia${pl_(g.len)}`:`Nenhum dia de estudo ainda · 0 de ${g.len}`;
-  const when=so.st==='concluido'?'Revisado em '+(so.mk?fd(so.mk.d):'—'):so.st==='disponivel'||so.st==='andamento'?`Disponível desde ${fd(so.availDate)}${tagOf(so)==='Na fila'&&prev?' · depois do '+rgLabel(prev):''}`:so.closed?`Disponível em ${fd(so.availDate)} · falta${so.missing===1?'':'m'} ${so.missing} dia${pl_(so.missing)}`:`Falta${fl===1?'':'m'} ${fl} dia${pl_(fl)} de estudo para fechar · previsto para ${sdm(so.mk.d)}`;
-  pn=`<div class="rcpn"><div class="rcph"><div class="rgh"><b>${rgLabel(so)}</b><span class="tag">${tagOf(so)}</span></div><button class="x" data-act="rcg" data-id="${g.id}" title="Limpar seleção" aria-label="Limpar seleção">${CLOSEI}</button></div><div class="mut rgm">${per}</div><div class="mut rgw">${when}</div><div class="rgpb">${rgBody(so)}</div>${!S.rv&&g.id===nx?`<button class="btn s rcst" data-act="rvstart" data-id="${g.id}">Iniciar revisão</button>`:''}</div>`}
- else if(I.list.length)pn='<div class="mut rchint">Toque num dia para ver o grupo.</div>';
+ if(so){const g=so.g,n=g.dates.length,mk=so.mk;
+  const per=n?(n>1?sdm(g.dates[0])+' a '+sdm(g.dates[n-1]):'estudado em '+sdm(g.dates[0])):'sem dias de estudo',rv=!mk?'':mk.k==='ok'?'revisado em '+sdm(mk.d):mk.k==='av'?'para revisar desde '+sdm(mk.d):'revisão prevista para '+sdm(mk.d);
+  pn=`<div class="rcpn" style="--c:${rgCol(g)}"><i class="rcx e" aria-hidden="true"></i><div class="grow rcpt"><b>${rgLabel(so)}</b> · ${per}${rv?' · '+rv:''}</div><button class="btn s g rcvl" data-act="rcvl" data-id="${g.id}">Ver na lista</button><button class="x" data-act="rcg" data-id="${g.id}" title="Limpar seleção" aria-label="Limpar seleção">${CLOSEI}</button></div>`}
+ else if(I.list.length)pn='<div class="mut rchint">Toque num dia para destacar o grupo na lista.</div>';
  return `<div class="card hasinfo rcal">${infoBtn('rvcal','Calendário de revisões')}<h2 class="pvt">Calendário de revisões</h2>${sum?`<div class="rcsum">${sum}</div>`:''}<div class="rcn"><button class="x" data-act="rcm" data-id="-1" aria-label="Mês anterior">‹</button><b>${RCM[first.getMonth()]} ${first.getFullYear()}</b><button class="x" data-act="rcm" data-id="1" aria-label="Próximo mês">›</button></div>
  <div class="rcg rcg2">${['seg','ter','qua','qui','sex','sáb','dom'].map(w=>`<span class="rcw">${w}</span>`).join('')}${cells.map(cell).join('')}</div>
  <div class="rcl"><span><i class="rcx e"></i>Dias do grupo</span><span><span class="rcmk av"><i></i></span>Para revisar</span><span><span class="rcmk pr"><i></i></span>Previsto</span><span><span class="rcmk ok">${RCOK}</span>Revisado</span></div>
@@ -1240,10 +1249,10 @@ function viewRev(){
  const when=o=>o.st==='disponivel'||o.st==='andamento'?`Disponível desde ${fd(o.availDate)}`:o.st==='concluido'?'Revisado em '+(S.reviewed[o.g.id]==='-'?'—':fd(S.reviewed[o.g.id])):(o.closed?`Disponível em ${fd(o.availDate)} · faltam ${o.missing} dia${o.missing===1?'':'s'}`:`Faltam ${o.g.len-o.g.dates.length} dia${o.g.len-o.g.dates.length===1?'':'s'} de estudo para fechar`);
  const av=I.list.filter(o=>o.st==='disponivel'),fu=I.list.filter(o=>o.st==='futuro'),dn=I.list.filter(o=>o.st==='concluido');
  const nx=rgNext(I),nxo=I.list.find(x=>x.g.id===nx);
- const avc=av.map((o,i)=>`<div class="rga"><div class="rgal"><div class="rgan"><b>${rgLabel(o)}</b><button class="x rgeye" data-act="rgview" data-id="${o.g.id}" title="Ver disciplinas e tópicos" aria-label="Ver disciplinas e tópicos do ${rgLabel(o)}">${EYEP}</button></div><div class="mut rgm">${o.g.dates.length} de ${o.g.len} dias de estudo</div><div class="mut rgw">${hasC(o)?when(o):'Sem tópicos registrados nestes dias.'}</div></div><div class="rgar"><span class="rgtg"><span class="tag${o.g.id===nx||!nxo?'':' qtag'}">${o.g.id===nx||!nxo?'Disponível':'Na fila'}</span></span>${!hasC(o)?'':o.g.id===nx?`<button class="btn s" data-act="rvstart" data-id="${o.g.id}">Iniciar</button>`:''}</div>${hasC(o)&&o.g.id!==nx&&nxo?`<div class="mut rgwait">Começa depois da revisão do ${rgLabel(av.slice(0,i).filter(hasC).pop()||nxo)}.</div>`:''}</div>`);
+ const avc=av.map((o,i)=>`<div class="rga${ui.rcg===o.g.id?' rgsel':''}" data-gid="${o.g.id}" data-act="rgpick" data-id="${o.g.id}"><div class="rgal"><div class="rgan"><b>${rgLabel(o)}</b><button class="x rgeye" data-act="rgview" data-id="${o.g.id}" title="Ver disciplinas e tópicos" aria-label="Ver disciplinas e tópicos do ${rgLabel(o)}">${EYEP}</button></div><div class="mut rgm">${o.g.dates.length} de ${o.g.len} dias de estudo</div><div class="mut rgw">${hasC(o)?when(o):'Sem tópicos registrados nestes dias.'}</div></div><div class="rgar"><span class="rgtg"><span class="tag${o.g.id===nx||!nxo?'':' qtag'}">${o.g.id===nx||!nxo?'Disponível':'Na fila'}</span></span>${!hasC(o)?'':o.g.id===nx?`<button class="btn s" data-act="rvstart" data-id="${o.g.id}">Iniciar</button>`:''}</div>${hasC(o)&&o.g.id!==nx&&nxo?`<div class="mut rgwait">Começa depois da revisão do ${rgLabel(av.slice(0,i).filter(hasC).pop()||nxo)}.</div>`:''}</div>`);
  /* Revisões futuras recolhíveis: fechado por padrão; o cabeçalho (grupo, etapa e dias) fica sempre visível */
- const fuc=fu.map(o=>{const op=ui.open.has('rfo:'+o.g.id);return `<div class="card rgc rfc${op?' open':''}"><div class="pvh rfh" data-act="rftog" data-id="${o.g.id}"><button class="x mtog${op?' on':''}" data-act="rftog" data-id="${o.g.id}" aria-expanded="${op}" aria-label="${op?'Recolher':'Ver detalhes do'} ${esc(rgLabel(o))}">${CHEV}</button><div class="grow">${head(o)}</div></div>${op?`<div class="rfb"><div class="mut rgw">${when(o)}</div>${body(o)}</div>`:''}</div>`}).join('');
- const dnc=dn.map(o=>`<div class="card rgc"><div>${head(o)}</div><div class="mut rgw">${when(o)}</div></div>`).join('');
+ const fuc=fu.map(o=>{const op=ui.open.has('rfo:'+o.g.id);return `<div class="card rgc rfc${op?' open':''}${ui.rcg===o.g.id?' rgsel':''}" data-gid="${o.g.id}"><div class="pvh rfh" data-act="rftog" data-id="${o.g.id}"><button class="x mtog${op?' on':''}" data-act="rftog" data-id="${o.g.id}" aria-expanded="${op}" aria-label="${op?'Recolher':'Ver detalhes do'} ${esc(rgLabel(o))}">${CHEV}</button><div class="grow">${head(o)}</div></div>${op?`<div class="rfb"><div class="mut rgw">${when(o)}</div>${body(o)}</div>`:''}</div>`}).join('');
+ const dnc=dn.map(o=>`<div class="card rgc${ui.rcg===o.g.id?' rgsel':''}" data-gid="${o.g.id}" data-act="rgpick" data-id="${o.g.id}"><div>${head(o)}</div><div class="mut rgw">${when(o)}</div></div>`).join('');
  const top=nxo?avc[av.indexOf(nxo)]:'',rest=avc.filter((x,i)=>av[i]!==nxo).join('');
  /* Próxima revisão só aparece quando há grupo pronto; os demais ficam em Revisões futuras */
  const nxt=top||av.length?`<div class="card rvnext"><h2>Próxima revisão</h2>${top||'<div class="empty">Os grupos disponíveis não têm tópicos registrados.</div>'}</div>`:I.list.length?'':'<div class="card"><div class="empty">Nenhum grupo ainda. Eles se formam conforme você estuda.</div></div>';
@@ -1717,15 +1726,17 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='sper'){ui.sp=p==='all'?'all':+p;render();return}
  if(a==='hmore'){ui.hn=(ui.hn||30)+30;render();return}
  if(a==='rcm'){const d=pd((ui.rcm||today().slice(0,7))+'-01');d.setMonth(d.getMonth()+(+p));ui.rcm=ymd(d).slice(0,7);render();return}
- if(a==='rcg'){ui.rcg=ui.rcg===p?null:p;render();return}
- if(a==='rcday'){const I=rcMarks(rgInfo()),o=I.list.find(o=>o.g.dates.includes(p))||I.list.find(o=>o.mk&&o.mk.d===p);ui.rcg=o&&ui.rcg!==o.g.id?o.g.id:null;render();return}
- if(a==='rcgo'){const b=document.querySelector('.rcsl[data-id="'+p+'"]');ui.rcg=p;if(b&&b.dataset.m)ui.rcm=b.dataset.m;render();return}
+ if(a==='rcg'){rcPick(ui.rcg===p?null:p);return}
+ if(a==='rcday'){const I=rcMarks(rgInfo()),o=I.list.find(o=>o.g.dates.includes(p))||I.list.find(o=>o.mk&&o.mk.d===p);rcPick(o&&ui.rcg!==o.g.id?o.g.id:null,'auto');return}
+ if(a==='rcgo'){const b=document.querySelector('.rcsl[data-id="'+p+'"]');if(b&&b.dataset.m)ui.rcm=b.dataset.m;rcPick(p,'auto');return}
+if(a==='rcvl'){rcShow(p,true);return}
+if(a==='rgpick'){if(e.target.closest('button,a,label'))return;rcPick(ui.rcg===p?null:p,'',true);return}
  if(a==='qinfo'){ui.qi=ui.qi||new Set();ui.qi.has(p)?ui.qi.delete(p):ui.qi.add(p);render();return}
  if(a==='ritmore'){ui.rx=ui.rx||new Set();ui.rx.add(p);render();return}
  if(a==='hclr'){ui.hq='';ui.hd1='';ui.hd2='';ui.hfs='';ui.hfc='';ui.hn=30;render();const q=$('hq');if(q)q.focus({preventScroll:true});return}
  if(a==='rvatog'){S.rvaClosed=!S.rvaClosed;save();render();return}
  if(a==='hmode'){if(p==='cic')S.hmode='cic';else delete S.hmode;ui.hn=30;save();render();return}
- if(a==='rftog'){const k='rfo:'+p;if(ui.open.has(k))ui.open.delete(k);else ui.open.add(k);render();return}
+ if(a==='rftog'){const k='rfo:'+p;if(ui.open.has(k)){ui.open.delete(k);if(ui.rcg===p)ui.rcg=null;render()}else{ui.open.add(k);rcPick(p,'',true)}return}
  if(a==='hctog'){const k='hc:'+p;if(ui.open.has(k))ui.open.delete(k);else ui.open.add(k);render();return}
  if(a==='rodtog'){const b=S.rodBack;S.rodOpen=!(S.rodOpen!=null?S.rodOpen:!!(b&&b.to===(S.set||1)&&!S.sessions.some(x=>(x.set||1)===(S.set||1))));save();render();return}
  if(a==='spick'){if(p==='af'){ui.nmph=null;S.sel.nnnew=false;S.sel.af=q;S.sel.nn='';S.sel.nnid=null;S.sel.nnall=false}else if(p==='ne'){S.sel.ne=q}else if(p==='ss'){reqSwitch(q)}else if(p.startsWith('k-')){const [,gi,ri]=p.split('-'),g=grps().find(x=>x.id===gi),r=g&&g.rows.find(x=>x.id===ri);if(r)r.kind=q==='questoes'?'questoes':'aula'}ui.dd=null}
