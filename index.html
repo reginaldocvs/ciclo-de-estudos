@@ -811,7 +811,12 @@ body .dlg.rvcfgdlg{width:min(92vw,460px)}
 .trvbelow{margin-top:18px}
 /* Dia escolhido por causa dos tópicos: anel na cor da marca dos tópicos */
 .rcy.tsel .rcdn{box-shadow:inset 0 0 0 2px var(--m-ontc)}
-.rcpn.rctl>.rctp.lg{flex:none;margin:0}
+.rcpn.rctl{flex-wrap:wrap;align-items:flex-start}
+.rctl .rcpt{display:flex;flex-direction:column;gap:2px;flex:1 1 60%;min-width:0;order:0}
+.rctl>.x{order:1;margin:-6px -8px 0 auto}
+.rctl>.btn{order:2}
+.rctd{display:flex;align-items:center;gap:6px;min-width:0;color:var(--ink)}
+.rctd .dot{flex:none}
 /* Dia com faixa de grupo: no hover escurece a própria faixa, em vez de pôr o círculo cinza por cima dela */
 .rcy.st:hover .rcdn{background:none}
 .rcy.st:hover .rcbd{background:color-mix(in srgb,var(--c) 34%,var(--card))}
@@ -1304,7 +1309,7 @@ function rvCal(I){
   pn=`<div class="rcpn" style="--c:${rgCol(g)}"><i class="rcx e" aria-hidden="true"></i><div class="grow rcpt"><b>${rgLabel(so)}</b> · ${per}${rv?' · '+rv:''}</div><button class="btn s g rcvl" data-act="rcvl" data-id="${g.id}">Ver na lista</button><button class="x" data-act="rcg" data-id="${g.id}" title="Limpar seleção" aria-label="Limpar seleção">${CLOSEI}</button></div>`}
  /* Dia com tópicos escolhido: quais vencem nele, com atalho para a visão Tópicos */
  const tdl=ui.rctd?trvList().filter(x=>!x.fix&&x.due===ui.rctd):[];
- if(tdl.length)pn+=`<div class="rcpn rctl"><span class="rctp lg" aria-hidden="true">${tdl.length}</span><div class="grow rcpt"><b>${sdm(ui.rctd)}</b> · ${tdl.map(x=>`${esc(x.tp.name)} <span class="nw">(${esc(nm(x.s))})</span>`).join(', ')}</div><button class="btn s g" data-act="rvt" data-id="topicos">Ver tópicos</button><button class="x" data-act="rctdx" title="Limpar" aria-label="Limpar dia escolhido">${CLOSEI}</button></div>`;
+ if(tdl.length)pn+=`<div class="rcpn rctl"><div class="grow rcpt"><b>${sdm(ui.rctd)}</b>${(()=>{const by=new Map();tdl.forEach(x=>{const b=x.s.of||x.s.id;if(!by.has(b))by.set(b,{s:x.s,n:0});by.get(b).n++});return [...by.values()].map(({s,n})=>`<span class="rctd"><span class="dot" style="background:${col(s)}" aria-hidden="true"></span><span class="snt" title="${esc(nm(s))}">${esc(nm(s))}</span>${n>1?` <span class="mut">· ${n}</span>`:''}</span>`).join('')})()}</div><button class="btn s g" data-act="rvt" data-id="topicos">Ver tópicos</button><button class="x" data-act="rctdx" title="Limpar" aria-label="Limpar dia escolhido">${CLOSEI}</button></div>`;
  if(!pn&&(I.list.length||Object.keys(TM).length))pn='<div class="mut rchint">Toque num dia para ver o grupo ou os tópicos dele.</div>';
  return `<div class="card hasinfo rcal">${infoBtn('rvcal','Calendário de revisões')}<h2 class="pvt">Calendário de revisões</h2>${sum?`<div class="rcsum">${sum}</div>`:''}<div class="rcn"><button class="x" data-act="rcm" data-id="-1" aria-label="Mês anterior">‹</button><b>${RCM[first.getMonth()]} ${first.getFullYear()}</b><button class="x" data-act="rcm" data-id="1" aria-label="Próximo mês">›</button></div>
  <div class="rcg rcg2">${['seg','ter','qua','qui','sex','sáb','dom'].map(w=>`<span class="rcw">${w}</span>`).join('')}${cells.map(cell).join('')}</div>
