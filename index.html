@@ -809,7 +809,8 @@ body .dlg.rvcfgdlg{width:min(92vw,460px)}
 .trvadd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 0 0;border-top:1px solid var(--m-ov)}
 .trvbelow{margin-top:18px}
 /* Dia escolhido por causa dos tópicos: anel na cor da marca dos tópicos */
-.rcy.tsel .rcdn{box-shadow:inset 0 0 0 2px var(--m-ontc)}
+.rcy.tsel .rcdn{box-shadow:inset 0 0 0 2px var(--mut)} /* dia de tópicos escolhido: só um anel neutro; o destaque já vem da bolinha dos tópicos */
+.rcy.msel .rcdn{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--c) 75%,var(--ink))}
 .rcpn.rctl{flex-wrap:wrap;align-items:flex-start}.rcpn.rctl>.rctp.lg{flex:none;width:16px;min-width:16px;padding:0;margin:2px 0 0} /* número de tópicos no lugar do quadradinho do grupo, alinhando as duas linhas */
 .rctl .rcpt{display:flex;flex-direction:column;gap:2px;flex:1 1 60%;min-width:0;order:0}
 .rctl>.x{order:1;margin:-6px -8px 0 auto}
@@ -1323,6 +1324,7 @@ function rvCal(I){
   if(out)cls.push('out');if(x===td)cls.push('tdy');if(ui.rctd===x)cls.push('tsel');
   const bm=sel&&o&&o.g.id===sel,mm=sel&&ms.some(m=>m.g.id===sel),mine=bm||mm;if(sel){if(o)cls.push(bm?'sel':'bdim');if(ms.length&&!mm)cls.push('mdim');if((o||ms.length)&&!mine)cls.push('ndim')}
   const m=ms.find(m=>m.g.id===sel)||ms[0];
+  if(!o&&sel&&m&&m.g.id===sel){cls.push('msel');st=`--c:${rgCol(m.g)}`} /* dia só com a marca do grupo escolhido: anel na cor do grupo */
   const lbl=[x===td?'hoje':'',o?'estudo do '+rgLabel(o):'',...ms.map(m=>rgLabel(m)+' '+KN[m.mk.k]),TM[x]?TM[x]+' tópico'+pl_(TM[x])+' para revisar':''].filter(Boolean).join(' · ');
   return `<button class="${cls.join(' ')}"${st?` style="${st}"`:''} data-act="rcday" data-id="${x}" aria-label="${+x.slice(8)} de ${RCM[+x.slice(5,7)-1]}${lbl?' — '+lbl:''}"${mine?' aria-pressed="true"':''}><span class="rcbd" aria-hidden="true"></span><span class="rcdn">${+x.slice(8)}</span>${TM[x]?`<span class="rctp" aria-hidden="true">${TM[x]}</span>`:''}<span class="rcmk ${m?m.mk.k:''}" aria-hidden="true">${m?(m.mk.k==='ok'?RCOK:'<i></i>')+'G'+m.g.idx+(ms.length>1?'+':''):''}</span></button>`};
  /* Resumo: o grupo para revisar agora e o próximo previsto; tocar leva ao mês da marca com o grupo já selecionado */
@@ -1967,7 +1969,8 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='hmore'){ui.hn=(ui.hn||30)+30;render();return}
  if(a==='rcm'){const d=pd((ui.rcm||today().slice(0,7))+'-01');d.setMonth(d.getMonth()+(+p));ui.rcm=ymd(d).slice(0,7);render();return}
  if(a==='rcg'){rcPick(ui.rcg===p?null:p,'',false,true);return}
- if(a==='rcday'){const I=rcMarks(rgInfo()),o=I.list.find(o=>o.g.dates.includes(p))||I.list.find(o=>o.mk&&o.mk.d===p);ui.rctd=trvList().some(x=>!x.fix&&x.due===p)?p:null;if(o&&ui.rcg===o.g.id){render();return}rcPick(o?o.g.id:null,'auto',false,true);return} /* uma linha por vez; as duas só juntas quando o dia tocado tem grupo e tópicos */ /* outro dia do mesmo grupo mantém a seleção; dia sem grupo limpa; dia com tópicos mostra quais vencem nele */
+ if(a==='rcday'){const I=rcMarks(rgInfo()),o=I.list.find(o=>o.g.dates.includes(p))||I.list.find(o=>o.mk&&o.mk.d===p);ui.rctd=trvList().some(x=>!x.fix&&x.due===p)?p:null;if(o&&ui.rcg===o.g.id)render();else rcPick(o?o.g.id:null,'auto',false,true);
+  if(ui.rvcalm)requestAnimationFrame(()=>{const l=[...document.querySelectorAll('#modal .rcpn')].pop();if(l)l.scrollIntoView({block:'nearest',behavior:'smooth'})});return} /* uma linha por vez; as duas só juntas quando o dia tocado tem grupo e tópicos. No painel, rola até a linha que apareceu */ /* outro dia do mesmo grupo mantém a seleção; dia sem grupo limpa; dia com tópicos mostra quais vencem nele */
  if(a==='rctdx'){ui.rctd=null;render();return}
  if(a==='rcgo'){const b=document.querySelector('.rcsl[data-id="'+p+'"]');if(b&&b.dataset.m)ui.rcm=b.dataset.m;rcPick(p,'auto');return}
 if(a==='rcvl'){if(ui.rvcalm){ui.rvcalm=null;ui.rvt='grupos';render()}rcShow(p,true);return}
