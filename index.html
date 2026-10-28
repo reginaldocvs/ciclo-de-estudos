@@ -1091,7 +1091,7 @@ const noteOf=(tid,l)=>{const t=tid&&topicById(tid);if(!t||!l)return '';const k=t
 const QICO='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3.5" width="14" height="18" rx="2"/><path d="M9 3.5h6v2.5H9z"/><path d="m9 13 2 2 4-4"/></svg>';
 /* Link/local das questões de um item: o do próprio registro ou, se faltar (ex.: registro de revisão), o do último registro de estudo do mesmo item */
 const qFrom=(tid,l)=>{if(!tid)return '';for(let n=S.sessions.length-1;n>=0;n--){const x=S.sessions[n];if(x.topic!==tid||x.review||x.rid)continue;for(const i of x.items||[]){if(i.q){const k=itKey(i);if(k&&sameIt(k,l))return i.q}}}return ''};
-const itemLine=(l,tid,nq)=>{const qk=tid+'|'+ik(l),nm=(l.title||'').trim()||(l.url?host(l.url):'')||(l.kind==='questoes'?'Questões':'Aula'),q=tid&&!nq?qAgg(tid,l):null,c=tCol(tid)||'var(--mut)',qv=String(l.q||qFrom(tid,l)||'').trim(),nt=noteOf(tid,l),nk=tid+'|'+ik(l),no=!!(nt&&ui.nv&&ui.nv.has(nk)),nb=nt?`<button class="x nbtn on lic" data-act="nview" data-id="${esc(nk)}" title="${esc(nt)}" aria-label="Ver anotação" aria-expanded="${no}">${NOTEI}</button>`:'';
+const itemLine=(l,tid,nq)=>{const qk=tid+'|'+ik(l),nm=(l.title||'').trim()||(l.kind==='questoes'?'Questões':'Aula'),q=tid&&!nq?qAgg(tid,l):null,c=tCol(tid)||'var(--mut)',qv=String(l.q||qFrom(tid,l)||'').trim(),nt=noteOf(tid,l),nk=tid+'|'+ik(l),no=!!(nt&&ui.nv&&ui.nv.has(nk)),nb=nt?`<button class="x nbtn on lic" data-act="nview" data-id="${esc(nk)}" title="${esc(nt)}" aria-label="Ver anotação" aria-expanded="${no}">${NOTEI}</button>`:'';
  const qi=qv?(isQLink(qv)?`<a class="lic lq" href="${esc(qHref(qv))}" target="_blank" rel="noopener noreferrer" title="Questões: ${esc(qv)}" aria-label="Abrir questões">${QICO}</a>`:`<button type="button" class="lic lq off${ui.qi&&ui.qi.has(qk)?' on':''}" data-act="qinfo" data-id="${esc(qk)}" title="Questões: ${esc(qv)}" aria-label="Ver onde estão as questões" aria-expanded="${ui.qi&&ui.qi.has(qk)?'true':'false'}">${QICO}</button>`):'';
  const name=`<span class="lnm" title="${esc(nm)}">${esc(nm)}</span>`;
  const qo=qv&&!isQLink(qv)&&ui.qi&&ui.qi.has(qk);return `<span class="lwrap"><span class="lrow">${name}${l.url?`<a class="lic" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer" title="Abrir aula" aria-label="Abrir aula">${AULAI}</a>`:''}${qi}${nb}${q?`<span class="ritl" style="--qc:${c}" aria-hidden="true"></span><span class="ritq">${qTag(q,tCol(tid))}</span>`:''}</span>${qo?`<span class="qbub">${esc(qv)}</span>`:''}${no?`<span class="nvw lnv">${esc(nt)}</span>`:''}</span>`};
@@ -1195,10 +1195,11 @@ const rowsFold=()=>grps().forEach(g=>g.rows.forEach(r=>{r.open=false;delete r.no
 /* Anotação: escondida até tocar na legenda; se a aula já tem texto, aparece aberta (nopen guarda a escolha da pessoa) */
 const nOpen=(r,nv)=>r.nopen===undefined?!!(nv||'').trim():!!r.nopen;
 const grps=()=>S.sel.groups&&S.sel.groups.length?S.sel.groups:(S.sel.groups=[newG()]);
-const hasG=()=>grps().some(g=>g.nt.trim()||g.rows.some(r=>(r.name||'').trim()||(r.link||'').trim()||(r.q||'').trim()));
+const rowHas=r=>!!((r.name||'').trim()||(r.link||'').trim()||(r.q||'').trim()||(r.note||'').trim()||(+r.ac||0)||(+r.tq||0)); /* aula sem nome vale (sessão só de questões do tópico), menos com link da aula */
+const hasG=()=>grps().some(g=>g.nt.trim()||g.rows.some(rowHas));
 const addRow=gid=>{const g=grps().find(x=>x.id===gid);if(!g)return;rowsFold();const r={id:uid(),kind:'aula',name:'',link:'',q:'',open:true};g.rows.push(r);ui.focus='r-'+r.id};
 const regErr=()=>{const rvE=S.edit?!!(S.sessions.find(x=>(x.ses||x.id)===S.edit.ses)||{}).review:S.type==='review';if(rvE)return null;let out=null;
- grps().forEach(g=>{let any=false;g.rows.forEach(r=>{const has=(r.link||'').trim()||(r.q||'').trim()||(r.note||'').trim()||(+r.ac||0)||(+r.tq||0);r.err=!!(has&&!(r.name||'').trim());if(has||(r.name||'').trim())any=true;if(r.err&&!out)out={msg:'Preencha o nome da aula.',focus:'r-'+r.id}});
+ grps().forEach(g=>{let any=false;g.rows.forEach(r=>{r.err=!!((r.link||'').trim()&&!(r.name||'').trim());if(rowHas(r))any=true;if(r.err&&!out)out={msg:'Preencha o nome da aula.',focus:'r-'+r.id}});
   g.err=!!(any&&!(g.nt||'').trim());if(g.err&&(!out||out.focus.startsWith('r-')))out={msg:'Escolha ou digite o tópico.',focus:'n-'+g.id}});return out};
 const qPct=r=>{const a=+r.ac||0,t=+r.tq||0;return t>0?Math.round(Math.min(a,t)/t*100)+'%':''};
 const rowNote=(s,g,r)=>{if(r.note!==undefined)return r.note;const t=s&&g.nt.trim()?s.topics.find(x=>x.name.toLowerCase()===g.nt.trim().toLowerCase()):null,it=mk2('aula',rowNm(r),r.link);if(!t||!it)return '';const k=t.links.find(x=>sameIt(x,it));return k&&k.note?k.note:''};
@@ -1293,7 +1294,7 @@ function viewCiclo(){
 }
 function sesRow(k,r,o){o=o||{};const f=r[0],s=subjAny(f.subj),t0=r.reduce((a,x)=>a+x.min,0);
  const tps=s?uniq(r.map(x=>x.topic).filter(Boolean)).map(id=>{const t=topicOf(s,id),x=r.find(y=>y.topic===id),n=t?t.name:x&&x.tn?x.tn:'';if(!n)return '';
-  const its=[];r.filter(y=>y.topic===id).forEach(y=>(y.items||[]).forEach(i=>{const it=itKey(i);if(!it)return;const key=ik(it);let e=its.find(z=>z.key===key);if(!e){e={key,nm:(it.title||'').trim()||(it.url?host(it.url):'')||(it.kind==='questoes'?'Questões':'Aula'),a:0,t:0};its.push(e)}if(+i.tq>0){e.a+=Math.min(+i.ac||0,+i.tq);e.t+=+i.tq}}));
+  const its=[];r.filter(y=>y.topic===id).forEach(y=>(y.items||[]).forEach(i=>{const it=itKey(i);if(!it)return;const key=ik(it);let e=its.find(z=>z.key===key);if(!e){e={key,nm:(it.title||'').trim()||(it.kind==='questoes'?'Questões':'Aula'),a:0,t:0};its.push(e)}if(+i.tq>0){e.a+=Math.min(+i.ac||0,+i.tq);e.t+=+i.tq}}));
   const rk=k+'|'+id,lim=o.lim&&!(ui.rx&&ui.rx.has(rk))?o.lim:0,shown=lim?its.slice(0,lim):its;
   return `<div class="rtpb"><div class="rtpn">${esc(n)}${!t?' <span class="tag del">excluído</span>':''}</div>${its.length?`<div class="rits">${shown.map(e=>`<div class="rit"><span class="ritn" title="${esc(e.nm)}">${esc(e.nm)}</span>${e.t?`<span class="ritl" style="--qc:${s?col(s):'var(--mut)'}" aria-hidden="true"></span><span class="ritq">${qTag(e,s?col(s):'')}</span>`:''}</div>`).join('')}${lim&&its.length>lim?`<button class="ritm" data-act="ritmore" data-id="${esc(rk)}">+${its.length-lim} aula${its.length-lim===1?'':'s'}</button>`:''}</div>`:''}</div>`}).filter(Boolean):[];
  const NL=[];if(o.notes)r.forEach(x=>(x.items||[]).forEach(i=>{const it=itKey(i);if(!it)return;const nt=noteOf(x.topic,it);if(nt&&!NL.some(z=>z.k===x.topic+'|'+ik(it)))NL.push({k:x.topic+'|'+ik(it),lb:it.title||host(it.url)||KIND[it.kind]||'Aula',nt})}));const hop=NL.length&&ui.hnv&&ui.hnv.has(k);
@@ -1872,10 +1873,10 @@ function pruneLinks(oldRecs,newRecs,exceptSes){
   (o.items||[]).forEach(i=>{const it=itKey(i);if(!it)return;
    const has=r=>r.topic===o.topic&&(r.items||[]).some(j=>{const k=itKey(j);return k&&sameIt(k,it)});
    if(!newRecs.some(has)&&!S.sessions.some(x=>(x.ses||x.id)!==exceptSes&&has(x)))t.links=t.links.filter(l=>l.man||!sameIt(l,it))})})}
-const rowNm=r=>{const n=(r.name||'').trim();if(n||(r.link||'').trim())return n;const q=(r.q||'').trim();return q?(isQLink(q)?'Questões':q):''};
-const recItem=r=>{const q=(r.q||'').trim();return {kind:'aula',name:rowNm(r),link:(r.link||'').trim(),...(q?{q}:{}),...((q||(r.link||'').trim())&&+r.tq>0?{ac:Math.min(+r.ac||0,+r.tq),tq:+r.tq}:{})}}; /* acertos valem com link de questões ou de aula (videoaulas com questões no fim) */
+const rowNm=r=>{const n=(r.name||'').trim();if(n||(r.link||'').trim())return n;const q=(r.q||'').trim();return q?(isQLink(q)?'Questões':q):+r.tq>0||+r.ac>0?'Questões':(r.note||'').trim()?'Anotação':''}; /* sem nome: só acertos vira "Questões", só anotação vira "Anotação" */
+const recItem=r=>{const q=(r.q||'').trim();return {kind:'aula',name:rowNm(r),link:(r.link||'').trim(),...(q?{q}:{}),...(+r.tq>0?{ac:Math.min(+r.ac||0,+r.tq),tq:+r.tq}:{})}}; /* acertos valem com link de questões ou de aula (videoaulas com questões no fim) */
 function buildRecs(s,rv,keep){const recs=[];
- grps().forEach(g=>{const name=g.nt.trim(),rows=g.rows.filter(r=>(r.name||'').trim()||(r.link||'').trim()||(r.q||'').trim());if(!name&&!rows.length)return;
+ grps().forEach(g=>{const name=g.nt.trim(),rows=g.rows.filter(rowHas);if(!name&&!rows.length)return;
   let t=name?s.topics.find(x=>x.name.toLowerCase()===name.toLowerCase()):null;
   const kd=!t&&name&&keep&&keep[name.toLowerCase()];if(kd){recs.push({topic:kd.topic,tn:kd.tn,tdel:true,kind:rows[0]?rows[0].kind:'aula',items:rows.map(recItem)});return}
   if(!t&&name&&!rv){t={id:uid(),name,done:false,links:[]};s.topics.push(t)}
