@@ -863,6 +863,7 @@ h2 .mut,h3 .mut{font-weight:400;font-size:.95rem}
 .swt[aria-checked=true] .swk{left:22px;width:24px;height:24px;margin-top:-12px;background:var(--m-onp)}
 .swt:disabled{opacity:.45;cursor:not-allowed}
 .swt::after{content:'';position:absolute;inset:-8px}
+.tvoffq{margin:2px 0 10px}.tvoffq p{margin:0;font-size:.9rem;line-height:1.45}.tvoffq .rvcfa{margin-top:10px}
 .rvsys .rvlb .lnk{align-self:flex-start;padding:2px 0;margin-top:2px}
 .trvact{align-items:center}.trvact .trvend{margin-right:auto;color:var(--mut)}
 /* Encerrado em Fixados: no celular a data desce para baixo do nome, que fica inteiro */
@@ -966,7 +967,7 @@ let S=load(KEY),tab='ciclo';const ui={open:new Set()};
 /* Disciplina da vez na ordem do ciclo, ao abrir o app e ao voltar para a aba Ciclo; nunca durante um estudo, edição ou revisão */
 function toCurrent(tabSw){if(S.edit||S.sx||(tabSw&&S.rv)||(S.timer&&(S.timer.running||S.timer.acc>0)))return;const c=current();if(c&&c.id!==S.sel.subj){S.sel.subj=c.id;S.sel.topic='';S.sel.groups=null}}
 function tabReset(){
- ui.rcg=ui.rcm=ui.rgview=ui.trvk=ui.trvcfg=ui.trviv=ui.rvt=ui.rvadj=ui.rvcalm=ui.rctd=null;                                    // Revisão: grupo selecionado, mês do calendário, janela do grupo
+ ui.tvoffq=ui.rcg=ui.rcm=ui.rgview=ui.trvk=ui.trvcfg=ui.trviv=ui.rvt=ui.rvadj=ui.rvcalm=ui.rctd=null;                                    // Revisão: grupo selecionado, mês do calendário, janela do grupo
  ui.hq=ui.hd1=ui.hd2=ui.hfs=ui.hfc='';ui.hn=30;ui.hrod=null;            // Histórico: busca, período, filtros, quantidade e rodada
  ui.ss=ui.sp=null;                                                     // Estatísticas: rodada e período
  ui.dd=null;ui.nv=ui.qi=ui.rx=null;ui.rowPick=null;                                   // menus abertos, anotações, questões e listas expandidas
@@ -1382,7 +1383,7 @@ const INFO={
  rvcal:()=>{const td=today(),st=rgInfo().list.some(o=>o.g.dates.includes(td));return {t:'Calendário de revisões',h:`<p>Os dias de estudo de cada grupo aparecem ligados numa faixa. Embaixo do número fica a marca da revisão do grupo: ● para revisar, ○ prevista e ✓ revisado.</p><p>Toque num dia para ver o grupo inteiro: período, disciplinas e tópicos.</p><p>A data prevista supõe que você estude todos os dias a partir de ${st?'amanhã':'hoje'}; se pular algum dia, ela se desloca.</p>`}},
  rodadas:()=>({t:'Rodadas',h:'<p>Uma rodada é uma volta completa pelo plano: ao iniciar uma nova, os ciclos recomeçam do 1 e as anteriores ficam guardadas para consulta.</p>'}),
  tema:()=>({t:'Aparência',h:'<p>Escolha o tema do app. No modo automático, ele acompanha o tema do seu dispositivo.</p>'}),
- trv:()=>({t:'Revisão por tópico',h:`<p>Cada dia em que você estuda um tópico ganha a própria agenda de revisões, só com as aulas daquele dia e separada da revisão por grupos. Com os intervalos atuais (${trvIv().join(', ')} dias), cada revisão vem esse número de dias depois da anterior; a primeira conta a partir do estudo.</p><p>Se atrasar, o estudo continua em "Para revisar" e a próxima conta a partir do dia em que você revisou. Depois da última, ele fica em "Fixados".</p><p>Estudos anteriores a ${fd((S.trv&&S.trv.start)||today())} começam a contar a partir dessa data. Estudar o tópico em outro dia abre outra agenda, com as aulas desse dia; revisá-lo na revisão por grupos não muda esta agenda.</p>`}),
+ trv:()=>({t:'Revisão por tópico',h:`<p>Cada dia em que você estuda um tópico ganha a própria agenda de revisões, só com as aulas daquele dia e separada da revisão por grupos. Com os intervalos atuais (${trvIv().join(', ')} dias), cada revisão vem esse número de dias depois da anterior; a primeira conta a partir do estudo.</p><p>Se atrasar, o estudo continua em "Para revisar" e a próxima conta a partir do dia em que você revisou. Depois da última, ele fica em "Fixados".</p><p>Entram os estudos a partir de ${fd((S.trv&&S.trv.start)||today())}, quando esta revisão foi ligada. Estudar o tópico em outro dia abre outra agenda, com as aulas desse dia; revisá-lo na revisão por grupos não muda esta agenda.</p><p>Ao desligar, as agendas em andamento são encerradas e vão para "Fixados", de onde dá para retomar uma a uma. Os estudos feitos enquanto ela estiver desligada não entram; ao religar, entram os daquele dia em diante.</p>`}),
 edrev:()=>({t:'Editar revisão',h:'<p>Ajuste a meta, duplique disciplinas para ter mais sessões, remova as que sobrarem e arraste para mudar a ordem. Cada disciplina fica com pelo menos uma sessão, e sessões com tempo registrado não saem. Enquanto uma disciplina tiver itens por revisar, ela ganha sozinha uma sessão nova no fim; sem itens, as sessões vazias dela saem. Vale só para a revisão.</p>'})};
 const infoHtml=()=>{const f=INFO[ui.info];if(!f){ui.info=null;return ''}const o=f();return `<div class="ov top" data-act="infox"></div><div class="dlg top infodlg" role="dialog" aria-modal="true" aria-label="${o.t}"><div class="chead"><h2>${o.t}</h2><button class="x" data-act="infox" title="Fechar" aria-label="Fechar">${CLOSEI}</button></div><div class="infotx">${o.h}</div></div>`};
 /* Ajuste da regra dos grupos: mesmos nomes dos chips (Grupo, Revisar), botões − e + e um resumo que acompanha os números */
@@ -1400,8 +1401,9 @@ const rgPopHtml=()=>{const o=rgInfo().list.find(x=>x.g.id===ui.rgview);if(!o){ui
    Cada dia de estudo de um tópico (disciplina › tópico › data) tem a própria agenda, só com as aulas daquele dia:
    revisões depois de 21, 15, 30, 30 e 60 dias (ajustável), cada intervalo contado a partir da revisão anterior feita de fato.
    Depois da última, o estudo fica "Fixado". Chave: base|tópico|data.
-   Estudos anteriores a esta função (antes de S.trv.start) ficam juntos numa agenda só por tópico, com a data S.trv.start,
-   e começam a contar dela; assim o histórico antigo não vira uma pilha de revisões vencendo no mesmo dia.
+   Só entram os estudos a partir do dia em que a função foi ligada pela primeira vez (S.trv.start).
+   Desligar encerra as agendas em andamento (vão para Fixados, com Retomar); os estudos feitos enquanto ficou desligada
+   não entram (S.trv.gaps: [de, até) — até fica vazio enquanto desligada).
    Revisar na revisão por grupos não mexe nesta agenda. */
 const TRV_DEF=[21,15,30,30,60];
 const RVICO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.5 21H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"/><path d="M16 3v4M8 3v4M4 11h12"/><path d="M20 14l2 2h-3M20 18l2-2"/><path d="M19 16a3 3 0 1 0 2 5.236"/></svg>'; /* mesmo ícone da aba Revisão: marca as revisões de grupo nas listas */
@@ -1410,27 +1412,29 @@ function trvInit(){if(!S.trv||typeof S.trv!=='object')S.trv={};if(!S.trv.t)S.trv
 /* Antes, a agenda era do tópico inteiro (chave base|tópico) e contava do primeiro dia de estudo: o que já foi marcado passa para esse dia */
 function trvMig(){if(!Array.isArray(S.sessions))return;const old=Object.keys(S.trv.t).filter(k=>k.split('|').length===2);if(!old.length)return;const first={};
  S.sessions.forEach(x=>{if(x.review||x.rid||x.trv||!x.topic||!x.date)return;const k=trvBase(x.subj)+'|'+x.topic;if(!first[k]||x.date<first[k])first[k]=x.date});
- const st=S.trv.start;old.forEach(k=>{if(!first[k])return;const nk=k+'|'+(first[k]<st?st:first[k]);if(!S.trv.t[nk])S.trv.t[nk]=S.trv.t[k];delete S.trv.t[k];S.sessions.forEach(x=>{if(x.trv===k)x.trv=nk})})}
+ old.forEach(k=>{if(!first[k])return;const nk=k+'|'+first[k];if(!S.trv.t[nk])S.trv.t[nk]=S.trv.t[k];delete S.trv.t[k];S.sessions.forEach(x=>{if(x.trv===k)x.trv=nk})})}
 const trvBase=id=>{const s=subjAny(id);return s?(s.of||s.id):id};
 const ordN=n=>n+'ª';
 /* Todos os tópicos já estudados, com a situação da agenda de cada um */
+/* Estudo feito enquanto a revisão por tópico estava desligada */
+const trvGap=d=>(S.trv.gaps||[]).some(([a,b])=>d>=a&&(!b||d<b));
 function trvList(){trvInit();const st=S.trv.start,first={},iv=trvIv(),td=today(),out=[];
- S.sessions.forEach(x=>{if(x.review||x.rid||x.trv||x.tdel||!x.topic||!x.date)return;const b=trvBase(x.subj),dk=x.date<st?st:x.date,k=b+'|'+x.topic+'|'+dk;if(!first[k])first[k]={d:dk,b,t:x.topic,old:false,mx:x.date};const f=first[k];if(x.date<st)f.old=true;if(x.date>f.mx)f.mx=x.date});
+ S.sessions.forEach(x=>{if(x.review||x.rid||x.trv||x.tdel||!x.topic||!x.date||x.date<st)return;const b=trvBase(x.subj),k=b+'|'+x.topic+'|'+x.date;if(first[k]||(trvGap(x.date)&&!S.trv.t[k]))return;first[k]={d:x.date,b,t:x.topic}});
  Object.entries(first).forEach(([k,f])=>{const s=subjAny(f.b),tp=s&&topicOf(s,f.t);if(!tp)return;
   /* end: revisões encerradas pelo usuário (vai para Fixados); rb: a agenda recomeça desta data (ao retomar o tópico ou religar o sistema) */
-  const r=S.trv.t[k]||{},h=(r.h||[]).slice().sort(),n=h.length,d0=f.d<st?st:f.d,fix=n>=iv.length||!!r.end;let base=n?h[n-1]:d0;if(r.rb&&r.rb>base)base=r.rb;const due=fix?null:addD(base,iv[n]);
-  out.push({k,s,tp,sd:f.d,pre:f.old?f.mx:null,d0,h,n,fix,end:r.end||null,due,late:due&&due<td?dDiff(td,due):0})});
+  const r=S.trv.t[k]||{},h=(r.h||[]).slice().sort(),n=h.length,d0=f.d,fix=n>=iv.length||!!r.end;let base=n?h[n-1]:d0;if(r.rb&&r.rb>base)base=r.rb;const due=fix?null:addD(base,iv[n]);
+  out.push({k,s,tp,sd:f.d,d0,h,n,fix,end:r.end||null,due,late:due&&due<td?dDiff(td,due):0})});
  return out}
 const trvDue=L=>tvOn()?(L||trvList()).filter(o=>!o.fix&&o.due<=today()):[];
 /* Cada sistema pode ser desligado nos Ajustes de revisão; desligado, some da aba, do calendário e do aviso do Ciclo, sem apagar nada */
 const rgOn=()=>!S.rvgOff,tvOn=()=>!(S.trv&&S.trv.off);
 /* Itens (aulas, links, questões) estudados no tópico naquele dia, sem repetição */
-function trvItems(o){const out=[],b=o.s.of||o.s.id;S.sessions.forEach(x=>{if(x.review||x.rid||x.trv||x.topic!==o.tp.id||(x.date<S.trv.start?S.trv.start:x.date)!==o.sd||trvBase(x.subj)!==b)return;(x.items||[]).forEach(i=>{const it=itKey(i);if(it&&!out.some(z=>sameIt(z,it)))out.push(it)})});return out}
+function trvItems(o){const out=[],b=o.s.of||o.s.id;S.sessions.forEach(x=>{if(x.review||x.rid||x.trv||x.topic!==o.tp.id||x.date!==o.sd||trvBase(x.subj)!==b)return;(x.items||[]).forEach(i=>{const it=itKey(i);if(it&&!out.some(z=>sameIt(z,it)))out.push(it)})});return out}
 function trvMark(k,d,m){trvInit();const r=S.trv.t[k]=S.trv.t[k]||{h:[]};r.h=(r.h||[]).concat(d).sort();
  if(m>0){const [b,t]=k.split('|');S.sessions.push({id:uid(),ses:uid(),subj:b,topic:t,min:m,cycle:S.cycle,set:S.set||1,review:true,trv:k,trvd:d,kind:'aula',items:[],date:d})}}
 function trvUnmark(k,d){const r=S.trv&&S.trv.t&&S.trv.t[k];if(!r||!r.h)return;const i=r.h.indexOf(d);if(i>=0)r.h.splice(i,1)}
-/* Dia de estudo: só a data; o grupo dos estudos anteriores à ativação mostra "até" o último deles */
-const trvSd=o=>o.pre?'até '+sdm(o.pre):sdm(o.sd);
+/* Dia de estudo: só a data */
+const trvSd=o=>sdm(o.sd);
 const trvWhen=o=>o.late?`atrasada há ${o.late} dia${pl_(o.late)}`:o.due===today()?'vence hoje':'em '+fd(o.due);
 function trvSec(inTab){const L=trvList(),td=today(),iv=trvIv(),due=L.filter(o=>!o.fix&&o.due<=td).sort((a,b)=>a.due<b.due?-1:a.due>b.due?1:0),nx=L.filter(o=>!o.fix&&o.due>td).sort((a,b)=>a.due<b.due?-1:a.due>b.due?1:0),fx=L.filter(o=>o.fix);
  const by=new Map();due.forEach(o=>{const b=o.s.of||o.s.id;if(!by.has(b))by.set(b,[]);by.get(b).push(o)});
@@ -1492,9 +1496,11 @@ function rvToday(I,gn){const td=today(),lim=addD(td,7),L=tvOn()?trvList():[],byD
  const nextAny=()=>{const c=[...L.filter(o=>!o.fix&&o.due>td).map(o=>({d:o.due,t:o.tp.name})),...I.list.filter(o=>o.st==='futuro'&&o.mk&&o.mk.d>td).map(o=>({d:o.mk.d,t:rgLabel(o)}))].sort((a,b)=>a.d<b.d?-1:1)[0];return c?` Próxima: ${esc(c.t)}, ${dl(c.d)}.`:''};
  return `<div class="card rvtoday"><h2>Para hoje${n?` <span class="mut">(${n})</span>`:''}</h2>${n?gRow+due.map(o=>trvRow(o,true)).join(''):`<div class="mut trve">Tudo em dia.${nextAny()}</div>`}</div>`+
   (soon.length?`<div class="card tdsoon"><h2>Em breve <span class="mut">· 7 dias</span></h2><div class="trvl">${soon.map(x=>`<div class="trvli"><span class="mut tdd">${dl(x.d)}</span>${x.h}</div>`).join('')}</div></div>`:'')}
+/* Desligar a revisão por tópico: encerra as agendas em andamento e abre um período em que os estudos não entram */
+function trvOff(){trvInit();const td=today();trvList().forEach(o=>{if(!o.fix){const r=S.trv.t[o.k]=S.trv.t[o.k]||{h:[]};r.end=td}});S.trv.off=true;(S.trv.gaps=S.trv.gaps||[]).push([td,null])}
 /* Ajustes de revisão: as regras dos dois sistemas num lugar só */
 const rvAdjHtml=()=>`<div class="ov top" data-act="rvadjx"></div><div class="dlg top rvcfgdlg" role="dialog" aria-modal="true" aria-label="Ajustes de revisão"><div class="chead"><h2>Ajustes de revisão</h2><button class="x" data-act="rvadjx" title="Fechar" aria-label="Fechar">${CLOSEI}</button></div>${[['g','Revisão por grupos',`Grupos de ${rvInt()} dia${pl_(rvInt())} de estudo; revisar ${rvWait()} dia${pl_(rvWait())} depois`,'rvcfg',rgOn(),S.rv?'Conclua ou cancele a revisão em andamento para desligar':''],
-  ['t','Revisão por tópico',`Intervalos: <span class="nw">${trvIv().join(' · ')} dias</span>`,'trvcfg',tvOn(),'']].map(([k,t,sub,act,on,lock])=>`<div class="rvrow rvsys"><div class="rvlb"><b>${t}</b><span class="mut">${on?sub:'Desligada'}</span>${on?`<button type="button" class="lnk lsm" data-act="${act}">Ajustar</button>`:''}</div><button type="button" class="swt" role="switch" aria-checked="${on}" data-act="rvsys" data-id="${k}" aria-label="${t}"${lock?` disabled title="${lock}"`:''}><span class="swk" aria-hidden="true"></span></button></div>`).join('')}</div>`;
+  ['t','Revisão por tópico',`Intervalos: <span class="nw">${trvIv().join(' · ')} dias</span>`,'trvcfg',tvOn(),'']].map(([k,t,sub,act,on,lock])=>`<div class="rvrow rvsys"><div class="rvlb"><b>${t}</b><span class="mut">${on?sub:'Desligada'}</span>${on?`<button type="button" class="lnk lsm" data-act="${act}">Ajustar</button>`:''}</div><button type="button" class="swt" role="switch" aria-checked="${on}" data-act="rvsys" data-id="${k}" aria-label="${t}"${lock?` disabled title="${lock}"`:''}><span class="swk" aria-hidden="true"></span></button></div>${k==='t'&&ui.tvoffq?`<div class="tvoffq" role="alert"><p>Desligar encerra ${ui.tvoffq===1?'a agenda em andamento':`as ${ui.tvoffq} agendas em andamento`}. ${ui.tvoffq===1?'Ela vai':'Elas vão'} para Fixados e ${ui.tvoffq===1?'pode ser retomada':'podem ser retomadas uma a uma'}. Ao religar, entram os estudos daquele dia em diante.</p><div class="fl rvcfa"><button type="button" class="btn g" data-act="tvoffx">Cancelar</button><button type="button" class="btn" data-act="tvoffok">Desligar</button></div></div>`:''}`).join('')}</div>`;
 /* Calendário no celular: abre numa janela pelo botão ao lado das visões */
 const rvCalHtml=()=>`<div class="ov" data-act="rvcalx"></div><div class="dlg rvcaldlg" role="dialog" aria-modal="true" aria-label="Calendário de revisões"><div class="chead"><h2>Calendário de revisões</h2><button class="x" data-act="rvcalx" title="Fechar" aria-label="Fechar">${CLOSEI}</button></div>${rvCal(rgOn()?rgInfo():{list:[],total:0})}</div>`;
 const MINUS='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>';
@@ -1685,7 +1691,7 @@ const GEAR='<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="
 /* Ícone Fechar/Remover (Material Symbols Rounded "close"), no mesmo traço dos demais ícones */
 const CLOSEI='<svg class="ci" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>';
 const TRASH='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>';
-const UNDO_MSG={rreopen:'Meta reiniciada',rundo:'Nova rodada desfeita',delreg:'Registro excluído',reopen:'Ciclo reaberto',rvcancel:'Revisão cancelada',pldel:'Plano excluído',plset:'Nova rodada iniciada',sdel:'Disciplina excluída',del:'Bloco removido',trvok:'Revisão do tópico registrada',trvend:'Revisões do tópico encerradas',trvres:'Revisões do tópico retomadas',rvdel:'Sessão removida da revisão',hide:'Disciplina removida do ciclo',dt:'Tópico excluído',dl:'Aula/link excluída',delgrp:'Tópico removido',delrow:'Aula/link removida',pdsave:'Disciplina editada',next:'Novo ciclo iniciado',rzero:'Cronômetro reiniciado'};
+const UNDO_MSG={rreopen:'Meta reiniciada',rundo:'Nova rodada desfeita',delreg:'Registro excluído',reopen:'Ciclo reaberto',rvcancel:'Revisão cancelada',pldel:'Plano excluído',plset:'Nova rodada iniciada',sdel:'Disciplina excluída',del:'Bloco removido',trvok:'Revisão do tópico registrada',trvend:'Revisões do tópico encerradas',tvoff:'Revisão por tópico desligada',trvres:'Revisões do tópico retomadas',rvdel:'Sessão removida da revisão',hide:'Disciplina removida do ciclo',dt:'Tópico excluído',dl:'Aula/link excluída',delgrp:'Tópico removido',delrow:'Aula/link removida',pdsave:'Disciplina editada',next:'Novo ciclo iniciado',rzero:'Cronômetro reiniciado'};
 function hideUndo(){clearTimeout(ui.undoT);ui.undo=null;const t=document.getElementById('undo');if(t)t.remove()}
 const UST=[],RST=[];
 function pushU(msg,snap){UST.push({snap:snap||JSON.stringify(S),msg});if(UST.length>10)UST.shift();RST.length=0}
@@ -2063,12 +2069,16 @@ if(a==='rgpick'){if(e.target.closest('button,a,label'))return;rcPick(ui.rcg===p?
  if(a==='trvokx')ui.trvk=null;
  if(a==='trvend'){if(!ask('trvend:'+p,t))return;trvInit();const r=S.trv.t[p]=S.trv.t[p]||{h:[]};r.end=today();ui.trvk=null}
  if(a==='trvres'){if(!ask('trvres:'+p,t))return;const r=S.trv.t[p];if(r){delete r.end;r.rb=today()}}
- if(a==='rvsys'){const on=t.getAttribute('aria-checked')!=='true';if(p==='g'){if(S.rv)return;if(on)delete S.rvgOff;else S.rvgOff=true}else{trvInit();if(on){delete S.trv.off;const td=today();trvList().forEach(o=>{if(!o.fix){const r=S.trv.t[o.k]=S.trv.t[o.k]||{h:[]};r.rb=td}})}else S.trv.off=true}
+ if(a==='rvsys'){const on=t.getAttribute('aria-checked')!=='true';if(p==='g'){if(S.rv)return;if(on)delete S.rvgOff;else S.rvgOff=true}else{trvInit();if(on){delete S.trv.off;const td=today(),g=(S.trv.gaps||[]).find(x=>!x[1]);if(g)g[1]=td;trvList().forEach(o=>{if(!o.fix){const r=S.trv.t[o.k]=S.trv.t[o.k]||{h:[]};r.rb=td}})}
+  /* Desligar com agendas em andamento pede confirmação dentro dos Ajustes */
+  else{const n=trvList().filter(o=>!o.fix).length;if(n){ui.tvoffq=n;render();return}trvOff()}}
   if((ui.rvt==='grupos'&&!rgOn())||(ui.rvt==='topicos'&&!tvOn()))ui.rvt=null}
  if(a==='trvtog'){const k=q!==undefined?p+':'+q:p;if(ui.open.has(k))ui.open.delete(k);else ui.open.add(k)}
  if(a==='rvt'){ui.rvt=p;ui.rcg=null;ui.rvcalm=null;scrollTo(0,0)}
  if(a==='rvadj')ui.rvadj=true;
- if(a==='rvadjx')ui.rvadj=null;
+ if(a==='rvadjx'){ui.rvadj=null;ui.tvoffq=null}
+ if(a==='tvoffx')ui.tvoffq=null;
+ if(a==='tvoffok'){if(!ask('tvoff',t))return;ui.tvoffq=null;trvOff()}
  if(a==='rvcalm')ui.rvcalm=true;
  if(a==='rvcalx')ui.rvcalm=null;
  if(a==='trvcfg'){ui.trvcfg=true;ui.trviv=trvIv().slice();ui.rvadj=null}
