@@ -1733,10 +1733,13 @@ async function syPush(){if(!SY.db||SY.status==='off'||SY.status==='init'||SY.sta
  catch(e){if(e&&e.code==='permission-denied'){SY.busy=false;syDenied();return}SY.status='err';setTimeout(()=>{if(SY.status==='err'){SY.status='on';syPush()}},e&&e.code==='quota_exceeded'?60000:8000)}
  SY.busy=false;if(SY.status==='on'&&(SY.again||SY.dirty)){SY.again=false;clearTimeout(SY.timer);SY.timer=setTimeout(syPush,1500)}}
 async function syFetch(m){const parts=[];for(let i=0;i<m.n;i++){const s=await syCol().doc('c'+i).get();if(!s.exists)return null;const d=s.data();if(d.ts!==m.ts)return null;parts.push(d.d)}return parts.join('')}
+/* Tempo pausado ao adotar o estado de outra aba ou da conta: uma cópia do app aberta antes da atualização apaga as pausas
+   (versão antiga). Mantém a pausa local da disciplina que lá continua sem registro e fora do modo foco. */
+function pzKeep(prev,nx){const pp=prev&&prev.paused;if(!pp||!nx)return;Object.keys(pp).forEach(k=>{if(!(+pp[k].ms>0)||(nx.paused&&nx.paused[k]))return;const sb=(nx.subjects||[]).find(x=>x.id===k);if(!sb||((nx.progress||{})[k]||0)>=sb.goal||(nx.sx&&nx.sel&&nx.sel.subj===k))return;nx.paused=nx.paused||{};nx.paused[k]=pp[k]})}
 /* Valida e normaliza a versão da conta antes de trocar S; guarda a versão local em KEY+'-bak'. */
 function syApply(json,ts){const prev=S;let o;try{o=JSON.parse(json)}catch(x){return false}
  if(!o||!Array.isArray(o.subjects)||!o.subjects.every(x=>x&&typeof x==='object'&&x.id)||(o.sessions!==undefined&&!Array.isArray(o.sessions)))return false;
- try{S=Object.assign(seed(),o);norm()}catch(x){S=prev;return false}
+ try{S=Object.assign(seed(),o);norm();pzKeep(prev,S)}catch(x){S=prev;return false}
  try{localStorage.setItem(KEY+'-bak',JSON.stringify(prev));const j=JSON.stringify(S);localStorage.setItem(KEY,j);LJ=j}catch(x){}
  UST.length=0;RST.length=0;SY.lastTs=ts;SY.lastJson=json;SY.dirty=false;syMeta();if(!['ciclo','rev','reg','st','bk'].includes(tab))tab='ciclo';render();return true}
 const localHasData=()=>S.sessions.length>0||(S.editais||[]).length>1||S.subjects.some(s=>s.topics&&s.topics.length);
@@ -1814,7 +1817,7 @@ function tabAdopt(j){if(j==null||j===LJ)return;let o;try{o=JSON.parse(j)}catch(x
  const fk=el=>{if(el.id)return '#'+CSS.escape(el.id);if(!el.name)return null;const f=el.closest('form[data-f]');return (f?'form[data-f="'+CSS.escape(f.dataset.f)+'"] ':'')+'[name="'+CSS.escape(el.name)+'"]'};
  const vals=[];document.querySelectorAll('#app input,#app textarea,#app select,#modal input,#modal textarea,#modal select').forEach(el=>{const k=fk(el);if(k)vals.push([k,el.type==='checkbox'||el.type==='radio'?{c:el.checked,v:el.value}:{v:el.value}])});
  const ae=document.activeElement,ak=ae&&ae!==document.body&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)?fk(ae):null;let car=null;try{car=ae&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null}catch(x){}
- const prev=S;try{S=Object.assign(seed(),o);norm()}catch(x){S=prev;return}
+ const prev=S;try{S=Object.assign(seed(),o);norm();pzKeep(prev,S)}catch(x){S=prev;return}
  LJ=j;UST.length=0;RST.length=0;hideUndo();render();
  vals.forEach(([k,o])=>{let el=null;try{el=document.querySelector(k)}catch(x){}if(!el)return;if('c' in o){if(el.value===o.v)el.checked=o.c}else if(el.value!==o.v&&el.type!=='file')el.value=o.v});
  if(ak){let el=null;try{el=document.querySelector(ak)}catch(x){}if(el&&document.activeElement!==el){el.focus({preventScroll:true});if(car&&el.setSelectionRange){try{el.setSelectionRange(car[0],car[1])}catch(x){}}}}}
