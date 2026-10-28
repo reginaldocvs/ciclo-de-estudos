@@ -965,7 +965,8 @@ const fmt=m=>{m=Math.round(m);return m>=60?Math.floor(m/60)+'h'+(m%60?String(m%6
 const uniq=a=>[...new Set(a)];
 const load=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
 const seed=()=>({subjects:[],cycle:1,type:'regular',progress:{},sessions:[],checked:{},reviewEvery:5,sinceReview:0,regDone:[],reviewSrc:[],completed:0,sel:{subj:null,topic:''},timer:{running:false,start:0,acc:0}});
-let S=load(KEY),tab='ciclo';const ui={open:new Set()};
+/* Ao atualizar a página, continua na aba em que estava (guardada por janela; janela nova abre no Ciclo) */
+const TABS=['ciclo','rev','reg','st','bk'];let S=load(KEY),tab=(()=>{try{const t=sessionStorage.getItem('ciclo-tab-atual');return TABS.includes(t)?t:'ciclo'}catch(x){return 'ciclo'}})();const ui={open:new Set()};
 /* Trocar de aba deixa a aba de destino como nova: some o que foi mexido só para ver (seleções, filtros, meses, blocos abertos,
    anotações e listas expandidas). Preferências salvas no plano (modo do Histórico, cartões recolhidos) continuam. */
 /* Disciplina da vez na ordem do ciclo, ao abrir o app e ao voltar para a aba Ciclo; nunca durante um estudo, edição ou revisão */
@@ -1694,7 +1695,7 @@ function render0(){
  $('modal').innerHTML=(ui.pl?plansHtml()+(ui.pdadd&&ui.pdd?pdAddHtml():''):'')+(ui.ed&&(tab==='ciclo'||(tab==='rev'&&S.rv))?editHtml()+(ui.addm?newMatCard():''):'')+(S.sx&&!S.edit?(fmv&&!ui.sxo?fmHtml():sessCard()):'')+(edPop()?sessCard():'')+(ui.rview?regViewHtml():'')+(ui.rgview&&tab==='rev'?rgPopHtml():'')+(ui.rvcfg&&tab==='rev'?rvcfgHtml():'')+(ui.rvadj&&tab==='rev'?rvAdjHtml():'')+(ui.rvcalm&&tab==='rev'&&!S.rv?rvCalHtml():'')+(ui.trvk&&tab==='rev'?trvOkHtml():'')+(ui.trvcfg&&tab==='rev'?trvCfgHtml():'')+(ui.info?infoHtml():'')+(welcomeOn()?welcomeHtml():'');if(tipEl)tipEl.style.display='none';fmSync(fmv);
  [$('app'),$('modal')].forEach(c=>{if(c&&c.querySelectorAll)c.querySelectorAll('button[aria-label]:not([title])').forEach(b=>{b.title=b.getAttribute('aria-label')})});
  [$('app'),$('modal')].forEach(c=>{if(c&&c.querySelectorAll)c.querySelectorAll('form,input:not([type=checkbox]):not([type=file]):not([type=hidden]),textarea').forEach(x=>x.setAttribute('autocomplete','off'))});
- scrLoad(scr);ui.rtab=tab;fitNames();
+ scrLoad(scr);ui.rtab=tab;try{sessionStorage.setItem('ciclo-tab-atual',tab)}catch(x){}fitNames();
  if(ui.anc){const A=ui.anc,b=document.querySelector(A.sel),c=b&&b.closest('.card'),box=c&&c.closest('.mscroll');ui.anc=null;if(box)box.scrollTop+=c.getBoundingClientRect().top-A.top}
  posDD();
  try{chrome()}catch(e){}
@@ -1744,7 +1745,7 @@ function syApply(json,ts){const prev=S;let o;try{o=JSON.parse(json)}catch(x){ret
  if(!o||!Array.isArray(o.subjects)||!o.subjects.every(x=>x&&typeof x==='object'&&x.id)||(o.sessions!==undefined&&!Array.isArray(o.sessions)))return false;
  try{S=Object.assign(seed(),o);norm();pzKeep(prev,S)}catch(x){S=prev;return false}
  if(!window.__ro)try{localStorage.setItem(KEY+'-bak',JSON.stringify(prev));const j=JSON.stringify(S);localStorage.setItem(KEY,j);LJ=j}catch(x){}
- UST.length=0;RST.length=0;SY.lastTs=ts;SY.lastJson=json;SY.dirty=false;syMeta();if(!['ciclo','rev','reg','st','bk'].includes(tab))tab='ciclo';render();return true}
+ UST.length=0;RST.length=0;SY.lastTs=ts;SY.lastJson=json;SY.dirty=false;syMeta();if(!TABS.includes(tab))tab='ciclo';render();return true}
 const localHasData=()=>S.sessions.length>0||(S.editais||[]).length>1||S.subjects.some(s=>s.topics&&s.topics.length);
 /* Dados diferentes no navegador e na conta: vence a versão mais recente, sem perguntar. */
 async function syOnMeta(snap){
@@ -2263,7 +2264,7 @@ document.addEventListener('keydown',e=>{if(e.code!=='Space'&&e.key!==' ')return;
   if(!b){if(S.edit)return;const id=selId(),s=S.subjects.find(x=>x.id===id);if(!s||(gDone(s)&&!(S.timer.running&&S.sel.subj===id)))return;
    b=document.createElement('button');b.type='button';b.hidden=true;b.dataset.act='rplay';b.dataset.id=id;document.getElementById('app').appendChild(b)}}
  e.preventDefault();e.stopPropagation();FOC.kb=false;b.click();if(b.hidden&&b.isConnected)b.remove()},true);})();
-/* Ao abrir ou atualizar, volta ao padrão: rolagem no topo, tela, abas e cartões recolhíveis, e também o trabalho em andamento
+/* Ao abrir ou atualizar, volta ao padrão: rolagem no topo, sub-abas e cartões recolhíveis (a aba principal é mantida), e também o trabalho em andamento
    (modo foco, registro sendo preenchido), por escolha do usuário. Tema e barra lateral são mantidos.
    O tempo do cronômetro não se perde: vira tempo pausado da disciplina (limitado ao que faltava para a meta), junto dos que já estavam pausados. */
 try{history.scrollRestoration='manual'}catch(e){}
