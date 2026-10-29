@@ -1560,6 +1560,10 @@ function blkCur(){const L=blkL();if(!L.length)return null;const A=inCycle();let 
 /* Bloco já encerrado (concluído ou pulado) que a pessoa abriu tocando no marcador; sem ele, o da vez */
 const blkView=()=>{if(!ui.bkv)return null;const b=blkL().find(x=>x.id===ui.bkv&&blkIsDone(x));if(!b)ui.bkv=null;return b||null},bkSel=()=>blkView()||blkCur();
 /* Todas as disciplinas do bloco revisadas: o encerrado conta como concluído; senão, como pulado (e vira concluído ao revisar as que faltavam) */
+/* Marcação velha de bloco: o ciclo foi zerado depois de concluir o bloco (as sessões dele sumiram e o ciclo ainda não chegou até ele).
+   Some a marcação de concluído e de revisadas, para o bloco voltar a valer quando chegar a vez; os registros de tempo ficam no histórico. */
+function blkClean(){if(S.type==='review'||!S.blkDone)return;const A=inCycle(),have=new Set(CS().map(x=>x.ses||x.id));
+ blkL().forEach(b=>{const k=blkKey(b),dn=S.blkDone[k];if(!dn)return;const reached=A.slice(0,b.pos).every(gDone);if(reached||(dn.ses||[]).some(id=>have.has(id)))return;delete S.blkDone[k];if(S.blkRev)delete S.blkRev[k];if(ui.bkv===b.id)ui.bkv=null})}
 const bkAll=b=>{const ok=new Set((S.blkRev||{})[blkKey(b)]||[]);return blkBy(b).every(v=>ok.has(v.s.id))};
 /* Sessões que o bloco cobre (chaves de sessão), sem as que outro bloco concluído já revisou */
 const blkCovered=()=>new Set(Object.values(S.blkDone||{}).flatMap(o=>o&&o.ses||[]));
@@ -1840,7 +1844,7 @@ function render(){const pre=focSig(),pix=focIdx(),had=!!document.querySelector('
 const scrKey=(el,root,t)=>{const c=el.classList[0]||el.tagName,d=el.closest('.dlg'),L=[...root.querySelectorAll(el.classList[0]?'.'+CSS.escape(c):c)];return root.id+(root.id==='app'?':'+t:'')+'|'+(d?d.getAttribute('aria-label'):'')+'|'+c+'|'+L.indexOf(el)};
 function scrSave(){const m={};[$('app'),$('modal')].forEach(r=>{if(r)r.querySelectorAll('*').forEach(el=>{if(el.scrollTop>0)m[scrKey(el,r,ui.rtab)]=el.scrollTop})});return m}
 function scrLoad(m){const ks=Object.keys(m);if(!ks.length)return;[$('app'),$('modal')].forEach(r=>{if(r)r.querySelectorAll('*').forEach(el=>{if(el.scrollHeight>el.clientHeight){const v=m[scrKey(el,r,tab)];if(v)el.scrollTop=v}})})}
-function render0(){
+function render0(){blkClean();
  const scr=scrSave();
  applyTheme();try{syncRg()}catch(e){}
  if(!S.edit&&ui.edPrev){if(S.subjects.some(x=>x.id===ui.edPrev.subj))S.sel.subj=ui.edPrev.subj;ui.edPrev=null}
