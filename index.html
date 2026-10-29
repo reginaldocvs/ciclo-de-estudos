@@ -1440,6 +1440,10 @@ const CHVR='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="
 /* Painéis inferiores do celular: arrastar pela alça para baixo fecha o painel (como o Esc); soltando antes, ele volta */
 const SHEETS='.dlg.edlg,.dlg.medit,.dlg.plans,.dlg.reg:not(.fmd),.dlg.addm,.dlg.rgpop,.dlg.pdadd,.dlg.rvcaldlg,.dlg.rvsheet,.dlg.rvcfgdlg,.dlg.infodlg';
 /* Título fixo: cada janela guarda o próprio recuo (muda entre celular e computador) e ganha uma linha sob o título quando rola */
+/* Campos de formulário que só existem na tela (acertos, data): o que a pessoa digitou sobrevive quando a janela é redesenhada
+   por outra ação (ex.: escolher o tempo na lista). Não volta se a própria ação trocou o valor do campo. */
+function formKeep(){const o={};document.querySelectorAll('#modal form[data-f] [name]').forEach(e=>{if(e.type==='checkbox'||e.type==='radio'||e.value===e.defaultValue)return;o[e.form.dataset.f+'|'+e.name]={v:e.value,d:e.defaultValue}});return o}
+function formBack(o){document.querySelectorAll('#modal form[data-f] [name]').forEach(e=>{const k=o[e.form&&e.form.dataset.f+'|'+e.name];if(k&&e.defaultValue===k.d&&e.value===e.defaultValue)e.value=k.v})}
 function dlgPad(){document.querySelectorAll('#modal .dlg').forEach(d=>{const c=getComputedStyle(d);d.style.setProperty('--dpt',c.paddingTop);d.style.setProperty('--dpx',c.paddingLeft);
  if(!d.dataset.sb){d.dataset.sb='1';d.addEventListener('scroll',()=>d.classList.toggle('scrolled',d.scrollTop>2),{passive:true})}d.classList.toggle('scrolled',d.scrollTop>2)})}
 addEventListener('resize',()=>dlgPad());
@@ -1874,7 +1878,7 @@ const focTo=sig=>{if(!sig)return false;let el=null;try{el=[...document.querySele
    em telas maiores a linha clicada fica no mesmo lugar, mesmo que o conteúdo acima mude de altura */
 function rowAnchor(){const A=ui.rowAnc;ui.rowAnc=null;if(!A)return;if(matchMedia('(max-width:1119.98px)').matches||document.querySelector('.c2 .rvcard')){scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});return}
  const g=document.querySelector('.srow .grow[data-id="'+A.id+'"]'),rw=g&&g.closest('.srow');if(rw)scrollBy(0,rw.getBoundingClientRect().top-A.top)}
-function render(){const pre=focSig(),pix=focIdx(),had=!!document.querySelector('#modal .dlg'),wasOpen=dlgKeys(),snaps=dlgSnap();render0();rowAnchor();rvSumFlow();{const nk=dlgKeys(),sw=[...nk].some(k=>!wasOpen.has(k))&&[...wasOpen].some(k=>!nk.has(k));if(!sw){dlgEnter(wasOpen);dlgLeave(snaps)}}modalLock();sheetBind();dlgPad();try{const dlg=document.querySelector('#modal .dlg'),ae=document.activeElement,lost=!ae||ae===document.body;
+function render(){const pre=focSig(),pix=focIdx(),had=!!document.querySelector('#modal .dlg'),wasOpen=dlgKeys(),snaps=dlgSnap(),typed=formKeep();render0();formBack(typed);rowAnchor();rvSumFlow();{const nk=dlgKeys(),sw=[...nk].some(k=>!wasOpen.has(k))&&[...wasOpen].some(k=>!nk.has(k));if(!sw){dlgEnter(wasOpen);dlgLeave(snaps)}}modalLock();sheetBind();dlgPad();try{const dlg=document.querySelector('#modal .dlg'),ae=document.activeElement,lost=!ae||ae===document.body;
  if(dlg&&!had){FOC.op=pre;if(!dlg.contains(ae)){if(FOC.kb){const f=dlg.querySelector('input:not([type=hidden]):not([disabled]),textarea,select,button:not([disabled])');if(f){f.focus({preventScroll:true});return}}dlg.setAttribute('tabindex','-1');dlg.focus({preventScroll:true})}return}
  if(!dlg&&had){const o=FOC.op;FOC.op=null;if(lost&&FOC.kb&&focTo(o))return}
  if(lost&&FOC.kb&&!focTo(pre)&&pix&&pix.i>=0){const box=pix.inDlg?dlg:document;if(box){const L=[...box.querySelectorAll(FQ)].filter(x=>x.getClientRects().length);const el=L[Math.min(pix.i,L.length-1)];el&&el.focus({preventScroll:true})}}}catch(e){}}
@@ -2125,7 +2129,11 @@ function viewStats(){
 }
 const edPop=()=>!!S.edit&&S.sessions.some(x=>(x.ses||x.id)===S.edit.ses);
 /* Tópicos estudados com seus itens (aula, questões, anotação), sem repetir, para qualquer conjunto de registros */
-const studyTree=recs=>uniq(recs.filter(x=>x.topic).map(x=>x.topic)).map(tid=>{const s=subjAny(recs.find(x=>x.topic===tid).subj),t=s&&topicOf(s,tid);const its=[];recs.filter(x=>x.topic===tid).forEach(x=>(x.items||[]).map(itKey).filter(Boolean).forEach(l=>{if(!its.some(z=>sameIt(z,l)))its.push(l)}));const nm=t?t.name:(recs.find(x=>x.topic===tid)||{}).tn||'';return nm?`<div class="rvtp"><div class="rvtn">${esc(nm)}</div>${its.length?`<div class="rvits">${its.map(l=>`<div class="rvit">${itemLine(l,tid)}</div>`).join('')}</div>`:''}</div>`:''}).join('');
+/* Registro de revisão de bloco salvo sem as aulas (versões antigas): usa as aulas das sessões que o bloco revisou;
+   sem essa lista, as do mesmo tópico estudadas naquele ciclo */
+const bkItemsOf=r=>{const m=/^(\d+)\.(\d+):/.exec(r.bkr||'');if(!m||!r.topic)return [];const dn=(S.blkDone||{})[r.bkr],ks=dn&&dn.ses?new Set(dn.ses):null,base=subjAny(r.subj),bid=base&&(base.of||base.id),out=[];
+ CS().forEach(x=>{if(x.review||x.rid||x.topic!==r.topic)return;if(ks?!ks.has(x.ses||x.id):((x.set||1)!==+m[1]||x.cycle!==+m[2]))return;const xs=subjAny(x.subj);if(bid&&xs&&(xs.of||xs.id)!==bid)return;(x.items||[]).forEach(i=>{const k=itKey(i);if(k&&!out.some(o=>{const ko=itKey(o);return ko&&sameIt(ko,k)}))out.push({kind:'aula',name:i.name,link:i.link,...(i.ref!==undefined?{ref:i.ref}:{}),...(i.q?{q:i.q}:{}),...(i.qo?{qo:true}:{})})})});return out};
+const studyTree=recs0=>{const recs=recs0.map(r=>r.bkr&&!(r.items||[]).length?{...r,items:bkItemsOf(r)}:r);return uniq(recs.filter(x=>x.topic).map(x=>x.topic)).map(tid=>{const s=subjAny(recs.find(x=>x.topic===tid).subj),t=s&&topicOf(s,tid);const its=[];recs.filter(x=>x.topic===tid).forEach(x=>(x.items||[]).map(itKey).filter(Boolean).forEach(l=>{if(!its.some(z=>sameIt(z,l)))its.push(l)}));const nm=t?t.name:(recs.find(x=>x.topic===tid)||{}).tn||'';return nm?`<div class="rvtp"><div class="rvtn">${esc(nm)}</div>${its.length?`<div class="rvits">${its.map(l=>`<div class="rvit">${itemLine(l,tid)}</div>`).join('')}</div>`:''}</div>`:''}).join('')};
 /* Edição de um registro de revisão: acertos por tópico (guardados em S.edit.rvq até salvar) */
 function edAcBox(E){const recs=S.sessions.filter(x=>(x.ses||x.id)===E.ses&&x.topic),s=subjAny(E.subj);if(!s||!recs.length)return '';const Q=E.rvq||{};
  const rows=uniq(recs.map(x=>x.topic)).map(tid=>{const t=topicOf(s.of?S.subjects.find(y=>y.id===s.of)||s:s,tid),r=recs.find(x=>x.topic===tid),v=Q[tid]||{};const n=t?t.name:r.tn||'';return n?`<div class="actp"><div class="rvtn">${esc(n)}</div>${acRow(v.ac,v.tq,{a:`data-tid="${tid}"`,t:`data-tid="${tid}"`})}</div>`:''}).join('');
@@ -2492,7 +2500,7 @@ document.addEventListener('submit',e=>{
  if(k==='pdadd'&&ui.pdd){const D=ui.pdd,have=new Set(D.topics.map(x=>x.name.trim().toLowerCase()));D.nw=D.nw||[];parseTopics(f.get('t')).forEach(n=>{if(!have.has(n.toLowerCase())){have.add(n.toLowerCase());const id=uid();D.nw.push(id);D.topics.push({id,name:n})}});ui.pdadd=null;ui.pdmsg=null}
  if(k==='bkreg'){const b=bkSel(),o=b&&blkBy(b).find(v=>v.s.id===ui.bkreg);if(o){ask('bkreg:',null);const key=blkKey(b),mm=tmParse(String(f.get('m')||'').trim())||0;let d=String(f.get('d')||'')||today();if(d>today())d=today();
   const T=o.tops.filter(t=>t.id),Q=T.map(t=>({t,q:qv(f.get('qa-'+t.id),f.get('qt-'+t.id))}));S.blkRev=S.blkRev||{};const L=S.blkRev[key]=S.blkRev[key]||[];if(!L.includes(o.s.id))L.push(o.s.id);if(S.rvp)delete S.rvp[rvfK('bk',o.s.id,key)];
-  if(mm>0||Q.some(z=>z.q)){const ses=uid(),R=Q.length?Q:[{t:{id:null},q:null}];R.forEach(z=>S.sessions.push({id:uid(),ses,rid:bkRid(b),bkr:key,subj:o.s.id,topic:z.t.id,min:mm/R.length,cycle:S.cycle,set:S.set||1,review:true,kind:'aula',items:[],date:d,...(z.q||{})}))}}
+  if(mm>0||Q.some(z=>z.q)){const ses=uid(),R=Q.length?Q:[{t:{id:null},q:null}];R.forEach(z=>S.sessions.push({id:uid(),ses,rid:bkRid(b),bkr:key,subj:o.s.id,topic:z.t.id,min:mm/R.length,cycle:S.cycle,set:S.set||1,review:true,kind:'aula',items:(z.t.its||[]).map(l=>({kind:'aula',name:l.title||'',link:l.url||l.loc||'',...(l.q?{q:l.q}:{}),...(l.qo?{qo:true}:{})})),date:d,...(z.q||{})}))}}
   ui.bkreg=null;save();render();if(ui.undoNext){showUndo(ui.undoNext);ui.undoNext=null}return}
  if(k==='cycfg'){const n=Number(String(f.get('cn')||'').trim());
   if(!(Number.isInteger(n)&&n>=1&&n<=20))ui.rvcfgmsg='Informe um número inteiro de 1 a 20.';
