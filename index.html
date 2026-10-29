@@ -953,6 +953,7 @@ body{text-wrap:pretty}
    inclusive os numerados, os vazados (fora do ciclo) e o da dica ao passar o mouse */
 .dot,.dot.dotn,#tip .tsw{border-radius:25%}
 .rvrun{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap}.rvrunt{flex:1 1 200px;min-width:0}.rvrun h2{margin-bottom:2px} /* revisão em andamento, na visão Hoje */
+.rcatr{font-weight:400} /* "· N atrasadas" ao lado de Hoje, no painel do dia do calendário */
 </style>
 </head>
 <body>
@@ -1377,7 +1378,7 @@ const CYC='#0B7A8A';
 function cyDays(){const R=(S.reviews||[]).filter(r=>r.cy).concat(S.rv&&S.rv.cy?[{...S.rv,run:true}]:[]),D={};
  R.forEach(r=>{const ds=uniq(S.sessions.filter(x=>x.rid===r.id&&x.date).map(x=>x.date)).sort();ds.forEach(d=>D[d]={r,ds})});return D}
 function rvCal(I){
- rcMarks(I);const CY=cyDays(),csel=ui.rccy&&Object.values(CY).some(v=>v.r.id===ui.rccy)?ui.rccy:null;const TM={};if(tvOn())trvList().forEach(o=>{if(!o.fix)TM[o.due]=(TM[o.due]||0)+1}); /* revisões por tópico: quantos tópicos vencem em cada dia */
+ rcMarks(I);const CY=cyDays(),csel=ui.rccy&&Object.values(CY).some(v=>v.r.id===ui.rccy)?ui.rccy:null;const TM={};if(tvOn())trvList().forEach(o=>{if(!o.fix){const k=o.due<today()?today():o.due;TM[k]=(TM[k]||0)+1}}); /* revisões por tópico: quantos tópicos vencem em cada dia (as atrasadas contam em hoje) */
  const td=today(),mon=ui.rcm||td.slice(0,7),sel=ui.rcg&&I.list.some(o=>o.g.id===ui.rcg)?ui.rcg:null,G={},M={};
  I.list.forEach(o=>{o.g.dates.forEach(d=>G[d]=o);if(o.mk)(M[o.mk.d]=M[o.mk.d]||[]).push(o)});
  const nx=rgNext(I),av=I.list.filter(o=>o.st==='disponivel'||o.st==='andamento'),fu=I.list.find(o=>o.st==='futuro');
@@ -1408,8 +1409,8 @@ function rvCal(I){
   pn=`<div class="rcpn" style="--c:${rgCol(g)}"><i class="rcx e" aria-hidden="true"></i><div class="grow rcpt"><b>${rgLabel(so)}</b> · ${per}${rv?' · '+rv:''}</div><button class="btn s g rcvl" data-act="rcvl" data-id="${g.id}">Ver na lista</button><button class="x" data-act="rcg" data-id="${g.id}" title="Limpar seleção" aria-label="Limpar seleção">${CLOSEI}</button></div>`}
  if(csel){const v=Object.values(CY).find(v=>v.r.id===csel),d0=v.ds[0],d1=v.ds[v.ds.length-1];pn=`<div class="rcpn" style="--c:${CYC}"><i class="rcx e" aria-hidden="true"></i><div class="grow rcpt"><b>${esc(v.r.lbl)}</b> · ${v.r.run?'em revisão desde '+sdm(d0):d0===d1?'revisado em '+sdm(d0):'revisado de '+sdm(d0)+' a '+sdm(d1)}</div><button class="btn s g rcvl" data-act="rccyl">Ver na lista</button><button class="x" data-act="rccyx" title="Limpar seleção" aria-label="Limpar seleção">${CLOSEI}</button></div>`}
  /* Dia com tópicos escolhido: quais vencem nele, com atalho para a visão Tópicos */
- const tdl=ui.rctd?trvList().filter(x=>!x.fix&&x.due===ui.rctd):[];
- if(tdl.length)pn+=`<div class="rcpn rctl"><span class="rctp lg" aria-hidden="true">${tdl.length}</span><div class="grow rcpt"><b>${sdm(ui.rctd)}</b>${(()=>{const by=new Map();tdl.forEach(x=>{const b=x.s.of||x.s.id;if(!by.has(b))by.set(b,{s:x.s,n:0});by.get(b).n++});return [...by.values()].map(({s,n})=>`<span class="rctd"><span class="dot" style="background:${col(s)}" aria-hidden="true"></span><span class="snt" title="${esc(nm(s))}">${esc(nm(s))}</span>${n>1?` <span class="mut">· ${n}</span>`:''}</span>`).join('')})()}</div><button class="btn s g" data-act="rvt" data-id="topicos">Ver tópicos</button><button class="x" data-act="rctdx" title="Limpar" aria-label="Limpar dia escolhido">${CLOSEI}</button></div>`;
+ const tdl=ui.rctd?trvList().filter(x=>!x.fix&&(x.due===ui.rctd||(ui.rctd===td&&x.due<td))):[],tla=tdl.filter(x=>x.due<td).length;
+ if(tdl.length)pn+=`<div class="rcpn rctl"><span class="rctp lg" aria-hidden="true">${tdl.length}</span><div class="grow rcpt"><b>${ui.rctd===td?'Hoje':sdm(ui.rctd)}${tla?` <span class="mut rcatr">· ${tla===tdl.length?'atrasad'+(tla===1?'a':'as'):tla+' atrasad'+(tla===1?'a':'as')}</span>`:''}</b>${(()=>{const by=new Map();tdl.forEach(x=>{const b=x.s.of||x.s.id;if(!by.has(b))by.set(b,{s:x.s,n:0});by.get(b).n++});return [...by.values()].map(({s,n})=>`<span class="rctd"><span class="dot" style="background:${col(s)}" aria-hidden="true"></span><span class="snt" title="${esc(nm(s))}">${esc(nm(s))}</span>${n>1?` <span class="mut">· ${n}</span>`:''}</span>`).join('')})()}</div><button class="btn s g" data-act="rvt" data-id="topicos">Ver tópicos</button><button class="x" data-act="rctdx" title="Limpar" aria-label="Limpar dia escolhido">${CLOSEI}</button></div>`;
  if(!pn&&(I.list.length||Object.keys(TM).length||Object.keys(CY).length))pn='<div class="mut rchint">Toque num dia para ver '+(rgOn()?'o grupo ou ':Object.keys(CY).length?'a revisão ou ':'')+'os tópicos dele.</div>';
  return `<div class="card hasinfo rcal">${infoBtn('rvcal','Calendário de revisões')}<h2 class="pvt">Calendário de revisões</h2><div class="rccols"><div class="rcleft"><div class="rcn"><button class="x" data-act="rcm" data-id="-1" aria-label="Mês anterior">‹</button><b>${RCM[first.getMonth()]} ${first.getFullYear()}</b><button class="x" data-act="rcm" data-id="1" aria-label="Próximo mês">›</button></div>
  <div class="rcg rcg2">${['seg','ter','qua','qui','sex','sáb','dom'].map(w=>`<span class="rcw">${w}</span>`).join('')}${cells.map(cell).join('')}</div></div><div class="rcright">${sum?`<div class="rcsum">${sum}</div>`:''}
@@ -2100,7 +2101,7 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='hmore'){ui.hn=(ui.hn||30)+30;render();return}
  if(a==='rcm'){const d=pd((ui.rcm||today().slice(0,7))+'-01');d.setMonth(d.getMonth()+(+p));ui.rcm=ymd(d).slice(0,7);render();return}
  if(a==='rcg'){rcPick(ui.rcg===p?null:p,'',false,true);return}
- if(a==='rcday'){{const v=cyDays()[p];ui.rccy=v&&ui.rccy!==v.r.id?v.r.id:null}const I=rcMarks(rgInfo()),o=I.list.find(o=>o.g.dates.includes(p))||I.list.find(o=>o.mk&&o.mk.d===p);ui.rctd=trvList().some(x=>!x.fix&&x.due===p)?p:null;if(o&&ui.rcg===o.g.id)render();else rcPick(o?o.g.id:null,'auto',false,true);
+ if(a==='rcday'){{const v=cyDays()[p];ui.rccy=v&&ui.rccy!==v.r.id?v.r.id:null}const I=rcMarks(rgInfo()),o=I.list.find(o=>o.g.dates.includes(p))||I.list.find(o=>o.mk&&o.mk.d===p);ui.rctd=trvList().some(x=>!x.fix&&(x.due===p||(p===today()&&x.due<p)))?p:null;if(o&&ui.rcg===o.g.id)render();else rcPick(o?o.g.id:null,'auto',false,true);
   if(ui.rvcalm)requestAnimationFrame(()=>{const l=[...document.querySelectorAll('#modal .rcpn')].pop();if(l)l.scrollIntoView({block:'nearest',behavior:'smooth'})});return} /* uma linha por vez; as duas só juntas quando o dia tocado tem grupo e tópicos. No painel, rola até a linha que apareceu */ /* outro dia do mesmo grupo mantém a seleção; dia sem grupo limpa; dia com tópicos mostra quais vencem nele */
  if(a==='rctdx'){ui.rctd=null;render();return}
  if(a==='rcgo'){const b=document.querySelector('.rcsl[data-id="'+p+'"]');if(b&&b.dataset.m)ui.rcm=b.dataset.m;rcPick(p,'auto');return}
@@ -2173,7 +2174,7 @@ if(a==='rgpick'){if(e.target.closest('button,a,label'))return;rcPick(ui.rcg===p?
  if(a==='rvadjx'){ui.rvadj=null;ui.tvoffq=null}
  if(a==='tvoffx')ui.tvoffq=null;
  if(a==='tvoffok'){if(!ask('tvoff',t))return;ui.tvoffq=null;trvOff()}
- if(a==='rvcalm')ui.rvcalm=true;
+ if(a==='rvcalm'){ui.rvcalm=true;ui.rcg=ui.rccy=null;const td=today(),L=tvOn()?trvList().filter(x=>!x.fix):[],d=L.some(x=>x.due<=td)?td:L.map(x=>x.due).sort()[0];ui.rctd=d||null;ui.rcm=(d||td).slice(0,7)} /* abre no dia de revisão de tópicos mais próximo; atrasadas contam como hoje */
  if(a==='rvcalx')ui.rvcalm=null;
  if(a==='trvcfg'){ui.trvcfg=true;ui.trviv=trvIv().slice();ui.rvadj=null}
  if(a==='trvcfgx'){ui.trvcfg=null;ui.trviv=null}
