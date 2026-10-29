@@ -1280,7 +1280,7 @@ function rvfPark(){const f=S.rvf;if(!f)return 0;const ms=Math.round(rvfMs());if(
 function rvfT(){const f=S.rvf;if(!f)return null;
  if(f.kind==='tp'){const o=trvList().find(x=>x.k===f.id);if(!o)return null;const its=trvItems(o);return {s:o.s,k:'Revisão · '+ordN(o.n+1)+' de '+trvIv().length,tp:o.tp.name,body:its.length?`<div class="rvits">${its.map(l=>`<div class="rvit">${itemLine(l,o.tp.id)}</div>`).join('')}</div>`:''}}
  const b=blkCur(),v=b&&blkKey(b)===f.bk&&blkBy(b).find(x=>x.s.id===f.id);if(!v)return null;const tb=bkTops(v.s,v.tops);return {s:v.s,k:'Revisão de bloco',tp:'',body:tb?`<div class="rvlist">${tb}</div>`:''}}
-function rvfHtml(){const f=S.rvf,T=rvfT();if(!T){S.rvf=null;return ''}const c=col(T.s),run=f.run,lb=run?'Pausar':'Retomar';
+function rvfHtml(){const f=S.rvf,T=rvfT();if(!T){S.rvf=null;return ''}const c=col(T.s),run=f.run,lb=run?'Pausar':rvfMs()>0?'Retomar':'Iniciar';
  return `<div class="dlg reg fmd rvfd" role="dialog" aria-modal="true" aria-label="Revisão em andamento"><div class="fmtop"><button class="x" data-act="rvfoff" title="Sair e pausar (Esc)" aria-label="Sair; o tempo fica guardado em pausa">${CLOSEI}</button></div><div class="fmc">
  <div class="mut">${T.k}</div>
  <div class="fms"><span class="dot" style="background:${c}"></span><span class="snt" title="${esc(nm(T.s))}">${esc(nm(T.s))}</span></div>
@@ -2192,7 +2192,7 @@ if(a==='blkadd'){S.blk=S.blk||[];S.blk.push({id:uid(),pos:inCycle().length});set
  if(a==='rvfgo')rvfStart('tp',p);
  if(a==='rvfpz'&&S.rvf&&S.rvf.run){S.rvf.acc=rvfMs();S.rvf.run=false}
  if(a==='rvfrs'&&S.rvf&&!S.rvf.run){S.rvf.run=true;S.rvf.start=Date.now()}
- if(a==='rvfrz'&&S.rvf){ask('rzero',t);S.rvf.acc=0;S.rvf.start=Date.now()}
+ if(a==='rvfrz'&&S.rvf){ask('rzero',t);S.rvf.acc=0;S.rvf.run=false;S.rvf.start=0}  /* como no estudo: zera e fica parado */
  if(a==='rvfoff'&&S.rvf){rvfOff();return}
  /* Registrar no foco: pausa, guarda o tempo e abre a janela de registro dele já com o tempo */
  if(a==='rvfreg'&&S.rvf){const f=S.rvf;rvfPark();if(f.kind==='tp'){tab='rev';ui.trvk=f.id;ui.trvm=rvpT('tp',f.id)}else{tab='ciclo';ui.bkreg=f.id;ui.bkm=rvpT('bk',f.id,f.bk)}}
