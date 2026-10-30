@@ -1433,13 +1433,24 @@ function viewCiclo(){
 const rvRec=rid=>(S.reviews||[]).find(x=>x.id===rid)||(S.rv&&S.rv.id===rid?S.rv:null);
 const kindOf=f=>f.trv?'t':String(f.rid||'').startsWith('bk-')?'b':f.rid?((rvRec(f.rid)||{}).cy?'c':'g'):f.review?'o':'e';
 const KINDS=[['e','Estudos'],['b','Revisão de bloco'],['g','Revisão por grupos'],['c','Revisão por ciclos'],['t','Revisão por tópico'],['o','Revisão (sem tipo)']];
+/* Registros de estudo que deram origem a uma revisão por tópico (mesma disciplina, tópico e dia) */
+const trvOrig=k=>{const [b,tp,d]=String(k).split('|');return S.sessions.filter(x=>kindOf(x)==='e'&&x.topic===tp&&x.date===d&&trvBase(x.subj)===b)};
+/* A que ciclos o registro pertence ("tudo sobre o conteúdo do ciclo"): estudo e revisão de bloco, o ciclo em que foram feitos;
+   por tópico, o ciclo do estudo de origem; por ciclos, os ciclos revisados; por grupos, os ciclos dos dias de estudo do grupo */
+function cycKeys(f){const k=kindOf(f),st=f.set||1,K=(set,c)=>'c'+set+'.'+c;
+ if(k==='e'||k==='b')return [K(st,f.cycle)];
+ if(k==='t')return uniq(trvOrig(f.trv).map(x=>K(x.set||1,x.cycle)));
+ const r=rvRec(f.rid);if(!r)return [];
+ if(k==='c')return (r.src||[]).map(c=>K(st,c));
+ const g=(S.rgs||[]).find(x=>x.id===(r.src||[])[0]);if(!g)return [];const ds=new Set(g.dates||[]);
+ return uniq(S.sessions.filter(x=>kindOf(x)==='e'&&(x.set||1)===st&&ds.has(x.date)).map(x=>K(st,x.cycle)))}
 /* Etiqueta curta e descrição completa da origem; a rodada entra como "R2 ·" a partir da 2ª */
 function recTag(f){const R=(S.set||1)>1?'R'+(f.set||1)+' · ':'',k=kindOf(f),r=f.rid&&rvRec(f.rid),lw=v=>String(v||'').replace(/^./,c=>c.toLowerCase());
  if(k==='e')return {k,t:R+'ciclo '+f.cycle};
  if(k==='b')return {k,t:R+'rev. bloco · ciclo '+f.cycle,d:'Revisão de bloco feita no ciclo '+f.cycle+((S.set||1)>1?', rodada '+(f.set||1):'')+'.'};
  if(k==='c'){const l=r&&r.lbl||'';return {k,t:R+'rev. '+(lw(l)||'ciclos'),d:'Revisão '+(l?(/^Ciclos/.test(l)?'dos ':'do ')+lw(l):'por ciclos')+'.'}}
  if(k==='g'){const l=r&&r.lbl||'',g=r&&(S.rgs||[]).find(x=>x.id===r.src[0]),ds=g&&g.dates&&g.dates.slice().sort(),f2=d=>fd(d).slice(0,5);return {k,t:R+'rev. '+(lw(l)||'grupo'),d:'Revisão do '+(lw(l)||'grupo')+(ds&&ds.length?': estudos '+(ds.length===1?'de '+f2(ds[0]):'de '+f2(ds[0])+' a '+f2(ds[ds.length-1])):'')+'.'}}
- if(k==='t'){const h=((S.trv&&S.trv.t||{})[f.trv]||{}).h||[],n=h.slice().sort().indexOf(f.trvd||f.date)+1,sd=String(f.trv).split('|')[2];return {k,t:R+'rev. tópico'+(n>0?' · '+n+'ª':''),d:(n>0?n+'ª revisão':'Revisão')+' do tópico'+(sd?' estudado em '+fd(sd):'')+'.'}}
+ if(k==='t'){const h=((S.trv&&S.trv.t||{})[f.trv]||{}).h||[],n=h.slice().sort().indexOf(f.trvd||f.date)+1,sd=String(f.trv).split('|')[2];const o=trvOrig(f.trv)[0];return {k,t:R+'rev. tópico'+(n>0?' · '+n+'ª':''),d:(n>0?n+'ª revisão':'Revisão')+' do tópico'+(sd?' estudado em '+fd(sd):'')+(o?', no ciclo '+o.cycle+((S.set||1)>1?' da rodada '+(o.set||1):''):'')+'.'}}
  return {k,t:R+'revisão',d:'Revisão feita antes de o app guardar o tipo.'}}
 /* Marca as palavras buscadas no texto, sem diferenciar acentos nem maiúsculas */
 function hlT(v,ws){v=String(v||'');const n=nrmS(v);if(n.length!==v.length)return esc(v);const on=new Array(v.length).fill(false);
@@ -2224,17 +2235,17 @@ function viewReg(){
  const baseOf=x=>{const s0=subjAny(x.subj);return s0?(s0.of||s0.id):x.subj},grpKey=f=>f.trv?'t'+(f.set||1)+'.T':f.rid?'r'+f.rid:(f.review?'o':'c')+(f.set||1)+'.'+f.cycle;
  /* do mais recente ao mais antigo pela data do estudo e o horário; no mesmo dia sem horário, o último registrado primeiro */
  const all=[...map.entries()].reverse().sort((a,b)=>(b[1][0].date||'').localeCompare(a[1][0].date||'')||(b[1][0].at||'').localeCompare(a[1][0].at||''));
- /* Tipo = o quê (só os tipos que existem no histórico); Ciclos = quando: o ciclo de estudo e a revisão de bloco feita nele */
+ /* Tipo = o quê (só os tipos que existem no histórico); Ciclos = tudo sobre o conteúdo do ciclo (ver cycKeys) */
  const kPres=new Set(all.map(([k,r])=>kindOf(r[0]))),tOpts=[['','Tipos']].concat(KINDS.filter(o=>kPres.has(o[0]))),both=tOpts.length>2;
- const cycKey=f=>{const k=kindOf(f);return k==='e'||k==='b'?'c'+(f.set||1)+'.'+f.cycle:null};
+ const CK=new Map(all.map(([k,r])=>[k,cycKeys(r[0])]));
  const sOpts=[['','Disciplinas']].concat(uniq(all.map(([k,r])=>baseOf(r[0]))).map(id=>{const s0=S.subjects.find(x=>x.id===id);return [id,s0?s0.name:'Disciplina removida']}).sort((a,b)=>a[1].localeCompare(b[1],'pt')));
  const rvName=rid=>{if(String(rid).startsWith('bk-'))return 'Revisão de bloco';const r=(S.reviews||[]).find(x=>x.id===rid)||(S.rv&&S.rv.id===rid?S.rv:null);return 'Revisão'+(r?' · '+(r.lbl||('ciclo'+(r.src.length>1?'s ':' ')+r.src.join(', '))):'')};
- const cOpts=[['','Ciclos']].concat(uniq(all.map(([k,r])=>cycKey(r[0])).filter(Boolean)).sort((a,b)=>{const [ra,ca]=a.slice(1).split('.').map(Number),[rb,cb]=b.slice(1).split('.').map(Number);return rb-ra||cb-ca}).map(g=>{const [r,c]=g.slice(1).split('.');return [g,((S.set||1)>1?'R'+r+' · ':'')+'Ciclo '+c]}));
+ const cOpts=[['','Ciclos']].concat(uniq(all.flatMap(([k])=>CK.get(k))).sort((a,b)=>{const [ra,ca]=a.slice(1).split('.').map(Number),[rb,cb]=b.slice(1).split('.').map(Number);return rb-ra||cb-ca}).map(g=>{const [r,c]=g.slice(1).split('.');return [g,((S.set||1)>1?'R'+r+' · ':'')+'Ciclo '+c]}));
  const pk=(k,O)=>(Array.isArray(ui[k])?ui[k]:[]).filter(v=>O.some(o=>o[0]===v)),FS=pk('hfs',sOpts),FC=pk('hfc',cOpts),FT=both?pk('hft',tOpts):[]; /* disciplinas e ciclos marcados */
  const hq=nrmS(ui.hq||'').trim(),hw=hq?hq.split(/\s+/):[],d1=ui.hd1||'',d2=ui.hd2||'';
  const hay=r=>{const s0=subjAny(r[0].subj),P=[s0?nm(s0):''];r.forEach(x=>{const t=s0&&x.topic?topicOf(s0,x.topic):null;P.push(t?t.name:'',x.tn||'');(x.items||[]).forEach(i=>{const it=itKey(i);P.push(i.name||'',it&&it.title||'',it&&it.url?host(it.url):'')})});return nrmS(P.join(' '))};
  const inPer=r=>{const d=r[0].date||'';return (!d1||d>=d1)&&(!d2||d<=d2)};
- const L=all.filter(([k,r])=>(!FS.length||FS.includes(baseOf(r[0])))&&(!FC.length||FC.includes(cycKey(r[0])))&&(!FT.length||FT.includes(kindOf(r[0])))&&inPer(r)&&(!hw.length||(h=>hw.every(w=>h.includes(w)))(hay(r)))),n=ui.hn||30;
+ const L=all.filter(([k,r])=>(!FS.length||FS.includes(baseOf(r[0])))&&(!FC.length||CK.get(k).some(c=>FC.includes(c)))&&(!FT.length||FT.includes(kindOf(r[0])))&&inPer(r)&&(!hw.length||(h=>hw.every(w=>h.includes(w)))(hay(r)))),n=ui.hn||30;
  const hact=!!(hq||d1||d2||FS.length||FC.length||FT.length),nf=FC.length+FS.length+FT.length+(d1||d2?1:0);
  const row=([k,r])=>sesRow(k,r,{at:true,notes:true,del:true,flush:true,hl:hw});
  /* Registros agrupados por dia, com o total do dia (de tudo o que passa nos filtros, não só do que está na tela) */
@@ -2246,20 +2257,16 @@ function viewReg(){
  /* Filtros em uso, como etiquetas removíveis */
  const lbOf=(O,v)=>(O.find(o=>o[0]===v)||[,''])[1],chips=[...FC.map(v=>['fc:'+v,lbOf(cOpts,v)]),...FS.map(v=>['fs:'+v,lbOf(sOpts,v)]),...FT.map(v=>['ft:'+v,lbOf(tOpts,v)]),(d1||d2)&&['d',d1&&d2?fd(d1)+' a '+fd(d2):d1?'Desde '+fd(d1):'Até '+fd(d2)]].filter(Boolean);
  const chipHtml=chips.length?`<div class="hchips">${chips.map(([k,t])=>`<button type="button" class="hchip" data-act="hfx" data-id="${k}" aria-label="Remover filtro ${esc(t)}"><span class="snt">${esc(t)}</span><span aria-hidden="true">×</span></button>`).join('')}</div>`:'';
- /* Meta de cada disciplina num ciclo de estudo da rodada atual: ciclos passados guardam as metas; o atual usa as de agora (no modo revisão, não mostra) */
- const goalsOf=b=>{if(b.g[0]!=='c')return null;const [st,cy]=b.g.slice(1).split('.').map(Number);if(st!==(S.set||1))return null;
-  const src=cy===S.cycle?(S.mode==='review'?null:Object.fromEntries(inCycle().map(s=>[s.id,s.goal]))):((S.hist||{})[cy]||{}).goals;if(!src)return null;
-  const G={};Object.entries(src).forEach(([id,g])=>{const s0=subjAny(id),k=s0?(s0.of||s0.id):id;G[k]=(G[k]||0)+(+g||0)});return G};
  /* Por ciclo: rodada → ciclo (recolhível) → disciplinas → tópicos estudados com seus itens */
  const cic=S.hmode==='cic',f2=d=>d.slice(8,10)+'/'+d.slice(5,7),B=[];
- if(cic){const bm=new Map();all.forEach(([k,r])=>{const g=grpKey(r[0]);if(!bm.has(g))bm.set(g,{g,set:r[0].set||1,recs:[]});bm.get(g).recs.push(...r)});
+ if(cic){const bm=new Map();all.forEach(([k,r])=>{if(/[bt]/.test(kindOf(r[0])))return;const g=grpKey(r[0]); /* revisões de bloco e por tópico ficam só em Registros */if(!bm.has(g))bm.set(g,{g,set:r[0].set||1,recs:[]});bm.get(g).recs.push(...r)});
   bm.forEach(b=>{const ds=b.recs.map(x=>x.date).filter(Boolean).sort();b.d0=ds[0]||'';b.d1=ds[ds.length-1]||'';B.push(b)});
   B.sort((a,b)=>b.set-a.set||b.d1.localeCompare(a.d1))}
  /* Uma rodada por vez: começa na atual; o ciclo mais recente dela abre na primeira visita */
  const RS=uniq(B.map(b=>b.set)),rsel=RS.includes(ui.hrod)?ui.hrod:(RS.includes(S.set||1)?(S.set||1):RS[0]),BR=B.filter(b=>b.set===rsel);
  if(cic&&BR.length&&!ui.open.has('hci:'+rsel)){ui.open.add('hci:'+rsel);ui.open.add('hc:'+BR[0].g)}
- const blk=b=>{const op=ui.open.has('hc:'+b.g),lb=b.g[0]==='r'?rvName(b.g.slice(1)):b.g[0]==='t'?'Revisão por tópico':(b.g[0]==='o'?'Revisão ':'Ciclo ')+b.g.split('.')[1],mn=b.recs.reduce((a,x)=>a+x.min,0),per=b.d0?(b.d0===b.d1?f2(b.d0):f2(b.d0)+' a '+f2(b.d1)):'';
-  const G=goalsOf(b),sb=uniq(b.recs.map(baseOf)).map(id=>{const rs=b.recs.filter(x=>baseOf(x)===id),s0=subjAny(id),t=studyTree(rs);return `<div class="hcs"><div class="hcsn"><span class="dot" style="background:${s0?col(s0):'var(--mut)'}"></span><b class="snt" title="${esc(s0?nm(s0):'Disciplina removida')}">${esc(s0?nm(s0):'Disciplina removida')}</b><span class="mut">${fmt(rs.reduce((a,x)=>a+x.min,0))}${G&&G[id]?' de '+fmt(G[id]):''}</span></div>${t?`<div class="rvlist hcst">${t}</div>`:'<div class="mut hcst">Sem tópico registrado</div>'}<div class="hcgo"><button type="button" class="lnk lsm" data-act="hgo" data-id="${esc([b.g,id,b.d0,b.d1,b.recs[0]?kindOf(b.recs[0]):'e',b.recs[0]?b.recs[0].cycle:''].join('|'))}">${t?'Ver e editar registros':'Ver registros para adicionar tópico'}</button></div></div>`}).join('');
+ const blk=b=>{const op=ui.open.has('hc:'+b.g),lb=b.g[0]==='r'?rvName(b.g.slice(1)):(b.g[0]==='o'?'Revisão ':'Ciclo ')+b.g.split('.')[1],mn=b.recs.reduce((a,x)=>a+x.min,0),per=b.d0?(b.d0===b.d1?f2(b.d0):f2(b.d0)+' a '+f2(b.d1)):'';
+  const sb=uniq(b.recs.map(baseOf)).map(id=>{const rs=b.recs.filter(x=>baseOf(x)===id),s0=subjAny(id),t=studyTree(rs),nt=uniq(rs.filter(x=>!x.topic&&!x.tn&&x.min>0).map(x=>x.ses||x.id)).length; /* registros sem tópico (com duas cópias da disciplina no ciclo, um pode ter tópico e o outro não) */return `<div class="hcs"><div class="hcsn"><span class="dot" style="background:${s0?col(s0):'var(--mut)'}"></span><b class="snt" title="${esc(s0?nm(s0):'Disciplina removida')}">${esc(s0?nm(s0):'Disciplina removida')}</b><span class="mut">${fmt(rs.reduce((a,x)=>a+x.min,0))}</span></div>${t?`<div class="rvlist hcst">${t}</div>`:'<div class="mut hcst">Sem tópico registrado</div>'}${t&&nt?`<div class="mut hcst">+ ${nt} registro${nt===1?'':'s'} sem tópico</div>`:''}<div class="hcgo"><button type="button" class="lnk lsm" data-act="hgo" data-id="${esc([b.g,id,b.d0,b.d1,b.recs[0]?kindOf(b.recs[0]):'e'].join('|'))}">${uniq(rs.map(x=>x.ses||x.id)).length>1?'Editar registros':'Editar registro'}</button></div></div>`}).join('');
   return `<div class="hcb${op?' open':''}"><div class="pvh hch" data-act="hctog" data-id="${esc(b.g)}"><button class="x mtog${op?' on':''}" data-act="hctog" data-id="${esc(b.g)}" aria-expanded="${op}" aria-label="${op?'Recolher':'Ver'} ${esc(lb)}">${CHEV}</button><span class="hct"><b>${esc(lb)}</b><span class="mut"> · ${fmt(mn)}${per?' · '+per:''}</span></span></div>${op?`<div class="hcbody">${sb}</div>`:''}</div>`};
  const rpick=RS.length>1?`<div class="hrsel">${selField('hrod',RS.map(r=>[String(r),'Rodada '+r+(r===(S.set||1)?' · atual':'')]),String(rsel),'','Escolher rodada')}</div>`:'';
  const cicHtml=()=>BR.map(blk).join('');
@@ -2388,9 +2395,9 @@ if(a==='rgpick'){if(e.target.closest('button,a,label'))return;rcPick(ui.rcg===p?
   if(a==='mpick'){const id=t.dataset.id,i=id.indexOf(':'),k=id.slice(0,i),v=id.slice(i+1),A=Array.isArray(ui[k])?ui[k]:[];ui[k]=!v?[]:A.includes(v)?A.filter(x=>x!==v):A.concat(v);ui.hn=30;render();return}
   if(a==='hfx'){const id=t.dataset.id,i=id.indexOf(':'),k=i<0?id:id.slice(0,i),v=id.slice(i+1);if(k==='d')ui.hd1=ui.hd2='';else{const kk={fc:'hfc',fs:'hfs',ft:'hft'}[k];ui[kk]=(Array.isArray(ui[kk])?ui[kk]:[]).filter(x=>x!==v)}ui.hn=30;render();return}
   /* Ciclos → Registros já filtrados por aquele ciclo e disciplina, para ver, editar ou completar */
-  if(a==='hgo'){const [g,id,d0,d1,k,cy]=t.dataset.id.split('|');delete S.hmode;ui.hq='';ui.hd1=ui.hd2='';ui.hfs=[id];ui.hfc=[];ui.hft=[];
-   /* ciclo de estudo: o ciclo; revisão de bloco: o ciclo e o tipo; outras revisões: o tipo e os dias daquela revisão */
-   if(k==='e')ui.hfc=[g];else if(k==='b'){ui.hfc=['c'+g.slice(1).split('-')[1]+'.'+cy];ui.hft=['b']}else{ui.hft=[k];ui.hd1=d0||'';ui.hd2=d1||''}
+  if(a==='hgo'){const [g,id,d0,d1,k]=t.dataset.id.split('|');delete S.hmode;ui.hq='';ui.hd1=ui.hd2='';ui.hfs=[id];ui.hfc=[];ui.hft=[];
+   /* ciclo de estudo: o ciclo; revisão por grupos ou por ciclos: o tipo e os dias daquela revisão */
+   if(k==='e')ui.hfc=[g];else{ui.hft=[k];ui.hd1=d0||'';ui.hd2=d1||''}
    ui.hn=30;ui.hfo=null;save();render();scrollTo(0,0);return}
   if(a==='hmode'){if(p==='cic')S.hmode='cic';else delete S.hmode;ui.hn=30;save();render();return}
  if(a==='rftog'){const k='rfo:'+p;if(ui.open.has(k)){ui.open.delete(k);if(ui.rcg===p)ui.rcg=null;render()}else{ui.open.add(k);rcPick(p,'',true)}return}
