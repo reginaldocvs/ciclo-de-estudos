@@ -110,7 +110,7 @@ input.t{flex:1;min-width:140px}
 .dlg.edlg{width:min(94vw,560px);padding:0;display:flex;flex-direction:column;max-height:90vh;max-height:90dvh;overflow:hidden}
 .edh{display:flex;align-items:flex-start;gap:10px;padding:16px 18px 12px;border-bottom:1px solid var(--line)}.edti{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .edk{font-size:.85rem;font-weight:600}.edn{display:flex;align-items:center;gap:8px;font-size:1.125rem;font-weight:800;line-height:1.2}.edn .dot{width:10px;height:10px;flex:none}
-.edh .sxgoal{align-self:center;white-space:nowrap}
+.edh .sxgoal{align-self:flex-end;white-space:nowrap} /* na linha do nome da disciplina */
 .edb{flex:1 1 auto;overflow:auto;padding:18px 18px 14px}.edb .gbox:first-of-type{margin-top:0}
 .edf{border-top:1px solid var(--line);padding:12px 18px 14px;background:var(--card)}.edf .edtm{margin-top:0}
 .edbt{display:flex;align-items:center;gap:8px;margin-top:10px}.edbt .x{margin-right:-8px}
@@ -158,7 +158,15 @@ body #hres .ritem .grow>.hic{float:right;height:1.3em;align-items:center;margin:
 .hat{color:var(--mut);font-variant-numeric:tabular-nums}
 mark.hl{background:color-mix(in srgb,var(--ac) 22%,transparent);color:inherit;border-radius:3px;padding:0 1px}
 .hcgo{margin:4px 0 0 12px}.hcgo .lnk{padding-left:0}
-.edat{flex:none;width:auto}.tmd:has(.edat){flex-wrap:wrap} /* com o horário, ele desce de linha quando tempo, data e horário não cabem juntos */
+/* com o horário, tempo, data e horário dividem a mesma linha: os três encolhem em vez de quebrar */
+.tmd:has(.edat){flex-wrap:nowrap;width:100%;max-width:420px}
+.tmd:has(.edat)>.cb.tf{flex:1 1 96px;min-width:72px}
+.tmd:has(.edat)>input[type=date]{flex:1.4 1 140px;min-width:0;width:0;padding-left:10px;padding-right:8px}
+.edat{flex:1 1 96px;min-width:0;width:0;padding-left:10px;padding-right:8px}
+/* telas estreitas: sem os ícones de calendário e relógio, o espaço fica para o texto; tocar no campo abre o seletor */
+@media (max-width:400px){.tmd:has(.edat)>input[type=date],.edat{padding-left:8px;padding-right:6px;text-align:center}
+ .tmd:has(.edat)>input[type=date]::-webkit-calendar-picker-indicator,.edat::-webkit-calendar-picker-indicator{display:none}
+ .tmd:has(.edat)>.cb.tf{flex:0 0 84px}}
 .ctb{position:relative}
 /* Telas bem estreitas: tempo e botões ocupam a linha inteira, sem recuo nem ícone de relógio */
 @media (max-width:400px){.srow .rtop>.rtime{margin-left:0;flex:1 1 100%;justify-content:space-between;min-width:0}.srow .rtime .ctl>svg{display:none}}
@@ -950,7 +958,9 @@ h2 .mut,h3 .mut{font-weight:400;font-size:.95rem}
 .dlg>.mhead{position:sticky;top:0;z-index:3} /* cabeçalho com recuo próprio (Planos, Editar ciclo): só fica fixo */
 .dlg>.chead,.dlg.reg>h2.rvt:first-child{position:sticky;top:calc(-1*var(--dpt,0px));z-index:3;background:inherit;margin-top:calc(-1*var(--dpt,0px));margin-left:calc(-1*var(--dpx,0px));margin-right:calc(-1*var(--dpx,0px));padding-top:var(--dpt,0px);padding-left:var(--dpx,0px);padding-right:var(--dpx,0px)} /* título fixo quando a janela rola; os botões rolam junto */
 .dlg.scrolled>.chead,.dlg.scrolled>.mhead,.dlg.scrolled.reg>h2.rvt:first-child{box-shadow:0 1px 0 var(--m-ov)}
-.chead>.cback,.edh>.cback{margin-left:-8px;flex:none}.edh>.cback{margin-top:-4px}.chead>.cback+h2{flex:1;min-width:0} /* seta, título e o X à direita */
+.chead>.cback,.edh>.cback{margin-left:-8px;flex:none}.edh>.cback{margin-top:-4px}
+/* Editar registro segue a regra das janelas: o título fica fixo e o resto (aulas, tempo, data e botões) rola junto */
+.dlg.edlg{overflow-y:auto;overscroll-behavior:contain}.dlg.edlg>.edh{position:sticky;top:0;z-index:3;background:inherit}.dlg.edlg>.edb{flex:none;overflow:visible}.chead>.cback+h2{flex:1;min-width:0} /* seta, título e o X à direita */
 .rvcaldlg .rcal{box-shadow:none;background:none;border:0;padding:0;margin:0}
 .rvcaldlg .rcal>.pvt,.rvcaldlg .rcal>.infob{display:none}
 .rctp.lg{display:inline-block;min-width:16px;height:16px;padding:0 4px;margin-right:6px;border-radius:999px;background:var(--m-tc);color:var(--m-ontc);font-size:11px;font-weight:700;line-height:16px;text-align:center}
@@ -1466,7 +1476,7 @@ function formBack(o){document.querySelectorAll('#modal form[data-f] [name]').for
 function dlgPad(){document.querySelectorAll('#modal .dlg').forEach(d=>{const c=getComputedStyle(d);d.style.setProperty('--dpt',c.paddingTop);d.style.setProperty('--dpx',c.paddingLeft);
  if(!d.dataset.sb){d.dataset.sb='1';d.addEventListener('scroll',()=>d.classList.toggle('scrolled',d.scrollTop>2),{passive:true})}d.classList.toggle('scrolled',d.scrollTop>2)})}
 addEventListener('resize',()=>dlgPad());
-function sheetBind(){document.querySelectorAll('#modal .dlg').forEach(d=>{if(!d.matches(SHEETS)||d.querySelector('.sgrip'))return;const g=document.createElement('div');g.className='sgrip';g.setAttribute('aria-hidden','true');(d.querySelector(':scope>.chead,:scope>.mhead,:scope>h2.rvt:first-child')||d).prepend(g);let y0=null,dy=0;
+function sheetBind(){document.querySelectorAll('#modal .dlg').forEach(d=>{if(!d.matches(SHEETS)||d.querySelector('.sgrip'))return;const g=document.createElement('div');g.className='sgrip';g.setAttribute('aria-hidden','true');(d.querySelector(':scope>.chead,:scope>.mhead,:scope>.edh,:scope>h2.rvt:first-child')||d).prepend(g);let y0=null,dy=0;
  g.addEventListener('pointerdown',e=>{if(!matchMedia('(max-width:600px)').matches)return;y0=e.clientY;dy=0;try{g.setPointerCapture(e.pointerId)}catch(x){}d.style.transition='none'});
  g.addEventListener('pointermove',e=>{if(y0===null)return;dy=Math.max(0,e.clientY-y0);d.style.transform='translateY('+dy+'px)'});
  const end=()=>{if(y0===null)return;y0=null;const rm=matchMedia('(prefers-reduced-motion: reduce)').matches,h=d.getBoundingClientRect().height;
@@ -2569,7 +2579,7 @@ document.addEventListener('submit',e=>{
 document.addEventListener('click',e=>{const n=e.target.closest&&e.target.closest('.nvw');if(n&&n.closest('label'))e.preventDefault()},true);
 /* Histórico: busca e filtro de datas sem redesenhar a página toda */
 (()=>{let tmr=null;const upd=()=>{if(tab!=='reg')return;const box=document.getElementById('hres');if(!box)return;const t=document.createElement('div');t.innerHTML=viewReg();const n=t.querySelector('#hres');if(n)box.replaceWith(n);{const fb=t.querySelector('#hfb'),ob=document.getElementById('hfb');if(fb&&ob)ob.replaceWith(fb)}const a=document.getElementById('hd1'),b=document.getElementById('hd2');if(a){if(ui.hd2)a.max=ui.hd2;else a.removeAttribute('max')}if(b){if(ui.hd1)b.min=ui.hd1;else b.removeAttribute('min')}['hd1','hd2'].forEach(k=>{const v=document.getElementById(k+'v');if(v){v.innerHTML=(ui[k]?fd(ui[k]):'')+CALI;v.parentNode.classList.toggle('on',!!ui[k])}})};
-document.addEventListener('click',e=>{const i=e.target&&(e.target.id==='hd1'||e.target.id==='hd2')?e.target:null;if(i&&typeof i.showPicker==='function'){try{i.showPicker()}catch(x){}}});
+document.addEventListener('click',e=>{const i=e.target&&(e.target.id==='hd1'||e.target.id==='hd2'||(e.target.dataset&&('eat' in e.target.dataset||'ed' in e.target.dataset)))?e.target:null;if(i&&typeof i.showPicker==='function'){try{i.showPicker()}catch(x){}}});
 document.addEventListener('input',e=>{const id=e.target&&e.target.id;if(id==='hq'){ui.hq=e.target.value;ui.hn=30;clearTimeout(tmr);tmr=setTimeout(upd,120)}else if(id==='hd1'||id==='hd2'){ui[id]=e.target.value;ui.hn=30;upd()}});
 document.addEventListener('change',e=>{const id=e.target&&e.target.id;if((id==='hd1'||id==='hd2')&&ui[id]!==e.target.value){ui[id]=e.target.value;ui.hn=30;upd()}});})();
 /* Espaço inicia/pausa o cronômetro */
