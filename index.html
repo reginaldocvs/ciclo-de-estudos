@@ -144,19 +144,24 @@ body #hres .ritem .grow>.hic{float:right;height:1.3em;align-items:center;margin:
 .hcbody{width:fit-content;max-width:min(760px,100%);min-width:min(360px,100%)}.hcbody .hcst.rvlist{width:auto;min-width:0}
 @media (max-width:600px){.hcbody{padding-left:8px}.hcst{margin-left:12px}}
 .htot{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.hclr{background:none;border:0;padding:0;font:inherit;font-size:.85rem;font-weight:600;color:var(--ac);cursor:pointer}.hclr:hover{text-decoration:underline}
-/* Histórico: busca com botão Filtrar (só no celular; no computador o painel fica sempre aberto), etiquetas dos filtros, dias e horário */
-.hsrow{display:flex;gap:8px;align-items:center;margin:4px 0 8px}.hsrow .hsrch{flex:1;min-width:0;margin:0}
-.hfb{display:none;align-items:center;gap:6px;flex:none;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:none;color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
+/* Histórico: busca com botão Filtrar, etiquetas dos filtros em uso com o painel fechado, dias e horário */
+.hsrow{display:flex;gap:8px;align-items:center;margin:4px 0 8px}.hsrow .hsrch{flex:1;min-width:0;margin:0}.hsrow .hsrch input{min-width:0}
+@media (max-width:600px){.hfb .hfl{display:none}.hfb{padding:0 12px}} /* no celular, o botão é só o ícone (e a contagem), para a busca ter espaço */
+.hfb{display:inline-flex;align-items:center;gap:6px;flex:none;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:none;color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
 .hfb.on{border-color:var(--ac);color:var(--ac)}.hfn{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--ac);color:#fff;font-size:.75rem;line-height:20px;text-align:center}
 .hflt{flex-wrap:wrap}.hflt .hfsel{flex:1 1 140px;min-width:0}
-.hchips{display:none;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.hchips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
 .hchip{display:inline-flex;align-items:center;gap:6px;max-width:100%;min-height:32px;padding:0 10px 0 12px;border:0;border-radius:8px;background:color-mix(in srgb,var(--ac) 12%,transparent);color:var(--ink);font:inherit;font-size:.85rem;cursor:pointer}
 .hchip>span:last-child{font-size:1.1rem;line-height:1;color:var(--mut)}
-@media (max-width:600px){.hfb{display:inline-flex}.hfpan{display:none}.hfpan.open{display:block}.hchips{display:flex}}
+.hfpan{display:none}.hfpan.open{display:block}
 .hday{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:16px 4px 6px 0;font-size:.9rem}.hdg:first-child .hday{padding-top:6px}
 .hday .mut{font-variant-numeric:tabular-nums}
 .hat{color:var(--mut);font-variant-numeric:tabular-nums}
 mark.hl{background:color-mix(in srgb,var(--ac) 22%,transparent);color:inherit;border-radius:3px;padding:0 1px}
+.ddi.ddm{display:flex;align-items:center;gap:10px}.ddm .snt{min-width:0}
+.ddck{flex:none;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border:1.5px solid var(--mut);border-radius:4px}
+.ddm.cur .ddck{background:var(--ac);border-color:var(--ac);color:#fff}.ddi.ddm.cur{font-weight:inherit;color:var(--ink)}#app .ddi.ddm.cur:not(:hover):not(:focus-visible){background:none}
+#app .hflt .hfsel .sfb{display:flex;align-items:center;gap:6px;min-width:0;padding-right:28px}.hfsel .sfb .snt{display:block;min-width:0}.hfsel .sfb .hfn{flex:none}
 .hcgo{margin:4px 0 0 12px}.hcgo .lnk{padding-left:0}
 /* com o horário, tempo, data e horário dividem a mesma linha: os três encolhem em vez de quebrar */
 .tmd:has(.edat){flex-wrap:nowrap;width:100%;max-width:420px}
@@ -1053,7 +1058,7 @@ const TABS=['ciclo','rev','reg','st','bk'];let S=load(KEY),tab=(()=>{try{const t
 function toCurrent(tabSw){if(S.edit||S.sx||(tabSw&&S.rv)||(S.timer&&(S.timer.running||S.timer.acc>0)))return;const c=current();if(c&&c.id!==S.sel.subj){S.sel.subj=c.id;S.sel.topic='';S.sel.groups=null}}
 function tabReset(){
  ui.tvoffq=ui.rccy=ui.rcg=ui.rcm=ui.rgview=ui.trvk=ui.trvcfg=ui.trviv=ui.rvt=ui.rvadj=ui.rvcalm=ui.rctd=null;                                    // Revisão: grupo selecionado, mês do calendário, janela do grupo
- ui.hq=ui.hd1=ui.hd2=ui.hfs=ui.hfc=ui.hft='';ui.hfo=null;ui.hn=30;ui.hrod=null;            // Histórico: busca, período, filtros, quantidade e rodada
+ ui.hq=ui.hd1=ui.hd2=ui.hft='';ui.hfs=[];ui.hfc=[];ui.hfo=null;ui.hn=30;ui.hrod=null;            // Histórico: busca, período, filtros, quantidade e rodada
  ui.ss=ui.sp=null;                                                     // Estatísticas: rodada e período
  ui.dd=null;ui.nv=ui.qi=ui.rx=null;ui.rowPick=null;                                   // menus abertos, anotações, questões e listas expandidas
  [...ui.open].forEach(k=>{if(/^(rfo|hc|hci|tdi):/.test(k)||k==='trvnx'||k==='trvfx'||k==='rvdn')ui.open.delete(k)})}  // revisões futuras e blocos do Histórico
@@ -2186,6 +2191,13 @@ const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+Stri
 const pd=s=>new Date(s+'T12:00:00');
 const monOf=s=>{const d=pd(s);d.setDate(d.getDate()-((d.getDay()+6)%7));return ymd(d)};
 const addD=(s,n)=>{const d=pd(s);d.setDate(d.getDate()+n);return ymd(d)};
+/* Painel de filtros do Histórico: começa fechado e fecha ao trocar de aba */
+const hfOpen=()=>!!ui.hfo;
+/* Lista de marcar vários (Ciclos, Disciplinas): fica aberta enquanto se marca; "Todos" desmarca tudo */
+const CHKI='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>';
+const msField=(key,opts,vals,label,allLbl)=>{const open=ui.dd==='s:'+key,txt=opts[0][1]; /* o campo mostra só o nome; a quantidade marcada vem ao lado, na bolinha do Filtrar */
+ const it=(v,t,on)=>`<button type="button" class="ddi ddm${on?' cur':''}" role="option" aria-selected="${on}" data-act="mpick" data-id="${key}:${esc(v)}"><span class="ddck" aria-hidden="true">${on?CHKI:''}</span><span class="snt">${esc(t)}</span></button>`;
+ return `<div class="cb sf hfsel"><button type="button" class="sfb" data-act="sdd" data-id="${key}" aria-label="${label}" aria-haspopup="listbox" aria-expanded="${open}"><span class="snt">${esc(txt)}</span>${vals.length?`<span class="hfn" aria-label="${vals.length} marcad${vals.length===1?'o':'os'}">${vals.length}</span>`:''}</button><button type="button" class="x chev${open?' on':''}" data-act="sdd" data-id="${key}" title="${label}" aria-label="${label}">${CHEV}</button>${open?`<div class="dd" role="listbox" aria-multiselectable="true">${it('',allLbl,!vals.length)}${opts.slice(1).map(o=>it(o[0],o[1],vals.includes(o[0]))).join('')}</div>`:''}</div>`};
 function viewReg(){
  const map=new Map();S.sessions.forEach(x=>{const k=x.ses||x.id;if(!map.has(k))map.set(k,[]);map.get(k).push(x)});
  const baseOf=x=>{const s0=subjAny(x.subj);return s0?(s0.of||s0.id):x.subj},grpKey=f=>f.trv?'t'+(f.set||1)+'.T':f.rid?'r'+f.rid:(f.review?'o':'c')+(f.set||1)+'.'+f.cycle;
@@ -2196,12 +2208,12 @@ function viewReg(){
  const sOpts=[['','Disciplinas']].concat(uniq(all.map(([k,r])=>baseOf(r[0]))).map(id=>{const s0=S.subjects.find(x=>x.id===id);return [id,s0?s0.name:'Disciplina removida']}).sort((a,b)=>a[1].localeCompare(b[1],'pt')));
  const rvName=rid=>{if(String(rid).startsWith('bk-'))return 'Revisão de bloco';const r=(S.reviews||[]).find(x=>x.id===rid)||(S.rv&&S.rv.id===rid?S.rv:null);return 'Revisão'+(r?' · '+(r.lbl||('ciclo'+(r.src.length>1?'s ':' ')+r.src.join(', '))):'')};
  const cOpts=[['','Ciclos']].concat(uniq(all.map(([k,r])=>grpKey(r[0]))).map(g=>{if(g[0]==='r')return [g,rvName(g.slice(1))];const [r,c]=g.slice(1).split('.');return [g,((S.set||1)>1?'R'+r+' · ':'')+(g[0]==='t'?'Revisão por tópico':(g[0]==='o'?'Revisão ':'Ciclo ')+c)]}));
- const fs=sOpts.some(o=>o[0]===ui.hfs)?ui.hfs||'':'',fc=cOpts.some(o=>o[0]===ui.hfc)?ui.hfc||'':'';
+ const pk=(k,O)=>(Array.isArray(ui[k])?ui[k]:[]).filter(v=>O.some(o=>o[0]===v)),FS=pk('hfs',sOpts),FC=pk('hfc',cOpts); /* disciplinas e ciclos marcados */
  const hq=nrmS(ui.hq||'').trim(),hw=hq?hq.split(/\s+/):[],d1=ui.hd1||'',d2=ui.hd2||'';
  const hay=r=>{const s0=subjAny(r[0].subj),P=[s0?nm(s0):''];r.forEach(x=>{const t=s0&&x.topic?topicOf(s0,x.topic):null;P.push(t?t.name:'',x.tn||'');(x.items||[]).forEach(i=>{const it=itKey(i);P.push(i.name||'',it&&it.title||'',it&&it.url?host(it.url):'')})});return nrmS(P.join(' '))};
  const inPer=r=>{const d=r[0].date||'';return (!d1||d>=d1)&&(!d2||d<=d2)};
- const L=all.filter(([k,r])=>(!fs||baseOf(r[0])===fs)&&(!fc||grpKey(r[0])===fc)&&(!ft||(ft==='r')===isRv(r[0]))&&inPer(r)&&(!hw.length||(h=>hw.every(w=>h.includes(w)))(hay(r)))),n=ui.hn||30;
- const hact=!!(hq||d1||d2||fs||fc||ft),nf=(fc?1:0)+(fs?1:0)+(ft?1:0)+(d1||d2?1:0);
+ const L=all.filter(([k,r])=>(!FS.length||FS.includes(baseOf(r[0])))&&(!FC.length||FC.includes(grpKey(r[0])))&&(!ft||(ft==='r')===isRv(r[0]))&&inPer(r)&&(!hw.length||(h=>hw.every(w=>h.includes(w)))(hay(r)))),n=ui.hn||30;
+ const hact=!!(hq||d1||d2||FS.length||FC.length||ft),nf=FC.length+FS.length+(ft?1:0)+(d1||d2?1:0);
  const row=([k,r])=>sesRow(k,r,{at:true,notes:true,del:true,flush:true,hl:hw});
  /* Registros agrupados por dia, com o total do dia (de tudo o que passa nos filtros, não só do que está na tela) */
  const WD=['dom','seg','ter','qua','qui','sex','sáb'],td=today(),dayLbl=d=>!d?'Sem data':d===td?'Hoje':d===addD(td,-1)?'Ontem':WD[pd(d).getDay()]+', '+(d.slice(0,4)===td.slice(0,4)?fd(d).slice(0,5):fd(d));
@@ -2210,8 +2222,8 @@ function viewReg(){
  /* Totais do que passa nos filtros: tempo e acertos */
  const tMin=L.reduce((a,[k,r])=>a+r.reduce((b,x)=>b+x.min,0),0),qAdd=(b,v)=>+v.tq>0?{a:b.a+Math.min(+v.ac||0,+v.tq),t:b.t+(+v.tq)}:b,tQ=L.reduce((a,[k,r])=>r.reduce((b,x)=>x.tq?qAdd(b,x):(x.items||[]).reduce(qAdd,b),a),{a:0,t:0}); /* acertos do registro (revisão) ou das aulas (estudo) */
  /* Filtros em uso, como etiquetas removíveis (no celular, com o painel de filtros fechado) */
- const lbOf=(O,v)=>(O.find(o=>o[0]===v)||[,''])[1],chips=[fc&&['fc',lbOf(cOpts,fc)],fs&&['fs',lbOf(sOpts,fs)],ft&&['ft',lbOf(tOpts,ft)],(d1||d2)&&['d',d1&&d2?fd(d1)+' a '+fd(d2):d1?'Desde '+fd(d1):'Até '+fd(d2)]].filter(Boolean);
- const chipHtml=chips.length&&!ui.hfo?`<div class="hchips">${chips.map(([k,t])=>`<button type="button" class="hchip" data-act="hfx" data-id="${k}" aria-label="Remover filtro ${esc(t)}"><span class="snt">${esc(t)}</span><span aria-hidden="true">×</span></button>`).join('')}</div>`:'';
+ const lbOf=(O,v)=>(O.find(o=>o[0]===v)||[,''])[1],chips=[...FC.map(v=>['fc:'+v,lbOf(cOpts,v)]),...FS.map(v=>['fs:'+v,lbOf(sOpts,v)]),ft&&['ft',lbOf(tOpts,ft)],(d1||d2)&&['d',d1&&d2?fd(d1)+' a '+fd(d2):d1?'Desde '+fd(d1):'Até '+fd(d2)]].filter(Boolean);
+ const chipHtml=chips.length&&!hfOpen()?`<div class="hchips">${chips.map(([k,t])=>`<button type="button" class="hchip" data-act="hfx" data-id="${k}" aria-label="Remover filtro ${esc(t)}"><span class="snt">${esc(t)}</span><span aria-hidden="true">×</span></button>`).join('')}</div>`:'';
  /* Meta de cada disciplina num ciclo de estudo da rodada atual: ciclos passados guardam as metas; o atual usa as de agora (no modo revisão, não mostra) */
  const goalsOf=b=>{if(b.g[0]!=='c')return null;const [st,cy]=b.g.slice(1).split('.').map(Number);if(st!==(S.set||1))return null;
   const src=cy===S.cycle?(S.mode==='review'?null:Object.fromEntries(inCycle().map(s=>[s.id,s.goal]))):((S.hist||{})[cy]||{}).goals;if(!src)return null;
@@ -2231,7 +2243,7 @@ function viewReg(){
  const cicHtml=()=>BR.map(blk).join('');
  const nrv=BR.filter(b=>b.g[0]!=='c').length,cnt=cic?`${BR.length} ${nrv?(BR.length===1?'ciclo ou revisão':'ciclos e revisões'):(BR.length===1?'ciclo':'ciclos')}`:`${L.length} registro${L.length===1?'':'s'}${L.length?' · '+fmt(tMin)+(tQ.t?' · '+Math.round(tQ.a/tQ.t*100)+'% de acertos':''):''}`;
  const modeSw=all.length?`<div class="sper hmode" role="group" aria-label="Visualização do histórico"><button type="button" class="seg${cic?'':' on'}" data-act="hmode" data-id="lin" aria-pressed="${!cic}">Registros</button><button type="button" class="seg${cic?' on':''}" data-act="hmode" data-id="cic" aria-pressed="${cic}">Ciclos</button></div>`:'';
- return `<div class="card"><div class="chead"><h2>Histórico</h2></div>${modeSw}${all.length&&!cic?`<div class="hfbox"><div class="hfcol"><div class="hsrow"><div class="hsrch"><svg class="hsi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="hq" class="t" value="${esc(ui.hq||'')}" placeholder="Buscar" aria-label="Buscar no histórico por tópico ou aula"></div><button type="button" id="hfb" class="hfb${ui.hfo?' on':''}" data-act="hfo" aria-expanded="${!!ui.hfo}" aria-controls="hfpan">${FILTI}<span>Filtrar</span>${nf?`<span class="hfn">${nf}</span>`:''}</button></div><div id="hfpan" class="hfpan${ui.hfo?' open':''}"><div class="hflt">${selField('hfc',cOpts,fc,'hfsel','Filtrar por ciclo')}${selField('hfs',sOpts,fs,'hfsel','Filtrar por disciplina')}${both?selField('hft',tOpts,ft,'hfsel','Filtrar por tipo'):''}</div><div class="hper"><label class="hdl"><span class="mut">De</span><span class="hdt${d1?' on':''}"><span class="hdv" id="hd1v">${d1?fd(d1):''}${CALI}</span><input type="date" id="hd1" value="${esc(d1)}"${d2?` max="${esc(d2)}"`:''} aria-label="Data inicial"></span></label><label class="hdl"><span class="mut">Até</span><span class="hdt${d2?' on':''}"><span class="hdv" id="hd2v">${d2?fd(d2):''}${CALI}</span><input type="date" id="hd2" value="${esc(d2)}"${d1?` min="${esc(d1)}"`:''} aria-label="Data final"></span></label></div></div></div></div>`:''}<div id="hres">${!cic?chipHtml:''}${all.length?`<div class="mut htot${cic?' hrrow':''}">${cic?rpick:''}${cnt}${hact&&!cic?` <button class="hclr" data-act="hclr">Limpar filtros</button>`:''}</div>`:''}${(cic?BR.length:L.length)?cic?cicHtml():'<div class="hlist">'+listHtml()+'</div>'+(L.length>n?`<div class="fl" style="justify-content:center;margin-top:10px"><button class="btn g" data-act="hmore">Ver mais (${L.length-n})</button></div>`:''):`<div class="empty">${all.length?'Nenhum registro com esses filtros.':'Nenhum estudo registrado ainda. Seus registros vão aparecer aqui.'}</div>`}</div></div>`;
+ return `<div class="card"><div class="chead"><h2>Histórico</h2></div>${modeSw}${all.length&&!cic?`<div class="hfbox"><div class="hfcol"><div class="hsrow"><div class="hsrch"><svg class="hsi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="hq" class="t" value="${esc(ui.hq||'')}" placeholder="Buscar" aria-label="Buscar no histórico por tópico ou aula"></div><button type="button" id="hfb" class="hfb${hfOpen()?' on':''}" data-act="hfo" aria-expanded="${hfOpen()}" aria-controls="hfpan" aria-label="Filtrar${nf?' ('+nf+' em uso)':''}" title="Filtrar">${FILTI}<span class="hfl">Filtrar</span>${nf?`<span class="hfn">${nf}</span>`:''}</button></div><div id="hfpan" class="hfpan${hfOpen()?' open':''}"><div class="hflt">${msField('hfc',cOpts,FC,'Filtrar por ciclo','Todos os ciclos')}${msField('hfs',sOpts,FS,'Filtrar por disciplina','Todas as disciplinas')}${both?selField('hft',tOpts,ft,'hfsel','Filtrar por tipo'):''}</div><div class="hper"><label class="hdl"><span class="mut">De</span><span class="hdt${d1?' on':''}"><span class="hdv" id="hd1v">${d1?fd(d1):''}${CALI}</span><input type="date" id="hd1" value="${esc(d1)}"${d2?` max="${esc(d2)}"`:''} aria-label="Data inicial"></span></label><label class="hdl"><span class="mut">Até</span><span class="hdt${d2?' on':''}"><span class="hdv" id="hd2v">${d2?fd(d2):''}${CALI}</span><input type="date" id="hd2" value="${esc(d2)}"${d1?` min="${esc(d1)}"`:''} aria-label="Data final"></span></label></div></div></div></div>`:''}<div id="hres">${!cic?chipHtml:''}${all.length?`<div class="mut htot${cic?' hrrow':''}">${cic?rpick:''}${cnt}${hact&&!cic?` <button class="hclr" data-act="hclr">Limpar filtros</button>`:''}</div>`:''}${(cic?BR.length:L.length)?cic?cicHtml():'<div class="hlist">'+listHtml()+'</div>'+(L.length>n?`<div class="fl" style="justify-content:center;margin-top:10px"><button class="btn g" data-act="hmore">Ver mais (${L.length-n})</button></div>`:''):`<div class="empty">${all.length?'Nenhum registro com esses filtros.':'Nenhum estudo registrado ainda. Seus registros vão aparecer aqui.'}</div>`}</div></div>`;
 }
 function advance(){
  S.hist=S.hist||{};S.hist[S.cycle]={type:S.type,goals:Object.fromEntries(inCycle().map(s=>[s.id,s.goal])),prog:{...S.progress},bump:{...(S.bump||{})},since:S.sinceReview,src:[...S.reviewSrc]};
@@ -2313,7 +2325,7 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='nmnew'){S.sel.nn='';S.sel.nnid=null;S.sel.nnall=false;S.sel.nnnew=true;ui.dd=null;ui.focus='nm-in'}
  if(a==='addall'){const af=myEds().some(e=>e.id===S.sel.af)?S.sel.af:'',g=tmParse(S.sel.ng)||90;S.subjects.filter(s=>!s.of&&gone(s)&&(!af||s.ed===af)).forEach(s=>{delete s.hid;s.off=true;s.goal=g;S.subjects.push(S.subjects.splice(S.subjects.indexOf(s),1)[0])});ui.addm=null;ui.dd=null}
  if(a==='spick'&&p==='hrod'){ui.hrod=+q;ui.dd=null;render();return}
- if(a==='spick'&&(p==='hfs'||p==='hfc'||p==='hft')){ui[p]=q||'';ui.hn=30;ui.dd=null;render();return}
+ if(a==='spick'&&p==='hft'){ui[p]=q||'';ui.hn=30;ui.dd=null;render();return}
  if(a==='sset'){ui.ss=p==='all'?'all':+p;render();return}
  if(a==='sper'){ui.sp=p==='all'?'all':+p;render();return}
  if(a==='hmore'){ui.hn=(ui.hn||30)+30;render();return}
@@ -2347,12 +2359,13 @@ if(a==='blkadd'){S.blk=S.blk||[];S.blk.push({id:uid(),pos:inCycle().length});set
 if(a==='rgpick'){if(e.target.closest('button,a,label'))return;rcPick(ui.rcg===p?null:p,'',true);return}
  if(a==='qinfo'){ui.qi=ui.qi||new Set();ui.qi.has(p)?ui.qi.delete(p):ui.qi.add(p);render();return}
  if(a==='ritmore'){ui.rx=ui.rx||new Set();ui.rx.add(p);render();return}
- if(a==='hclr'){ui.hq='';ui.hd1='';ui.hd2='';ui.hfs='';ui.hfc='';ui.hft='';ui.hn=30;render();const q=$('hq');if(q)q.focus({preventScroll:true});return}
+ if(a==='hclr'){ui.hq='';ui.hd1='';ui.hd2='';ui.hfs=[];ui.hfc=[];ui.hft='';ui.hn=30;render();const q=$('hq');if(q)q.focus({preventScroll:true});return}
  if(a==='rvatog'){S.rvaClosed=!S.rvaClosed;save();render();return}
  if(a==='hfo'){ui.hfo=!ui.hfo;render();return}
-  if(a==='hfx'){if(p==='d')ui.hd1=ui.hd2='';else ui[{fc:'hfc',fs:'hfs',ft:'hft'}[p]]='';ui.hn=30;render();return}
+  if(a==='mpick'){const id=t.dataset.id,i=id.indexOf(':'),k=id.slice(0,i),v=id.slice(i+1),A=Array.isArray(ui[k])?ui[k]:[];ui[k]=!v?[]:A.includes(v)?A.filter(x=>x!==v):A.concat(v);ui.hn=30;render();return}
+  if(a==='hfx'){const id=t.dataset.id,i=id.indexOf(':'),k=i<0?id:id.slice(0,i),v=id.slice(i+1);if(k==='d')ui.hd1=ui.hd2='';else if(k==='ft')ui.hft='';else{const kk=k==='fc'?'hfc':'hfs';ui[kk]=(Array.isArray(ui[kk])?ui[kk]:[]).filter(x=>x!==v)}ui.hn=30;render();return}
   /* Ciclos → Registros já filtrados por aquele ciclo e disciplina, para ver, editar ou completar */
-  if(a==='hgo'){const i=p.lastIndexOf('|');delete S.hmode;ui.hq=ui.hd1=ui.hd2=ui.hft='';ui.hfc=p.slice(0,i);ui.hfs=p.slice(i+1);ui.hn=30;ui.hfo=null;save();render();scrollTo(0,0);return}
+  if(a==='hgo'){const i=p.lastIndexOf('|');delete S.hmode;ui.hq=ui.hd1=ui.hd2=ui.hft='';ui.hfc=[p.slice(0,i)];ui.hfs=[p.slice(i+1)];ui.hn=30;ui.hfo=null;save();render();scrollTo(0,0);return}
   if(a==='hmode'){if(p==='cic')S.hmode='cic';else delete S.hmode;ui.hn=30;save();render();return}
  if(a==='rftog'){const k='rfo:'+p;if(ui.open.has(k)){ui.open.delete(k);if(ui.rcg===p)ui.rcg=null;render()}else{ui.open.add(k);rcPick(p,'',true)}return}
  if(a==='hctog'){const k='hc:'+p;if(ui.open.has(k))ui.open.delete(k);else ui.open.add(k);render();return}
