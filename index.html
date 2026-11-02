@@ -1598,7 +1598,7 @@ function rvCal(I){
  /* Resumo: o grupo para revisar agora e o próximo previsto; tocar leva ao mês da marca com o grupo já selecionado */
  const sline=(o,t)=>`<button type="button" class="rcsl" data-act="rcgo" data-id="${o.g.id}" data-m="${o.mk.d.slice(0,7)}"><span class="rcmk ${o.mk.k}" aria-hidden="true"><i></i></span><span class="grow">${t}</span>${CHVR}</button>`;
  const nav=av.find(o=>o.g.id===nx)||av[0];
- const cyS=S.rv&&S.rv.cy?`<div class="rcsl cys"><span class="rcmk av" aria-hidden="true"><i></i></span><span class="grow"><b>${esc(S.rv.lbl)} em revisão</b> · desde ${sdm(S.rv.start)}</span></div>`:cyOn()?`<div class="rcsl cys"><span class="rcmk pr" aria-hidden="true"><i></i></span><span class="grow">${cyDue()?'<b>Ciclo de revisão</b> · pronto para começar':(()=>{const x=cyLast()+cyN(),k=x-(S.cycle-1);return `<b>Próximo ciclo de revisão</b> · depois do ciclo&nbsp;${x}, falta${k===1?'':'m'} ${k}`})()}</span></div>`:'';
+ const cyS=S.rv&&S.rv.cy?`<div class="rcsl cys"><span class="rcmk av" aria-hidden="true"><i></i></span><span class="grow"><b>${esc(S.rv.lbl)} em revisão</b> · desde ${sdm(S.rv.start)}</span></div>`:cyOn()?`<div class="rcsl cys"><span class="rcmk pr" aria-hidden="true"><i></i></span><span class="grow">${cyDue()||cyLeft().k<1?'<b>Ciclo de revisão</b> · pronto para começar':(()=>{const {x,k}=cyLeft();return `<b>Próximo ciclo de revisão</b> · depois do ciclo&nbsp;${x}, falta${k===1?'':'m'} ${k}`})()}</span></div>`:'';
  const sum=cyS+(nav?sline(nav,`<b>G${nav.g.idx} ${nav.st==='andamento'?'em revisão':'para revisar'}</b> · desde ${sdm(nav.availDate)}`):'')+(fu&&fu.mk?sline(fu,`<b>G${fu.g.idx} previsto</b> · ${sdm(fu.mk.d)}${fu.closed?'':', se estudar todo dia'}`):'');
  /* Painel do grupo selecionado */
  /* Grupo selecionado: uma linha só com as datas (período e revisão); disciplinas e tópicos ficam no cartão do grupo na lista, que é destacado */
@@ -1685,6 +1685,8 @@ const rgOn=()=>!S.rvgOff&&!cyOn(),tvOn=()=>!(S.trv&&S.trv.off);
    estudado nesses ciclos; o ciclo de estudo espera por ele. Alternativa à revisão por grupos. S.cyrv={on,n,last}; last = último ciclo de estudo já coberto. */
 const cyOn=()=>!!(S.cyrv&&S.cyrv.on),cyN=()=>{const n=+(S.cyrv&&S.cyrv.n);return n>=1&&n<=20&&n===Math.floor(n)?n:3},cyLast=()=>(S.cyrv&&+S.cyrv.last)||0;
 /* Vence quando o ciclo atual ainda não começou e já se completaram N ciclos desde a última revisão */
+/* quantos ciclos de estudo faltam até o próximo ciclo de revisão; o atual não conta se já foi concluído */
+const cyLeft=()=>{const x=cyLast()+cyN();return {x,k:x-(S.cycle-1)-(S.type!=='review'&&inCycle().length&&!current()?1:0)}};
 const cyDue=()=>cyOn()&&!S.rv&&S.type!=='review'&&S.cycle-1-cyLast()>=cyN()&&!CS().some(x=>!x.rid&&!x.trv&&x.cycle===S.cycle)&&!Object.values(S.progress||{}).some(v=>v>0);
 /* Revisão de bloco: marcadores que o usuário põe na ordem do ciclo (Editar ciclo). Não são sessões: na vez de um marcador,
    o cartão Agora lista o que foi estudado desde o marcador anterior (o primeiro do ciclo emenda com o último do ciclo passado),
@@ -1739,7 +1741,7 @@ const cyWait=()=>{const run=!!(S.rv&&S.rv.cy),a=run?S.rv.src[0]:cyLast()+1,b=run
 /* Visão Ciclos: a regra, o ciclo de revisão da vez (ou quando vem o próximo) e as concluídas */
 const cyView=()=>{const n=cyN(),dn=(S.reviews||[]).filter(r=>r.cy).slice().reverse(),opD=ui.open.has('rvdn');
  return `<div class="rvrule mut">Ciclo de revisão a cada ${n} ciclo${pl_(n)} de estudo${infoBtnI('rvcyc','Revisão por ciclos')}</div>${cyCard()}${dn.length?`<div class="card"><button type="button" class="trvgh" data-act="trvtog" data-id="rvdn" aria-expanded="${opD}"><span class="grow">Concluídas <span class="mut">(${dn.length})</span></span><span class="x mtog${opD?' on':''}" aria-hidden="true">${CHEV}</span></button>${opD?`<div class="rgql">${dn.map(r=>`<div class="rgq"><b>${esc(r.lbl)}</b><span class="mut grow">revisado em ${fd(r.end)}</span></div>`).join('')}</div>`:''}</div>`:''}`};
-const cyCard=()=>{if(!cyOn()||S.rv)return '';if(cyDue())return cyGate();const x=cyLast()+cyN(),k=x-(S.cycle-1);return `<div class="card cyst"><h2>Próximo ciclo de revisão</h2><div class="mut">Depois do ciclo&nbsp;${x}: falta${k===1?'':'m'} ${k}&nbsp;ciclo${pl_(k)}.</div></div>`};
+const cyCard=()=>{if(!cyOn()||S.rv)return '';if(cyDue())return cyGate();const {x,k}=cyLeft();if(k<1)return `<div class="card cyst"><h2>Ciclo de revisão</h2><div class="mut">Ciclo&nbsp;${x} concluído: inicie o ciclo de revisão na aba Ciclo.</div></div>`;return `<div class="card cyst"><h2>Próximo ciclo de revisão</h2><div class="mut">Depois do ciclo&nbsp;${x}: falta${k===1?'':'m'} ${k}&nbsp;ciclo${pl_(k)}.</div></div>`};
 /* Itens (aulas, links, questões) estudados no tópico naquele dia, sem repetição */
 function trvItems(o){const out=[],b=o.s.of||o.s.id;S.sessions.forEach(x=>{if(x.review||x.rid||x.trv||x.topic!==o.tp.id||x.date!==o.sd||trvBase(x.subj)!==b)return;(x.items||[]).forEach(i=>{const it=itKey(i);if(it&&!out.some(z=>sameIt(z,it)))out.push(it)})});return out}
 /* its: as aulas revisadas (com acertos por aula, se houver); ag: a soma desses acertos, guardada na agenda do tópico */
