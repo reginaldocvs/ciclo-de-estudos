@@ -1418,9 +1418,9 @@ const PIP={w:null,sig:''};
 const pipOk=()=>typeof window!=='undefined'&&'documentPictureInPicture' in window;
 const pipBtn=()=>pipOk()?`<button type="button" class="lnk lsm fmpip" data-act="pipon" title="Abre o cronômetro numa janela flutuante, por cima das outras janelas">${PIPI}<span>Destacar cronômetro</span></button>`:'';
 /* o que a janelinha mostra: a revisão em foco ou o estudo em andamento */
-function pipData(){if(S.rvf){const T=rvfT();if(!T)return null;const f=S.rvf,ms=rvfMs();return {c:col(T.s),n:nm(T.s),k:T.k,t:clock(ms),run:!!f.run,pz:f.run?'rvfpz':'rvfrs',reg:ms>0||f.run?'rvfreg':''}}
+function pipData(){if(S.rvf){const T=rvfT();if(!T)return null;const f=S.rvf,ms=rvfMs();return {c:col(T.s),n:nm(T.s),k:T.k,t:clock(ms),run:!!f.run,pz:f.run?'rvfpz':'rvfrs',rs:ms>0||f.run?'rvfrz':'',reg:ms>0||f.run?'rvfreg':''}}
  const s=S.sx&&curS();if(!s)return null;const man=S.sx==='manual'; /* registro aberto no app (ex.: meta atingida): só o tempo e um botão que traz o app para a frente */
- return {c:col(s),n:nm(s),k:man?'Registrar':S.type==='review'?'Revisão':'Estudo',t:clock(),run:!!S.timer.running,pz:man?'':S.timer.running?'tpause':'tstart',reg:man?'pipfocus':'fmreg'}}
+ return {c:col(s),n:nm(s),k:man?'Registrar':S.type==='review'?'Revisão':'Estudo',t:clock(),run:!!S.timer.running,pz:man?'':S.timer.running?'tpause':'tstart',rs:man?'':'treset',reg:man?'pipfocus':'fmreg'}}
 /* as ações da janelinha passam pelos mesmos botões do app */
 function pipAct(act){const b=document.createElement('button');b.type='button';b.hidden=true;b.dataset.act=act;$('app').appendChild(b);b.click();b.remove()}
 async function pipOpen(){if(!pipOk())return;if(PIP.w&&!PIP.w.closed){try{PIP.w.focus()}catch(e){}return}
@@ -1445,8 +1445,8 @@ async function pipOpen(){if(!pipOk())return;if(PIP.w&&!PIP.w.closed){try{PIP.w.f
  pipDraw()}
 /* redesenha a parte fixa só quando algo muda (pausa, disciplina); o tempo e a barra a cada meio segundo */
 function pipDraw(){const w=PIP.w;if(!w)return;if(w.closed){PIP.w=null;return}const d=pipData();if(!d){try{w.close()}catch(e){}PIP.w=null;return}
- const doc=w.document,sig=[d.n,d.k,d.c,d.run,d.pz,d.reg].join('|');
- if(sig!==PIP.sig){PIP.sig=sig;doc.title=d.n;doc.getElementById('pp').innerHTML=`<div class="tm${d.run?'':' off'}" id="tm" title="${esc(d.n)} · ${esc(d.k)}"></div><div class="ov"><div class="nm"><i style="background:${d.c}"></i><span>${esc(d.n)}</span></div><div class="bt">${d.pz?`<button data-act="${d.pz}" title="${d.run?'Pausar':'Retomar'}" aria-label="${d.run?'Pausar':'Retomar'}">${d.run?PAUSE:PLAY}</button>`:''}${d.reg?`<button data-act="${d.reg}" title="Registrar" aria-label="Registrar">${EDITI}</button>`:''}</div></div>`}
+ const doc=w.document,sig=[d.n,d.k,d.c,d.run,d.pz,d.rs,d.reg].join('|');
+ if(sig!==PIP.sig){PIP.sig=sig;doc.title=d.n;doc.getElementById('pp').innerHTML=`<div class="tm${d.run?'':' off'}" id="tm" title="${esc(d.n)} · ${esc(d.k)}"></div><div class="ov"><div class="nm"><i style="background:${d.c}"></i><span>${esc(d.n)}</span></div><div class="bt">${d.pz?`<button data-act="${d.pz}" title="${d.run?'Pausar':'Retomar'}" aria-label="${d.run?'Pausar':'Retomar'}">${d.run?PAUSE:PLAY}</button>`:''}${d.rs?`<button data-act="${d.rs}" title="Reiniciar cronômetro" aria-label="Reiniciar cronômetro">${RESET}</button>`:''}${d.reg?`<button data-act="${d.reg}" title="Registrar" aria-label="Registrar">${EDITI}</button>`:''}</div></div>`}
  doc.getElementById('tm').textContent=d.t}
 setInterval(()=>{if(PIP.w)pipDraw()},500);
 /* Aviso do sistema (aparece por cima de tudo, mesmo com o app minimizado), pedido uma vez num clique de iniciar */
