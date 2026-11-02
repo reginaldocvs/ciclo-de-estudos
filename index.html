@@ -163,7 +163,7 @@ body #hres .ritem .grow>.hic{float:right;height:1.3em;align-items:center;margin:
 .hday{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:16px 4px 6px 0;font-size:.9rem}.hdg:first-child .hday{padding-top:6px}
 .hday .mut{font-variant-numeric:tabular-nums}
 .hat{color:var(--mut);font-variant-numeric:tabular-nums}
-mark.hl{background:color-mix(in srgb,var(--ac) 22%,transparent);color:inherit;border-radius:3px;padding:0 1px}
+mark.hl{background:color-mix(in srgb,var(--ac) 22%,transparent);color:inherit;border-radius:4px;padding:0 1px}
 .ddi.ddm{display:flex;align-items:center;gap:10px}.ddm .snt{min-width:0}
 .ddck{flex:none;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border:1.5px solid var(--mut);border-radius:4px}
 .ddm.cur .ddck{background:var(--ac);border-color:var(--ac);color:#fff}.ddi.ddm.cur{font-weight:inherit;color:var(--ink)}#app .ddi.ddm.cur:not(:hover):not(:focus-visible){background:none}
@@ -1164,7 +1164,6 @@ function migEd(){const ids=(S.plans||[]).map(x=>x.id);if(!ids.length||!Array.isA
   e.plan=o||S.plan})}
 function migAll(){if(S.mig2)return;migQ(S);if(S.tpl)migQ(S.tpl);if(S.planData)Object.values(S.planData).forEach(d=>migQ(d));S.mig2=1}
 const mk2=(kind,name,link)=>{name=(name||'').trim();link=(link||'').trim();if(!name&&!link)return null;let url='';if(link){const m=link.match(/https?:\/\/\S+/i);url=m?m[0]:(!/\s/.test(link)&&/^[\w-]+(\.[\w-]+)+(\/|$)/.test(link)?normUrl(link):'')}if(link&&!url&&!name)name=link;return {id:uid(),kind:kind==='questoes'?'questoes':'aula',url,title:name,...(link&&!url&&link!==name?{loc:link}:{})}}; /* loc: local escrito da aula (ex.: PDF p. 12) */
-const EXT='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>';
 /* Aula: quadro de apresentação (representa a aula; usado no link da aula e nas legendas) */
 const AULAI='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h18"/><path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4"/><path d="M12 16v4"/><path d="M9 20h6"/><path d="m8 12 3-3 2 2 3-3"/></svg>';
 /* Acertos: alvo */
@@ -1192,7 +1191,7 @@ const tpAcLine=(tid,ids)=>{const q=qTpCtx(tid,ids);if(!q)return '';const c=tCol(
 const qPrevT=q=>`<span class="qprev" title="Tentativa anterior: ${q.a} de ${q.t}">antes ${Math.round(q.a/q.t*100)}% →</span>`;
 const qAgg=(tid,it)=>{let a=0,t=0;S.sessions.forEach(x=>{if(x.topic!==tid)return;(x.items||[]).forEach(i=>{if(+i.tq>0){const k=itKey(i);if(k&&(!it||sameIt(k,it))){a+=Math.min(+i.ac||0,+i.tq);t+=+i.tq}}})});return t?{a,t}:null};
 const tCol=tid=>{const s0=tid&&S.subjects.find(x=>(x.topics||[]).some(t=>t.id===tid));return s0?col(s0):''};
-/* Acertos das revisões: guardados no próprio registro (ac/tq), separados dos acertos do estudo (que ficam nas aulas) */
+/* Acertos das revisões: por aula (nas aulas do registro, como no estudo) ou, quando nenhuma aula tem questões e nas revisões antigas, no próprio registro (ac/tq) */
 const qv=(a,t)=>{a=parseInt(a,10)||0;t=parseInt(t,10)||0;return t>0?{ac:Math.min(a,t),tq:t}:null};
 const acRow=(a,t,attrs,lbl,strict)=>{const q=(strict?acQ:qv)(a,t); /* strict: sem acertos digitados não conta (campos por aula) */return `<div class="acrow"><span class="rlb">${ALVOI}${lbl||'Acertos'}</span><span class="racs"><input class="qin" data-qa ${attrs.a} value="${esc(a||'')}" placeholder="0" inputmode="numeric" aria-label="Acertos"><span class="mut">de</span><input class="qin" data-qt ${attrs.t} value="${esc(t||'')}" placeholder="0" inputmode="numeric" aria-label="Total de questões"><span class="qpct qsc qsub">${q?Math.round(q.ac/q.tq*100)+'%':''}</span></span></div>`};
 /* Acertos por aula na revisão: as aulas do tópico que já tiveram questões ganham campo próprio, com o total da última vez já preenchido;
@@ -1426,7 +1425,7 @@ const rodMax=r=>{const a=rodArc(r);return S.sessions.reduce((m,x)=>(x.set||1)===
 function rodSum(r){const cur=r===(S.set||1),ss=S.sessions.filter(x=>(x.set||1)===r),ds=ss.map(x=>x.date).filter(Boolean).sort();
  return {r,cur,c:cur?S.cycle:rodMax(r),min:ss.reduce((a,x)=>a+x.min,0),n:new Set(ss.map(x=>x.ses||x.id)).size,d0:ds[0],d1:ds[ds.length-1]}}
 /* Fim de ciclo: resumo do que foi feito + um único próximo passo. */
-function cycleEnd(){const ss=CS().filter(x=>x.cycle===S.cycle&&!x.rid&&!x.review),ds=uniq(ss.map(x=>x.date).filter(Boolean)).sort(),tp=new Set(ss.filter(x=>x.topic).map(x=>x.subj+'|'+x.topic)).size,A=actives(),f2=d=>d.slice(8,10)+'/'+d.slice(5,7);
+function cycleEnd(){const ss=CS().filter(x=>x.cycle===S.cycle&&!x.rid&&!x.review),ds=uniq(ss.map(x=>x.date).filter(Boolean)).sort(),tp=new Set(ss.filter(x=>x.topic).map(x=>x.subj+'|'+x.topic)).size,f2=d=>d.slice(8,10)+'/'+d.slice(5,7);
  const st=[['Dias',String(ds.length)],['Período',ds.length?(ds[0]===ds[ds.length-1]?f2(ds[0]):f2(ds[0])+' a '+f2(ds[ds.length-1])):'—'],['Tópicos',String(tp)]];
  return `<div class="card cfin"><div class="mut cfl"><span class="metaok mok6">Ciclo concluído ✓</span></div><dl class="cfst">${st.map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl><div class="cfact"><button class="btn" data-act="next">${cyOn()&&S.cycle-cyLast()>=cyN()?'Iniciar ciclo de revisão':'Iniciar ciclo '+(S.cycle+1)}</button></div></div>`}
 function viewCiclo(){
@@ -1977,7 +1976,8 @@ const focTo=sig=>{if(!sig)return false;let el=null;try{el=[...document.querySele
    em telas maiores a linha clicada fica no mesmo lugar, mesmo que o conteúdo acima mude de altura */
 function rowAnchor(){const A=ui.rowAnc;ui.rowAnc=null;if(!A)return;if(matchMedia('(max-width:1119.98px)').matches||document.querySelector('.c2 .rvcard')){scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});return}
  const g=document.querySelector('.srow .grow[data-id="'+A.id+'"]'),rw=g&&g.closest('.srow');if(rw)scrollBy(0,rw.getBoundingClientRect().top-A.top)}
-function render(){const pre=focSig(),pix=focIdx(),had=!!document.querySelector('#modal .dlg'),wasOpen=dlgKeys(),snaps=dlgSnap(),typed=formKeep();render0();formBack(typed);rowAnchor();rvSumFlow();{const nk=dlgKeys(),sw=[...nk].some(k=>!wasOpen.has(k))&&[...wasOpen].some(k=>!nk.has(k));if(!sw){dlgEnter(wasOpen);dlgLeave(snaps)}}modalLock();sheetBind();dlgPad();try{const dlg=document.querySelector('#modal .dlg'),ae=document.activeElement,lost=!ae||ae===document.body;
+/* Ao desenhar, o app ajusta dados sozinho (grupos de revisão, tópicos de cópias, modo ao abrir): se algo mudou depois da última gravação, grava */
+function render(){const pre=focSig(),pix=focIdx(),had=!!document.querySelector('#modal .dlg'),wasOpen=dlgKeys(),snaps=dlgSnap(),typed=formKeep();render0();if(LJ!==JSON.stringify(S))save();formBack(typed);rowAnchor();rvSumFlow();{const nk=dlgKeys(),sw=[...nk].some(k=>!wasOpen.has(k))&&[...wasOpen].some(k=>!nk.has(k));if(!sw){dlgEnter(wasOpen);dlgLeave(snaps)}}modalLock();sheetBind();dlgPad();try{const dlg=document.querySelector('#modal .dlg'),ae=document.activeElement,lost=!ae||ae===document.body;
  if(dlg&&!had){FOC.op=pre;if(!dlg.contains(ae)){if(FOC.kb){const f=dlg.querySelector('input:not([type=hidden]):not([disabled]),textarea,select,button:not([disabled])');if(f){f.focus({preventScroll:true});return}}dlg.setAttribute('tabindex','-1');dlg.focus({preventScroll:true})}return}
  if(!dlg&&had){const o=FOC.op;FOC.op=null;if(lost&&FOC.kb&&focTo(o))return}
  if(lost&&FOC.kb&&!focTo(pre)&&pix&&pix.i>=0){const box=pix.inDlg?dlg:document;if(box){const L=[...box.querySelectorAll(FQ)].filter(x=>x.getClientRects().length);const el=L[Math.min(pix.i,L.length-1)];el&&el.focus({preventScroll:true})}}}catch(e){}}
