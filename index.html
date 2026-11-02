@@ -399,7 +399,6 @@ input::placeholder,textarea::placeholder{color:var(--mut);opacity:1}
 /* Modo foco */
 .dlg.fmd{inset:0;width:auto;height:auto;max-width:none;max-height:none;margin:0;padding:24px 16px;border-radius:0;box-shadow:none;background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:auto;z-index:60}
 .fmtop{position:absolute;top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));display:flex;gap:6px}
-.fmtop{align-items:center}.fmpip{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.fmpip svg{flex:none}
 .fmc{margin:auto;width:min(100%,560px);display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px}
 .fms{display:flex;align-items:center;gap:10px;max-width:100%;font-size:1.125rem;font-weight:700}
 .fms .snt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1392,7 +1391,7 @@ function rvfT(){const f=S.rvf;if(!f)return null;
  if(f.kind==='tp'){const o=trvList().find(x=>x.k===f.id);if(!o)return null;const its=trvItems(o);return {s:o.s,k:'Revisão · '+ordN(o.n+1)+' de '+trvIv().length,tp:o.tp.name,body:its.length?`<div class="rvits">${its.map(l=>`<div class="rvit">${itemLine(l,o.tp.id)}</div>`).join('')}</div>`:''}}
  const b=blkL().find(x=>blkKey(x)===f.bk),v=b&&blkBy(b).find(x=>x.s.id===f.id);if(!v)return null;const tb=bkTops(v.s,v.tops);return {s:v.s,k:'Revisão de bloco',tp:'',body:tb?`<div class="rvlist">${tb}</div>`:''}}
 function rvfHtml(){const f=S.rvf,T=rvfT();if(!T){S.rvf=null;return ''}const c=col(T.s),run=f.run,ms=rvfMs(),lb=run?'Pausar':ms>0?'Retomar':'Iniciar';
- return `<div class="dlg reg fmd rvfd" role="dialog" aria-modal="true" aria-label="Revisão em andamento"><div class="fmtop">${pipBtn()}<button class="x" data-act="rvfoff" title="Sair e pausar (Esc)" aria-label="Sair; o tempo fica guardado em pausa">${CLOSEI}</button></div><div class="fmc">
+ return `<div class="dlg reg fmd rvfd" role="dialog" aria-modal="true" aria-label="Revisão em andamento"><div class="fmtop"><button class="x" data-act="rvfoff" title="Sair e pausar (Esc)" aria-label="Sair; o tempo fica guardado em pausa">${CLOSEI}</button></div><div class="fmc">
  <div class="mut">${T.k}</div>
  <div class="fms"><span class="dot" style="background:${c}"></span><span class="snt" title="${esc(nm(T.s))}">${esc(nm(T.s))}</span></div>
  ${T.tp?`<div class="rvftp snt" title="${esc(T.tp)}">${esc(T.tp)}</div>`:''}
@@ -1411,49 +1410,11 @@ const fmRegHtml=(s,body)=>{const c=col(s);
  <div class="fms"><span class="dot" style="background:${c}"></span><span class="snt" title="${esc(s.name)}">${esc(s.name)}</span></div>
  <div class="fmrt">${clock()}</div><div class="mut fmrg">${fmGoal(s)}</div>
  <div class="fmform"><h2 class="fmrh">${S.type==='review'?'O que você revisou':'O que você estudou'}</h2>${body}</div></div></div>`};
-/* Janelinha flutuante (Picture-in-Picture de documento; Chrome e Edge no computador): o cronômetro fica por cima de todas as
-   janelas, até de outros programas. Abre só por um clique (exigência do navegador); fechar a janelinha não para o cronômetro. */
-const PIPI='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4" width="19" height="16" rx="2"/><rect x="12" y="12" width="7" height="5" rx="1" fill="currentColor" stroke="none"/></svg>';
-const PIP={w:null,sig:''};
-const pipOk=()=>typeof window!=='undefined'&&'documentPictureInPicture' in window;
-const pipBtn=()=>pipOk()?`<button type="button" class="lnk lsm fmpip" data-act="pipon" title="Abre o cronômetro numa janela flutuante, por cima das outras janelas">${PIPI}<span>Destacar cronômetro</span></button>`:'';
-/* o que a janelinha mostra: a revisão em foco ou o estudo em andamento */
-function pipData(){if(S.rvf){const T=rvfT();if(!T)return null;const f=S.rvf,ms=rvfMs();return {c:col(T.s),n:nm(T.s),k:T.k,t:clock(ms),run:!!f.run,pz:f.run?'rvfpz':'rvfrs',rs:ms>0||f.run?'rvfrz':'',reg:ms>0||f.run?'rvfreg':''}}
- const s=S.sx&&curS();if(!s)return null;const man=S.sx==='manual'; /* registro aberto no app (ex.: meta atingida): só o tempo e um botão que traz o app para a frente */
- return {c:col(s),n:nm(s),k:man?'Registrar':S.type==='review'?'Revisão':'Estudo',t:clock(),run:!!S.timer.running,pz:man?'':S.timer.running?'tpause':'tstart',rs:man?'':'treset',reg:man?'pipfocus':'fmreg'}}
-/* as ações da janelinha passam pelos mesmos botões do app */
-function pipAct(act){const b=document.createElement('button');b.type='button';b.hidden=true;b.dataset.act=act;$('app').appendChild(b);b.click();b.remove()}
-async function pipOpen(){if(!pipOk())return;if(PIP.w&&!PIP.w.closed){try{PIP.w.focus()}catch(e){}return}
- let w;try{w=await documentPictureInPicture.requestWindow({width:220,height:90})}catch(e){toast('Não foi possível abrir a janela flutuante.');return}
- PIP.w=w;PIP.sig='';const bs=getComputedStyle(document.body);
- w.document.title='Cronômetro';
- w.document.head.innerHTML=`<meta charset="utf-8"><style>
- *{box-sizing:border-box}html,body{margin:0;height:100%}
- body{background:#171D1E;color:#FFFFFF;font-family:${bs.fontFamily};overflow:hidden;user-select:none}
- .pp{position:relative;height:100%;display:flex;align-items:center;justify-content:center}
- .tm{font-size:min(11vw,34vh);font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:.01em;line-height:1;opacity:.5;transition:opacity .2s}
- .tm.off{opacity:.28} /* branco a 50%, pequeno e discreto; pausado, mais apagado */
- .ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:6px 10px;background:rgba(23,29,30,.93);opacity:0;transition:opacity .18s}
- body:hover .ov,.ov:focus-within{opacity:1}
- .nm{max-width:100%;font-size:12px;font-weight:600;opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:6px}.nm i{width:8px;height:8px;border-radius:50%;flex:none}
- .bt{display:flex;gap:10px}button{width:40px;height:40px;border-radius:50%;border:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;background:rgba(255,255,255,.14);color:#fff;padding:0}
- button:hover{background:rgba(255,255,255,.26)}button:focus-visible{outline:2px solid #fff;outline-offset:2px}
- </style>`;
- w.document.body.innerHTML='<div class="pp" id="pp"></div>';
- w.document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;if(a==='fmreg'||a==='rvfreg'||a==='pipfocus')try{window.focus()}catch(x){}if(a!=='pipfocus')pipAct(a)});
- w.addEventListener('pagehide',()=>{PIP.w=null});
- pipDraw()}
-/* redesenha a parte fixa só quando algo muda (pausa, disciplina); o tempo e a barra a cada meio segundo */
-function pipDraw(){const w=PIP.w;if(!w)return;if(w.closed){PIP.w=null;return}const d=pipData();if(!d){try{w.close()}catch(e){}PIP.w=null;return}
- const doc=w.document,sig=[d.n,d.k,d.c,d.run,d.pz,d.rs,d.reg].join('|');
- if(sig!==PIP.sig){PIP.sig=sig;doc.title=d.n;doc.getElementById('pp').innerHTML=`<div class="tm${d.run?'':' off'}" id="tm" title="${esc(d.n)} · ${esc(d.k)}"></div><div class="ov"><div class="nm"><i style="background:${d.c}"></i><span>${esc(d.n)}</span></div><div class="bt">${d.pz?`<button data-act="${d.pz}" title="${d.run?'Pausar':'Retomar'}" aria-label="${d.run?'Pausar':'Retomar'}">${d.run?PAUSE:PLAY}</button>`:''}${d.rs?`<button data-act="${d.rs}" title="Reiniciar cronômetro" aria-label="Reiniciar cronômetro">${RESET}</button>`:''}${d.reg?`<button data-act="${d.reg}" title="Registrar" aria-label="Registrar">${EDITI}</button>`:''}</div></div>`}
- doc.getElementById('tm').textContent=d.t}
-setInterval(()=>{if(PIP.w)pipDraw()},500);
 /* Aviso do sistema (aparece por cima de tudo, mesmo com o app minimizado), pedido uma vez num clique de iniciar */
 const notifAsk=()=>{try{if('Notification' in window&&Notification.permission==='default'&&!localStorage.getItem('ciclo-notif-pedido')){localStorage.setItem('ciclo-notif-pedido','1');Notification.requestPermission()}}catch(e){}};
 function notify(t,b){try{if(!('Notification' in window)||Notification.permission!=='granted')return;const n=new Notification(t,{body:b,icon:'icons/icon-192.png',tag:'ciclo-meta'});n.onclick=()=>{try{window.focus()}catch(e){}n.close()}}catch(e){}}
 const fmHtml=()=>{const s=curS(),c=col(s),run=S.timer.running,p=Math.min(liveMin(s)/s.goal,1),lb=run?'Pausar':el()?'Retomar':prog(s.id)>0?'Continuar':'Iniciar';
- return `<div class="dlg reg fmd" role="dialog" aria-modal="true" aria-label="Sessão de estudo"><div class="fmtop">${pipBtn()}<button class="x" data-act="fmoff" title="Sair e pausar (Esc)" aria-label="Sair; o tempo fica guardado em pausa">${CLOSEI}</button></div><div class="fmc">
+ return `<div class="dlg reg fmd" role="dialog" aria-modal="true" aria-label="Sessão de estudo"><div class="fmtop"><button class="x" data-act="fmoff" title="Sair e pausar (Esc)" aria-label="Sair; o tempo fica guardado em pausa">${CLOSEI}</button></div><div class="fmc">
  <div class="fms"><span class="dot" style="background:${c}"></span><span class="snt" title="${esc(s.name)}">${esc(s.name)}</span></div>
  <div class="fmst${run?'':' off'}"${run?` style="--sc:${c}"`:''}>${run?(S.type==='review'?'Revisando':'Estudando'):'Pausado'}</div>
  <div class="fmt" id="fmt" role="timer" aria-live="off">${clock()}</div>
@@ -2019,7 +1980,7 @@ const focTo=sig=>{if(!sig)return false;let el=null;try{el=[...document.querySele
 function rowAnchor(){const A=ui.rowAnc;ui.rowAnc=null;if(!A)return;if(matchMedia('(max-width:1119.98px)').matches||document.querySelector('.c2 .rvcard')){scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});return}
  const g=document.querySelector('.srow .grow[data-id="'+A.id+'"]'),rw=g&&g.closest('.srow');if(rw)scrollBy(0,rw.getBoundingClientRect().top-A.top)}
 /* Ao desenhar, o app ajusta dados sozinho (grupos de revisão, tópicos de cópias, modo ao abrir): se algo mudou depois da última gravação, grava */
-function render(){const pre=focSig(),pix=focIdx(),had=!!document.querySelector('#modal .dlg'),wasOpen=dlgKeys(),snaps=dlgSnap(),typed=formKeep();render0();if(LJ!==JSON.stringify(S))save();if(PIP.w)pipDraw();formBack(typed);rowAnchor();rvSumFlow();{const nk=dlgKeys(),sw=[...nk].some(k=>!wasOpen.has(k))&&[...wasOpen].some(k=>!nk.has(k));if(!sw){dlgEnter(wasOpen);dlgLeave(snaps)}}modalLock();sheetBind();dlgPad();try{const dlg=document.querySelector('#modal .dlg'),ae=document.activeElement,lost=!ae||ae===document.body;
+function render(){const pre=focSig(),pix=focIdx(),had=!!document.querySelector('#modal .dlg'),wasOpen=dlgKeys(),snaps=dlgSnap(),typed=formKeep();render0();if(LJ!==JSON.stringify(S))save();formBack(typed);rowAnchor();rvSumFlow();{const nk=dlgKeys(),sw=[...nk].some(k=>!wasOpen.has(k))&&[...wasOpen].some(k=>!nk.has(k));if(!sw){dlgEnter(wasOpen);dlgLeave(snaps)}}modalLock();sheetBind();dlgPad();try{const dlg=document.querySelector('#modal .dlg'),ae=document.activeElement,lost=!ae||ae===document.body;
  if(dlg&&!had){FOC.op=pre;if(!dlg.contains(ae)){if(FOC.kb){const f=dlg.querySelector('input:not([type=hidden]):not([disabled]),textarea,select,button:not([disabled])');if(f){f.focus({preventScroll:true});return}}dlg.setAttribute('tabindex','-1');dlg.focus({preventScroll:true})}return}
  if(!dlg&&had){const o=FOC.op;FOC.op=null;if(lost&&FOC.kb&&focTo(o))return}
  if(lost&&FOC.kb&&!focTo(pre)&&pix&&pix.i>=0){const box=pix.inDlg?dlg:document;if(box){const L=[...box.querySelectorAll(FQ)].filter(x=>x.getClientRects().length);const el=L[Math.min(pix.i,L.length-1)];el&&el.focus({preventScroll:true})}}}catch(e){}}
@@ -2466,7 +2427,6 @@ if(a==='rgpick'){if(e.target.closest('button,a,label'))return;rcPick(ui.rcg===p?
  if(a==='hclr'){ui.hq='';ui.hd1='';ui.hd2='';ui.hfs=[];ui.hfc=[];ui.hft=[];ui.hn=30;render();const q=$('hq');if(q)q.focus({preventScroll:true});return}
  if(a==='rvatog'){S.rvaClosed=!S.rvaClosed;save();render();return}
  if(a==='hfo'){ui.hfo=!ui.hfo;render();return}
-  if(a==='pipon'){notifAsk();pipOpen();return}
   if(a==='tstart'||a==='rplay'||a==='rvfrs'||a==='rvfgo')notifAsk(); /* pede o aviso do sistema uma vez, num clique de iniciar */
   if(a==='htag'){const k=t.dataset.id;ui.htg=ui.htg||new Set();ui.htg.has(k)?ui.htg.delete(k):ui.htg.add(k);render();return}
   if(a==='mpick'){const id=t.dataset.id,i=id.indexOf(':'),k=id.slice(0,i),v=id.slice(i+1),A=Array.isArray(ui[k])?ui[k]:[];ui[k]=!v?[]:A.includes(v)?A.filter(x=>x!==v):A.concat(v);ui.hn=30;render();return}
