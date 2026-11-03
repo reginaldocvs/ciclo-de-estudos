@@ -1692,7 +1692,7 @@ const trvDue=L=>tvOn()?(L||trvList()).filter(o=>!o.fix&&o.due<=today()):[];
 const rgOn=()=>!S.rvgOff&&!cyOn(),tvOn=()=>!(S.trv&&S.trv.off);
 /* Revisão por ciclos: a cada N ciclos de estudo, um ciclo de revisão (mesma ordem e metas, na aba Revisão) com o que foi
    estudado nesses ciclos; o ciclo de estudo espera por ele. Alternativa à revisão por grupos. S.cyrv={on,n,last}; last = último ciclo de estudo já coberto. */
-const cyOn=()=>!!(S.cyrv&&S.cyrv.on),cyN=()=>{const n=+(S.cyrv&&S.cyrv.n);return n>=1&&n<=20&&n===Math.floor(n)?n:3},cyLast=()=>(S.cyrv&&+S.cyrv.last)||0;
+const cyOn=()=>!!(S.cyrv&&S.cyrv.on),cyN=()=>{const n=+(S.cyrv&&S.cyrv.n);return n>=1&&n<=20&&n===Math.floor(n)?n:5},cyLast=()=>(S.cyrv&&+S.cyrv.last)||0;
 /* Vence quando o ciclo atual ainda não começou e já se completaram N ciclos desde a última revisão */
 /* quantos ciclos de estudo faltam até o próximo ciclo de revisão; o atual não conta se já foi concluído */
 const cyLeft=()=>{const x=cyLast()+cyN();return {x,k:x-(S.cycle-1)-(S.type!=='review'&&inCycle().length&&!current()?1:0)}};
@@ -1828,10 +1828,10 @@ function rvToday(I,gn){const td=today(),lim=addD(td,7),L=tvOn()?trvList():[],byD
   (soon.length?`<div class="card tdsoon"><h2>Em breve <span class="mut">· 7 dias</span></h2><div class="trvl">${soon.map(x=>`<div class="trvli"><span class="mut tdd">${dl(x.d)}</span>${x.h}</div>`).join('')}</div></div>`:'')}
 /* Desligar a revisão por tópico: encerra as agendas em andamento e abre um período em que os estudos não entram */
 function trvOff(){trvInit();const td=today();trvList().forEach(o=>{if(!o.fix){const r=S.trv.t[o.k]=S.trv.t[o.k]||{h:[]};r.end=td}});S.trv.off=true;(S.trv.gaps=S.trv.gaps||[]).push([td,null])}
-/* Ajustes de revisão: as regras dos dois sistemas num lugar só */
+/* Ajustes de revisão: as regras dos sistemas num lugar só; a regra e o Ajustar aparecem mesmo desligado (o botão já diz se está ligado) */
 const rvAdjHtml=()=>`<div class="ov top" data-act="rvadjx"></div><div class="dlg top rvcfgdlg" role="dialog" aria-modal="true" aria-label="Ajustes de revisão"><div class="chead"><h2>Ajustes de revisão</h2><button class="x" data-act="rvadjx" title="Fechar" aria-label="Fechar">${CLOSEI}</button></div>${[['g','Revisão por grupos',`Grupos de ${rvInt()} dia${pl_(rvInt())} de estudo; revisar ${rvWait()} dia${pl_(rvWait())} depois`,'rvcfg',rgOn(),S.rv?'Conclua ou cancele a revisão em andamento para desligar':''],
   ['c','Revisão por ciclos',`A cada ${cyN()} ciclo${pl_(cyN())} de estudo`,'cycfg',cyOn(),S.rv?'Conclua ou cancele a revisão em andamento para desligar':''],
-  ['t','Revisão por tópico',`Intervalos: <span class="nw">${trvIv().join(' · ')} dias</span>`,'trvcfg',tvOn(),'']].map(([k,t,sub,act,on,lock])=>`<div class="rvrow rvsys"><div class="rvlb"><b>${t}</b><span class="mut">${on?sub:'Desligada'}</span>${on?`<button type="button" class="lnk lsm" data-act="${act}">Ajustar</button>`:''}</div><button type="button" class="swt" role="switch" aria-checked="${on}" data-act="rvsys" data-id="${k}" aria-label="${t}"${lock?` disabled title="${lock}"`:''}><span class="swk" aria-hidden="true"></span></button></div>${k==='t'&&ui.tvoffq?`<div class="tvoffq" role="alert"><p>Desligar encerra ${ui.tvoffq===1?'a agenda em andamento':`as ${ui.tvoffq} agendas em andamento`}. ${ui.tvoffq===1?'Ela vai':'Elas vão'} para Finalizados e ${ui.tvoffq===1?'pode ser retomada':'podem ser retomadas uma a uma'}. Ao religar, entram os estudos daquele dia em diante.</p><div class="fl rvcfa"><button type="button" class="btn g" data-act="tvoffx">Cancelar</button><button type="button" class="btn" data-act="tvoffok">Desligar</button></div></div>`:''}`).join('')}</div>`;
+  ['t','Revisão por tópico',`Intervalos: <span class="nw">${trvIv().join(' · ')} dias</span>`,'trvcfg',tvOn(),'']].map(([k,t,sub,act,on,lock])=>`<div class="rvrow rvsys"><div class="rvlb"><b>${t}</b><span class="mut">${sub}</span><button type="button" class="lnk lsm" data-act="${act}">Ajustar</button></div><button type="button" class="swt" role="switch" aria-checked="${on}" data-act="rvsys" data-id="${k}" aria-label="${t}"${lock?` disabled title="${lock}"`:''}><span class="swk" aria-hidden="true"></span></button></div>${k==='t'&&ui.tvoffq?`<div class="tvoffq" role="alert"><p>Desligar encerra ${ui.tvoffq===1?'a agenda em andamento':`as ${ui.tvoffq} agendas em andamento`}. ${ui.tvoffq===1?'Ela vai':'Elas vão'} para Finalizados e ${ui.tvoffq===1?'pode ser retomada':'podem ser retomadas uma a uma'}. Ao religar, entram os estudos daquele dia em diante.</p><div class="fl rvcfa"><button type="button" class="btn g" data-act="tvoffx">Cancelar</button><button type="button" class="btn" data-act="tvoffok">Desligar</button></div></div>`:''}`).join('')}</div>`;
 /* Calendário no celular: abre numa janela pelo botão ao lado das visões */
 const rvCalHtml=()=>`<div class="ov" data-act="rvcalx"></div><div class="dlg rvcaldlg" role="dialog" aria-modal="true" aria-label="Calendário de revisões"><div class="chead"><h2>Calendário de revisões</h2><button class="x" data-act="rvcalx" title="Fechar" aria-label="Fechar">${CLOSEI}</button></div>${rvCal(rgOn()?rgInfo():{list:[],total:0})}</div>`;
 const MINUS='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>';
@@ -2710,7 +2710,9 @@ document.addEventListener('keydown',e=>{if(e.code!=='Space'&&e.key!==' ')return;
    (modo foco, registro sendo preenchido), por escolha do usuário. Tema e barra lateral são mantidos.
    O tempo do cronômetro não se perde: vira tempo pausado da disciplina (inteiro, mesmo passando da meta), junto dos que já estavam pausados. */
 try{history.scrollRestoration='manual'}catch(e){}
-function bootReset(){scrollTo(0,0);['hmode','rvaClosed','rodOpen'].forEach(k=>delete S[k]);S.edit=null;
+function bootReset(){scrollTo(0,0);
+ /* o padrão da revisão por ciclos passou de 3 para 5: quem tinha 3 guardado com ela desligada (o padrão antigo) passa a 5, uma vez só */
+ if(S.cyrv&&!S.cyrv.d5){if(!S.cyrv.on&&+S.cyrv.n===3)S.cyrv.n=5;S.cyrv.d5=1}['hmode','rvaClosed','rodOpen'].forEach(k=>delete S[k]);S.edit=null;
  const clr=c=>{if(!c)return;const t=c.timer,id=c.sel&&c.sel.subj;
   let ms=t?(+t.acc||0)+(t.running&&t.start?Date.now()-t.start:0):0;
   if(ms>0&&id){c.paused=c.paused||{};c.paused[id]={ms:Math.round(ms),d0:t.d0||today()}}
