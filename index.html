@@ -1426,13 +1426,16 @@ const fmRegHtml=(s,body)=>{const c=col(s);
 /* Aviso do sistema (aparece por cima de tudo, mesmo com o app minimizado), pedido uma vez num clique de iniciar */
 const notifAsk=()=>{try{if('Notification' in window&&Notification.permission==='default'&&!localStorage.getItem('ciclo-notif-pedido')){localStorage.setItem('ciclo-notif-pedido','1');Notification.requestPermission()}}catch(e){}};
 function notify(t,b){try{if(!('Notification' in window)||Notification.permission!=='granted')return;const n=new Notification(t,{body:b,icon:'icons/icon-192.png',tag:'ciclo-meta'});n.onclick=()=>{try{window.focus()}catch(e){}n.close()}}catch(e){}}
-const fmHtml=()=>{const s=curS(),c=col(s),run=S.timer.running,lb=run?'Pausar':el()?'Retomar':prog(s.id)>0?'Continuar':'Iniciar';
+/* revisão por ciclos ou por grupo (rv): o nome da revisão no alto e "O que revisar" com as aulas para marcar, como no foco da revisão de bloco e de tópico */
+const fmHtml=()=>{const s=curS(),c=col(s),run=S.timer.running,rv=S.type==='review'&&!!S.rv,lb=run?'Pausar':el()?'Retomar':prog(s.id)>0?'Continuar':'Iniciar';
  return `<div class="dlg reg fmd" role="dialog" aria-modal="true" aria-label="Sessão de estudo"><div class="fmtop"><button class="x" data-act="fmoff" title="Sair e pausar (Esc)" aria-label="Sair; o tempo fica guardado em pausa">${CLOSEI}</button></div><div class="fmc">
+ ${rv?`<div class="mut">${esc('Revisão'+(S.rv.lbl?' · '+S.rv.lbl:''))}</div>`:''}
  <div class="fms"><span class="dot" style="background:${c}"></span><span class="snt" title="${esc(s.name)}">${esc(s.name)}</span></div>
  <div class="fmst${run?'':' off'}"${run?` style="--sc:${c}"`:''}>${run?(S.type==='review'?'Revisando':'Estudando'):'Pausado'}</div>
  <div class="fmt" id="fmt" role="timer" aria-live="off">${clock()}</div>
  <div class="fmg">${goalBarHtml('fmb',liveMin(s),s.goal,c)}<div class="mut" id="fmgl">${fmGoal(s)}</div></div>
  <div class="fma"><button class="btn fmp${run?' run':''}" data-act="${run?'tpause':'tstart'}" aria-label="${lb}">${run?PAUSE:PLAY}<span>${lb}</span></button><button class="btn g" data-act="fmreg">Registrar</button></div>
+ ${rv?`<div class="rvfw"><h2 class="rvfh">O que revisar</h2>${(()=>{const L=revList(s,winTopics(s.id));return L?`<div class="rvlist">${L}</div>`:'<div class="mut">Sem aula registrada.</div>'})()}</div>`:''}
  <div class="fmk"><span class="mut fmkb">Espaço pausa ou retoma · Esc sai sem registrar</span><button class="lnk lsm" data-act="treset">Reiniciar cronômetro</button></div></div></div>`};
 setInterval(()=>{if(!FM.on)return;const s=curS();if(!s)return;const t=$('fmt');if(t)t.textContent=clock();goalBarSet('fmb',liveMin(s),s.goal);const g=$('fmgl');if(g)g.textContent=fmGoal(s)},500);
 
