@@ -578,6 +578,7 @@ input[type=checkbox],input[type=radio]{accent-color:var(--m-p)}
 .qbox:focus-within{border-color:var(--m-p);box-shadow:inset 0 0 0 1px var(--m-p)}
 .qlb{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--m-p);flex:none;min-width:0;max-width:100%}
 /* nome da linha de Questões numa linha só, com reticências; no computador e no tablet, nome e acertos lado a lado sem quebrar */
+.vhl{margin-top:12px;display:flex;flex-direction:column}.vhr{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}.vhr:first-child{border-top:0}.vhr .mut{font-size:.85rem}
 .qln{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (min-width:601px){.qbox{flex-wrap:nowrap}.qbox .qlb{flex:0 1 auto}.qbox .qac{flex:none}}
 @media (max-width:360px){.qbox .qac .qin{width:42px}}.qlb svg{width:16px;height:16px;flex:none}.qlb .rsig{color:var(--mut)}
@@ -1972,7 +1973,7 @@ function chrome(){const mt=$('mtt'),ms=$('msub');if(!mt||!ms)return;let t=TTL[ta
  subFlow();
  const h=[...document.querySelectorAll('#app h2')].find(e=>e.textContent.trim()===TTL[tab]);document.querySelectorAll('#app .mdup').forEach(e=>{if(e!==h)e.classList.remove('mdup')});if(h)h.classList.add('mdup')}
 function viewConfig(){const t=S.theme||'auto',o=[['auto','Automático'],['light','Claro'],['dark','Escuro']];
- return `<div class="card hasinfo">${infoBtn('tema','Aparência')}<h2 style="margin-bottom:12px">Aparência</h2><div class="sper" role="group" aria-label="Tema">${o.map(([v,l])=>`<button type="button" class="seg${t===v?' on':''}" data-act="theme" data-id="${v}" aria-pressed="${t===v}">${l}</button>`).join('')}</div></div><div class="card"><h2>Seus dados</h2>${syCard()}</div><div class="card"><h2>Backup</h2><p class="mut" style="margin:4px 0 0">Salve um arquivo com todos os seus dados para guardar onde quiser. Para voltar a ele, use Restaurar backup: o arquivo substitui os dados atuais.</p><div class="fl" style="margin-top:12px"><button class="btn g s" data-act="bkout">Salvar backup</button><button class="btn g s" data-act="bkin">Restaurar backup</button></div></div>`}
+ return `<div class="card hasinfo">${infoBtn('tema','Aparência')}<h2 style="margin-bottom:12px">Aparência</h2><div class="sper" role="group" aria-label="Tema">${o.map(([v,l])=>`<button type="button" class="seg${t===v?' on':''}" data-act="theme" data-id="${v}" aria-pressed="${t===v}">${l}</button>`).join('')}</div></div><div class="card"><h2>Seus dados</h2>${syCard()}</div><div class="card"><h2>Backup</h2><p class="mut" style="margin:4px 0 0">Salve um arquivo com todos os seus dados para guardar onde quiser. Para voltar a ele, use Restaurar backup: o arquivo substitui os dados atuais.</p><div class="fl" style="margin-top:12px"><button class="btn g s" data-act="bkout">Salvar backup</button><button class="btn g s" data-act="bkin">Restaurar backup</button></div></div>${vhCard()}`}
 
 /* ===== Vários ciclos de estudo (um por concurso) ===== */
 const PEN='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>';
@@ -2078,7 +2079,12 @@ const SY={prov:null,user:null,err:null,db:null,uid:null,status:'init',dev:null,l
 (()=>{try{SY.dev=localStorage.getItem('ciclo-dev')||(()=>{const d=Math.random().toString(36).slice(2,10);localStorage.setItem('ciclo-dev',d);return d})();const m=JSON.parse(localStorage.getItem('ciclo-sync')||'{}');SY.lastTs=m.ts||0;SY.dirty=!!m.dirty;SY.localTs=m.lts||0}catch(x){SY.dev=SY.dev||'x'}})();
 const syMeta=()=>{try{localStorage.setItem('ciclo-sync',JSON.stringify({ts:SY.lastTs,dirty:!!SY.dirty,lts:SY.localTs||0}))}catch(x){}};
 const syCol=()=>SY.db.collection(SY.prov==='firebase'?'users/'+SY.uid+'/ciclo':'data/users/'+SY.uid);
-function syMark(){SY.dirty=true;SY.localTs=Date.now();syMeta();if(SY.status==='on'||SY.status==='saving'||SY.status==='err'){clearTimeout(SY.timer);SY.timer=setTimeout(syPush,1500)}}
+/* Hora da última ação da pessoa (toque, tecla, digitação, envio). Só uma gravação logo depois de uma ação conta como "mudança feita agora"
+   para decidir quem vence entre o aparelho e a conta; a arrumação automática ao abrir ou na virada do dia não conta (senão um aparelho
+   desatualizado, só por ser aberto, passava por cima da versão mais nova da conta). */
+['pointerdown','keydown','input','change','submit'].forEach(t=>document.addEventListener(t,()=>{SY.uact=Date.now()},true));
+const userAct=()=>Date.now()-(SY.uact||0)<5000;
+function syMark(){SY.dirty=true;if(userAct())SY.localTs=Date.now();syMeta();if(SY.status==='on'||SY.status==='saving'||SY.status==='err'){clearTimeout(SY.timer);SY.timer=setTimeout(syPush,1500)}}
 async function syPush(){if(window.__ro||!SY.db||SY.status==='off'||SY.status==='init'||SY.status==='denied')return;if(SY.busy){SY.again=true;return}
  const json=JSON.stringify(S);if(json===SY.lastJson&&!SY.dirty)return;SY.busy=true;SY.status='saving';
  try{const CH=180000,n=Math.max(1,Math.ceil(json.length/CH)),ts=Math.max(Date.now(),SY.lastTs+1);
@@ -2091,11 +2097,28 @@ async function syFetch(m){const parts=[];for(let i=0;i<m.n;i++){const s=await sy
 /* Tempo pausado ao adotar o estado de outra aba ou da conta: uma cópia do app aberta antes da atualização apaga as pausas
    (versão antiga). Mantém a pausa local da disciplina que lá continua sem registro e fora do modo foco. */
 function pzKeep(prev,nx){const pp=prev&&prev.paused;if(!pp||!nx)return;Object.keys(pp).forEach(k=>{if(!(+pp[k].ms>0)||(nx.paused&&nx.paused[k]))return;const sb=(nx.subjects||[]).find(x=>x.id===k);if(!sb||((nx.progress||{})[k]||0)>=sb.goal||(nx.sx&&nx.sel&&nx.sel.subj===k))return;nx.paused=nx.paused||{};nx.paused[k]=pp[k]})}
-/* Valida e normaliza a versão da conta antes de trocar S; guarda a versão local em KEY+'-bak'. */
+/* Versões anteriores: antes de os dados serem trocados por inteiro (versão de outro aparelho, backup ou versão restaurada), guarda a versão
+   que estava. As 3 últimas, neste aparelho (IndexedDB, que comporta bem mais que o localStorage). */
+const VH={db:null,list:null,loading:false};
+const vhDb=()=>VH.db||(VH.db=new Promise((ok,no)=>{try{const r=indexedDB.open('ciclo-versoes',1);r.onupgradeneeded=()=>r.result.createObjectStore('v',{keyPath:'ts'});r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}catch(e){no(e)}}));
+async function vhAll(){try{const db=await vhDb();return await new Promise((ok,no)=>{const q=db.transaction('v').objectStore('v').getAll();q.onsuccess=()=>ok((q.result||[]).sort((a,b)=>b.ts-a.ts));q.onerror=()=>no(q.error)})}catch(e){return []}}
+async function vhSave(json,why){if(window.__ro)return;try{let o;try{o=JSON.parse(json)}catch(x){return}if(!o||!((o.sessions||[]).length||(o.subjects||[]).length))return;
+ const L=await vhAll();if(L[0]&&L[0].d===json)return;const db=await vhDb();
+ await new Promise((ok,no)=>{const tx=db.transaction('v','readwrite'),st=tx.objectStore('v');st.put({ts:Date.now(),why,n:(o.sessions||[]).length,cy:o.cycle||1,d:json});L.slice(2).forEach(x=>st.delete(x.ts));tx.oncomplete=()=>ok();tx.onerror=()=>no(tx.error)});
+ VH.list=null;if(tab==='bk')render()}catch(e){}}
+const VH_WHY={aparelho:'antes de chegar a versão de outro aparelho',backup:'antes de restaurar um backup',versao:'antes de voltar a uma versão anterior'};
+function vhCard(){if(!VH.list&&!VH.loading){VH.loading=true;vhAll().then(l=>{VH.list=l;VH.loading=false;if(tab==='bk')render()})}
+ const L=VH.list||[],dt=ts=>{const d=new Date(ts);return d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'}).replace('.','')+' · '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+ return `<div class="card"><h2>Versões anteriores</h2><p class="mut" style="margin:4px 0 0">Quando seus dados são trocados por inteiro (por uma versão de outro aparelho ou por um backup), a versão que estava fica guardada aqui. Ficam as 3 últimas, neste aparelho.</p>${L.length?`<div class="vhl">${L.map(v=>`<div class="vhr"><div class="grow" style="min-width:0"><b>${esc(dt(v.ts))}</b><div class="mut">${esc(VH_WHY[v.why]||'')} · ${v.n} registro${v.n===1?'':'s'} · ciclo ${v.cy}</div></div><button class="btn g s" data-act="vhres" data-id="${v.ts}">Restaurar</button></div>`).join('')}</div>`:`<p class="mut" style="margin:12px 0 0">${VH.list?'Nenhuma versão guardada ainda.':'Carregando…'}</p>`}</div>`}
+function vhRestore(ts){const v=(VH.list||[]).find(x=>String(x.ts)===String(ts));if(!v)return;let o;try{o=JSON.parse(v.d)}catch(x){o=null}
+ if(!o||!Array.isArray(o.subjects)){toast('Não foi possível ler esta versão');return}
+ const prev=S,snap=JSON.stringify(S);try{S=Object.assign(seed(),o);norm()}catch(x){S=prev;toast('Não foi possível ler esta versão');return}
+ vhSave(snap,'versao');SY.uact=Date.now();pushU('Versão restaurada',snap);save();render();toast('Versão restaurada','undo','Desfazer')}
+/* Valida e normaliza a versão da conta antes de trocar S; guarda a versão local em KEY+'-bak' e nas versões anteriores. */
 function syApply(json,ts){const prev=S;let o;try{o=JSON.parse(json)}catch(x){return false}
  if(!o||!Array.isArray(o.subjects)||!o.subjects.every(x=>x&&typeof x==='object'&&x.id)||(o.sessions!==undefined&&!Array.isArray(o.sessions)))return false;
  try{S=Object.assign(seed(),o);norm();pzKeep(prev,S)}catch(x){S=prev;return false}
- if(!window.__ro)try{localStorage.setItem(KEY+'-bak',JSON.stringify(prev));const j=JSON.stringify(S);localStorage.setItem(KEY,j);LJ=j}catch(x){}
+ if(!window.__ro)try{vhSave(JSON.stringify(prev),'aparelho');localStorage.setItem(KEY+'-bak',JSON.stringify(prev));const j=JSON.stringify(S);localStorage.setItem(KEY,j);LJ=j}catch(x){}
  UST.length=0;RST.length=0;SY.lastTs=ts;SY.lastJson=json;SY.dirty=false;syMeta();if(!TABS.includes(tab))tab='ciclo';render();return true}
 const localHasData=()=>S.sessions.length>0||(S.editais||[]).length>1||S.subjects.some(s=>s.topics&&s.topics.length);
 /* Dados diferentes no navegador e na conta: vence a versão mais recente, sem perguntar. */
@@ -2159,7 +2182,7 @@ function bkIn(){const f=document.createElement('input');f.type='file';f.accept='
   r.onload=()=>{let o;try{o=JSON.parse(r.result)}catch(x){o=null}
    if(!o||!Array.isArray(o.subjects)||!o.subjects.every(x=>x&&typeof x==='object'&&x.id)||(o.sessions!==undefined&&!Array.isArray(o.sessions))){toast('Este arquivo não é um backup do Ciclo de Estudos');return}
    const prev=S,snap=JSON.stringify(S);try{S=Object.assign(seed(),o);norm()}catch(x){S=prev;toast('Não foi possível ler este backup');return}
-   pushU('Backup restaurado',snap);save();render();toast('Backup restaurado','undo','Desfazer')};
+   vhSave(snap,'backup');SY.uact=Date.now();pushU('Backup restaurado',snap);save();render();toast('Backup restaurado','undo','Desfazer')};
   r.onerror=()=>toast('Não foi possível ler o arquivo');r.readAsText(file)};
  f.click()}
 if(typeof document!=='undefined'){document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&SY.dirty&&SY.status==='on'){clearTimeout(SY.timer);syPush()}})}
@@ -2522,6 +2545,7 @@ if(a==='rgpick'){if(e.target.closest('button,a,label'))return;rcPick(ui.rcg===p?
  if(a==='fblogout'){fbLogout();return}
  if(a==='bkout'){bkOut();return}
  if(a==='bkin'){bkIn();return}
+ if(a==='vhres'){vhRestore(p);return}
  if(a==='rvcfg'){ui.rvcfg=true;ui.rvcfgmsg=null;ui.rvadj=null}
  if(a==='cycfg'){ui.cycfg=true;ui.rvcfgmsg=null;ui.rvadj=null}
  /* voltar (seta ou Cancelar) de um ajuste de revisão: fecha sem salvar e reabre Ajustes de revisão */
