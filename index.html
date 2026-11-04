@@ -2114,7 +2114,7 @@ const syCol=()=>SY.db.collection(SY.prov==='firebase'?'users/'+SY.uid+'/ciclo':'
 /* Hora da última ação da pessoa (toque, tecla, digitação, envio). Só uma gravação logo depois de uma ação conta como "mudança feita agora"
    para decidir quem vence entre o aparelho e a conta; a arrumação automática ao abrir ou na virada do dia não conta (senão um aparelho
    desatualizado, só por ser aberto, passava por cima da versão mais nova da conta). */
-['pointerdown','keydown','input','change','submit'].forEach(t=>document.addEventListener(t,e=>{if(e.target&&e.target.closest&&e.target.closest('#sygate'))return;SY.uact=Date.now()},true));
+['pointerdown','keydown','input','change','submit'].forEach(t=>document.addEventListener(t,e=>{if(e.target&&e.target.closest&&e.target.closest('#sygate'))return;SY.uact=Date.now();if(typeof SYL!=='undefined'&&SYL.off&&document.visibilityState==='visible')syListenOn(true)},true)); /* voltou a usar depois de parado: confere e volta a escutar */
 const userAct=()=>Date.now()-(SY.uact||0)<5000;
 function syMark(){SY.dirty=true;if(userAct())SY.localTs=Date.now();syMeta();if(SY.status==='on'||SY.status==='saving'||SY.status==='err'){clearTimeout(SY.timer);SY.timer=setTimeout(syPush,1500)}}
 async function syPush(){if(window.__ro||!SY.db||SY.status==='off'||SY.status==='init'||SY.status==='denied')return;if(SY.busy){SY.again=true;return}
@@ -2266,7 +2266,14 @@ function gateBoot(){if(!(SY.lastTs>0))return;gateShow();const w=setInterval(()=>
 /* ao voltar ao app: busca a versão da conta no servidor antes de liberar */
 async function syCheck(){if(!SY.db||!SY.uid||GT.checking||!['on','err','saving'].includes(SY.status))return;GT.checking=true;gateShow();
  try{const sn=await syCol().doc('meta').get({source:'server'});await syOnMeta(sn);gateHide()}catch(e){gateSlow()}finally{GT.checking=false}}
-if(typeof document!=='undefined')document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){GT.hid=Date.now();return}if(GT.hid&&Date.now()-GT.hid>60000)syCheck();GT.hid=0});
+/* Economia de download: com o app escondido, ou aberto sem uso por 5 min, para de escutar a conta (senão baixa os dados a cada mudança
+   feita no outro aparelho). Ao voltar, confere uma vez (com a camada, se ficou fora mais de 1 min ou parado) e volta a escutar. */
+const SYL={off:false,boot:Date.now()};
+function syListenOff(){if(SYL.off||!SY.unsub)return;try{SY.unsub()}catch(x){}SY.unsub=null;SYL.off=true}
+async function syListenOn(check){if(!SYL.off)return;SYL.off=false;if(check)await syCheck();if(SY.db&&SY.uid&&!SY.unsub&&['on','err','saving'].includes(SY.status))sySub()}
+if(typeof document!=='undefined'){document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){GT.hid=Date.now();syListenOff();return}const long=GT.hid&&Date.now()-GT.hid>60000;GT.hid=0;if(SYL.off)syListenOn(long);else if(long)syCheck()});
+ setInterval(()=>{if(document.visibilityState==='visible'&&!SYL.off&&SY.unsub&&SY.status==='on'&&Date.now()-Math.max(SY.uact||0,SYL.boot)>300000)syListenOff()},10000)}
+
 /* Aba congelada pelo navegador pode perder o aviso: confere de novo ao voltar a ela. */
 const tabCheck=()=>{try{tabAdopt(localStorage.getItem(KEY))}catch(x){}};
 addEventListener('focus',tabCheck);if(typeof document!=='undefined')document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')tabCheck()});
