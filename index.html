@@ -672,6 +672,8 @@ button.rnb{font:inherit;font-size:.85rem;font-weight:600;background:none;border:
 .rcsl b{color:var(--ink);font-weight:600}
 .rcsl:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
 .rcsl>svg{flex:none;width:16px;height:16px}
+/* resumo do calendário: ícone e marquinha na altura da 1ª linha (linha de 1.5em) */
+.rcsl{align-items:flex-start}.rcsl>svg{margin-top:calc(.75em - 8px)}.rcsl>.rcmk{margin-top:3.7px}
 .rcg.rcg2{column-gap:0;row-gap:2px}
 .rcy{font:inherit;font-size:.85rem;color:var(--ink);background:none;border:0;padding:3px 0 2px;margin:0;min-width:0;position:relative;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;font-variant-numeric:tabular-nums}
 .rcy .rcbd{display:none;position:absolute;top:3px;left:3px;right:3px;height:28px;border-radius:999px;background:color-mix(in srgb,var(--c) 22%,var(--card))}
@@ -883,6 +885,8 @@ html.mlock{overflow:hidden}
 .trvst{overflow:hidden}.trvsi{display:flex;flex-wrap:wrap;margin-left:-.8em}.trvsi>span{white-space:nowrap}.trvsi>span::before{content:'·';display:inline-block;width:.8em;text-align:center}
 .trvsdl{display:flex;align-items:center;min-width:0}.trvsdl .snt{min-width:0}.trvsdl .dot{flex:none}
 .trvd{flex:none;font-variant-numeric:tabular-nums;font-size:.85rem}
+/* Próximas: com o nome em 2 linhas, o quadradinho e a data ficam na altura da primeira linha */
+.trvx{align-items:first baseline}.trvx>.dot{align-self:flex-start;margin-top:.3em;margin-top:calc(.5lh - 6px)}
 .trvok{display:flex;flex-direction:column;gap:2px;min-width:0;margin:0 0 14px}
 .trvf{display:flex;gap:8px;flex-wrap:wrap}
 /* Tempo e data sempre na mesma linha: sem espaço, o campo de tempo encolhe (até 76px) em vez de a data descer */
@@ -935,6 +939,8 @@ h2 .mut,h3 .mut{font-weight:400;font-size:.95rem}
 .rgql>.rgq:first-child{border-top:0}
 .rgq>b{flex:none}.rgq .mut{font-size:.875rem;min-width:0}
 .rgq .rgeye{margin:-8px 0}
+/* fila de grupos: com o texto em 2 linhas, nome e olho ficam na altura da primeira (linhas de 24px; o olho de 40px centrado nela) */
+.rgq{align-items:flex-start;padding:10px 0}.rgq>b,.rgq>.mut{line-height:24px}
 .rgq.rgsel{background:color-mix(in srgb,var(--m-p) 8%,transparent);border-radius:var(--r-m);margin-inline:-10px;padding-inline:10px}
 .nw{white-space:nowrap}
 /* Interruptor (Material 3): trilho de 52×32; ligado, preenchido e com a bolinha maior à direita */
@@ -971,7 +977,7 @@ h2 .mut,h3 .mut{font-weight:400;font-size:.95rem}
 /* Linha do resumo em duas linhas: a bolinha acompanha a primeira (o nome do grupo), a setinha fica no meio */
 .rcsl{align-items:flex-start}
 .rcsl>.rcmk{margin-top:4px;flex:none}
-.rcsl>svg{align-self:center}
+.rcsl>svg{align-self:flex-start}
 .rcright>.rcl{order:1}.rcright>.rcsum{order:2;margin-top:8px}.rcright>.rcpn,.rcright>.rchint{order:3}
 .rcright>.rcpn{flex-wrap:wrap;align-items:flex-start}
 .rcright>.rcpn>.rcpt{flex:1 1 60%;min-width:0}
