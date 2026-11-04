@@ -110,7 +110,9 @@ const MIG=new Set(['bumpMig','mig2']); /* marcas de migração que o app grava a
 /* o que o app zera de propósito ao abrir (bootReset): modo do Histórico, cartões recolhidos, edição, foco,
    registro sendo preenchido e cronômetro (que vira tempo pausado; esse tempo é conferido à parte) */
 const BOOT=new Set(['hmode','rvaClosed','rodOpen','edit','sx','draft','sel','timer','paused','rvf','rvp']);
-const diff=(A,B)=>[...new Set(Object.keys(A).concat(Object.keys(B)))].filter(k=>!MIG.has(k)&&!BOOT.has(k)&&!eq(A[k],B[k]));
+/* o contexto estacionado durante a revisão (alt) também passa pela limpeza da abertura */
+const nb=v=>v&&typeof v==='object'?Object.fromEntries(Object.entries(v).filter(([k])=>!BOOT.has(k))):v;
+const diff=(A,B)=>[...new Set(Object.keys(A).concat(Object.keys(B)))].filter(k=>!MIG.has(k)&&!BOOT.has(k)&&!(k==='alt'?eq(nb(A[k]),nb(B[k])):eq(A[k],B[k])));
 const pzSum=o=>Object.values(o.paused||{}).reduce((a,v)=>a+(+v.ms||0),0);
 const sig=b=>b.rule+'|'+b.msg.replace(/\d+/g,'#').replace(/\b[a-z0-9]{7}\b/g,'@');
 const found=new Map();
