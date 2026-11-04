@@ -1,0 +1,82 @@
+/* Histórico: ordem por data, dias com total, totais, filtros recolhidos no celular, tipo, destaque, Ciclos com meta e atalho, horário */
+import {open,mk,W} from './lib.mjs';import fs from 'fs';
+const [F,O]=process.argv.slice(2);const RAW=JSON.parse(fs.readFileSync(F,'utf8')),DATA=RAW['ciclo-estudos-v2']||JSON.stringify(RAW);
+let bad=0;const ok=(c,m)=>{console.log((c?'OK    ':'FALHA ')+m);if(!c)bad++};
+const tab=async(p,t)=>{await p.evaluate(t=>[...document.querySelectorAll(`[data-tab="${t}"]`)].find(e=>e.getClientRects().length).click(),t);await W(350)};
+const ovf=p=>p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
+{/* computador */
+ const {b,p,errs}=await open({w:1280,h:900,data:{'ciclo-estudos-v2':DATA,'ciclo-welcome-skip':'1'}});const x=mk(p);
+ await tab(p,'reg');
+ const r=await x.ev(()=>{const days=[...document.querySelectorAll('#hres .hday b')].map(e=>e.textContent);const dates=[];return {days,tot:document.querySelector('#hres .htot').textContent.trim(),pan:getComputedStyle(document.querySelector('#hfpan')).display,btn:getComputedStyle(document.querySelector('#hfb')).display,tipo:!!document.querySelector('[data-act=sdd][data-id=hft]')}});
+ console.log('  dias:',r.days.slice(0,5).join(' | '),' · total:',r.tot);
+ ok(r.days[0]&&/20\/10/.test(r.days[0]),'primeiro dia é o mais recente (20/10)');
+ ok(/registros · .*h/.test(r.tot),'linha de totais com tempo');
+ ok(r.pan==='none'&&r.btn!=='none','computador: botão Filtrar, painel começa fechado');
+ const y0=await x.ev(()=>document.querySelector('#hres .htot').getBoundingClientRect().top);
+ await x.act('hfo');ok(await x.ev(()=>getComputedStyle(document.querySelector('#hfpan')).display!=='none'),'computador: Filtrar abre a caixinha');
+ const pop=await x.ev(()=>{const pn=document.querySelector('#hfpan'),f=[...pn.querySelectorAll('.hflt .hfsel')].map(e=>e.getBoundingClientRect()),pe=pn.querySelector('.hper').getBoundingClientRect(),b=document.querySelector('#hfb').getBoundingClientRect(),r=pn.getBoundingClientRect();
+  return {abs:getComputedStyle(pn).position,col:f.every(z=>Math.abs(z.left-f[0].left)<1&&Math.abs(z.width-f[0].width)<1)&&f.every((z,i)=>!i||z.top>f[i-1].top),perBelow:pe.top>f[f.length-1].bottom,rows:f.length+1,under:r.top>=b.bottom,right:Math.round(r.right-b.right),htot:document.querySelector('#hres .htot').getBoundingClientRect().top}});
+ console.log('  caixinha:',JSON.stringify(pop));
+ ok(pop.abs==='absolute'&&pop.under&&Math.abs(pop.right)<=1,'caixinha flutuante presa embaixo do botão');ok(pop.col&&pop.perBelow,'campos em uma coluna ('+pop.rows+' linhas)');ok(Math.abs(pop.htot-y0)<1,'abrir não empurra a lista');
+ await p.screenshot({path:`${O}/h2-desk-pop.png`});
+ await x.ev(()=>document.querySelector('#hres .htot').click());await W(250);ok(await x.ev(()=>getComputedStyle(document.querySelector('#hfpan')).display==='none'),'clicar fora fecha');
+ await x.act('hfo');await p.keyboard.press('Escape');await W(250);ok(await x.ev(()=>getComputedStyle(document.querySelector('#hfpan')).display==='none'&&document.activeElement.id==='hfb'),'Esc fecha e volta o foco ao botão');
+ await x.act('hfo');await x.act('sdd','hfs');await p.keyboard.press('Escape');await W(250);ok(await x.ev(()=>!ui.dd&&ui.hfo),'Esc com a lista aberta fecha só a lista');await p.keyboard.press('Escape');await W(200);
+ await x.act('hfo');
+ await p.reload();await W(700);await tab(p,'reg');ok(await x.ev(()=>getComputedStyle(document.querySelector('#hfpan')).display==='none'),'computador: reabrir o app volta fechado');
+ await x.act('hfo');await tab(p,'st');await tab(p,'reg');ok(await x.ev(()=>getComputedStyle(document.querySelector('#hfpan')).display==='none'),'computador: trocar de aba volta fechado');
+ /* marcar várias disciplinas e ciclos */
+ await x.act('hfo');await x.act('sdd','hfs');const ids=await x.ev(()=>[...document.querySelectorAll('[data-act=mpick][data-id^="hfs:"]')].map(e=>e.dataset.id).filter(i=>i!=='hfs:'));
+ await x.act('mpick',ids[0]);ok(await x.ev(()=>!!document.querySelector('[data-act=mpick]')),'lista continua aberta depois de marcar');await x.act('mpick',ids[1]);
+ const m=await x.ev(()=>({lbl:document.querySelector('[data-act=sdd][data-id=hfs]').textContent.trim(),on:document.querySelectorAll('[data-act=mpick][data-id^="hfs:"][aria-selected=true]').length,tot:document.querySelector('#hres .htot').textContent.trim(),subs:[...new Set([...document.querySelectorAll('#hres .rsub')].map(e=>e.textContent))]}));
+ console.log('  ',JSON.stringify(m));ok(/^Disciplinas\s*2$/.test(m.lbl)&&m.on===2&&m.subs.length===2,'duas disciplinas marcadas: campo "Disciplinas ②" e lista só com elas');
+ await p.screenshot({path:`${O}/h2-desk-multi.png`});
+ await x.act('sdd','hfc');const cid=await x.ev(()=>[...document.querySelectorAll('[data-act=mpick][data-id^="hfc:"]')].map(e=>e.dataset.id).filter(i=>i!=='hfc:'));await x.act('mpick',cid[0]);await x.act('mpick',cid[1]);
+ const cy=await x.ev(()=>[...new Set([...document.querySelectorAll('#hres .rmeta .tag:last-child')].map(e=>e.textContent))]);ok(cy.length>=1&&cy.length<=2,'dois ciclos marcados: '+cy.join(', '));
+ await x.ev(()=>document.body.click());await W(250);
+ const dc=await x.ev(()=>({pan:getComputedStyle(document.querySelector('#hfpan')).display,chips:[...document.querySelectorAll('.hchip')].map(e=>e.textContent),n:(document.querySelector('.hfn')||{}).textContent}));
+ ok(dc.pan==='none'&&dc.chips.length===4&&dc.n==='4','fechado: uma etiqueta por item marcado '+JSON.stringify(dc));
+ await p.screenshot({path:`${O}/h2-desk-fechado.png`});
+ await x.act('hfx',await x.ev(()=>document.querySelector('.hchip[data-id^="fs:"]').dataset.id));ok(await x.ev(()=>ui.hfs.length===1&&document.querySelectorAll('.hchip').length===3),'× tira só aquela disciplina');
+ await x.act('hfo');await x.act('sdd','hfs');await x.act('mpick','hfs:');ok(await x.ev(()=>ui.hfs.length===0),'"Todas as disciplinas" desmarca tudo');
+ await x.act('hclr');
+ await p.screenshot({path:`${O}/h2-desk.png`});
+ await p.type('#hq','crase');await W(400);
+ ok(await x.ev(()=>[...document.querySelectorAll('#hres mark.hl')].some(m=>/crase/i.test(m.textContent))),'busca destaca "crase"');
+ await p.screenshot({path:`${O}/h2-busca.png`});
+ await x.act('hclr');
+ if(r.tipo){await x.act('hfo');await x.act('sdd','hft');await x.act('spick','hft:r');const t=await x.ev(()=>document.querySelector('#hres .htot').textContent);ok(/registro/.test(t),'filtro Só revisões: '+t.trim());await x.act('hclr')}else console.log('  (sem revisões nos dados: filtro de tipo escondido)');
+ await x.act('hmode','cic');
+ const c=await x.ev(()=>({meta:[...document.querySelectorAll('.hcsn .mut')].map(e=>e.textContent),go:document.querySelectorAll('[data-act=hgo]').length}));
+ console.log('  Ciclos:',c.meta.join(' | '));ok(c.meta.length&&c.meta.every(t=>!/ de /.test(t)),'Ciclos mostra só o tempo (sem a meta)');ok(c.go>0,'Ciclos tem atalho para os registros');const gl=await x.ev(()=>[...document.querySelectorAll('[data-act=hgo]')].map(e=>e.textContent));ok(gl.every(t=>t==='Editar registro'||t==='Editar registros'),'botão "Editar registro(s)": '+gl.join(', '));
+ await p.screenshot({path:`${O}/h2-ciclos.png`});
+ await x.act('hgo',await x.ev(()=>document.querySelector('[data-act=hgo]').dataset.id));
+ const g=await x.ev(()=>({cic:S.hmode,fc:ui.hfc,fs:ui.hfs,n:document.querySelectorAll('#hres .ritem').length}));ok(!g.cic&&g.fc&&g.fs&&g.n>0,'atalho abre Registros filtrado ('+g.n+' registros)');
+ ok(!errs.length,'sem erros: '+errs.join(' | '));await b.close()}
+{/* celular */
+ const {b,p,errs}=await open({w:360,h:740,data:{'ciclo-estudos-v2':DATA,'ciclo-welcome-skip':'1'}});const x=mk(p);
+ await tab(p,'reg');
+  ok(await x.ev(()=>getComputedStyle(document.querySelector('#hfpan')).display==='none'),'celular: filtros recolhidos');ok(!await ovf(p),'celular: sem rolagem lateral');
+ await p.screenshot({path:`${O}/h2-cel.png`});
+ await x.act('hfo');ok(await x.ev(()=>getComputedStyle(document.querySelector('#hfpan')).display!=='none'),'Filtrar abre o painel');
+ await x.act('sdd','hfs');const sid=await x.ev(()=>document.querySelectorAll('[data-act=mpick][data-id^="hfs:"]')[1].dataset.id);await x.act('mpick',sid);await x.ev(()=>document.body.click());await W(250);
+ await p.screenshot({path:`${O}/h2-cel-aberto.png`});
+ await x.act('hfo');const ch=await x.ev(()=>({chips:[...document.querySelectorAll('.hchip')].map(e=>e.textContent),n:(document.querySelector('.hfn')||{}).textContent}));
+ ok(ch.chips.length===1&&ch.n==='1','fechado: etiqueta do filtro e contagem ('+ch.chips.join()+')');
+ await p.screenshot({path:`${O}/h2-cel-chip.png`});
+ await x.act('hfx',await x.ev(()=>document.querySelector('.hchip').dataset.id));ok(await x.ev(()=>!ui.hfs.length&&!document.querySelector('.hchip')),'× remove o filtro');
+ ok(!await ovf(p),'celular: sem rolagem lateral depois dos filtros');
+ /* horário: registro novo de hoje ganha horário; edição com data passada mostra o campo */
+ await x.ev(()=>{const s=S.subjects.find(s=>!s.off&&!s.of);S.sel.subj=s.id;addSession(30);save();render()});
+ const at=await x.ev(()=>S.sessions[S.sessions.length-1].at);ok(/^\d\d:\d\d$/.test(at||''),'registro de hoje grava o horário ('+at+')');
+ await tab(p,'reg');ok(await x.ev(a=>{const h=document.querySelector('#hres .hdg .hat');return h&&h.textContent===a&&document.querySelector('#hres .hday b').textContent==='Hoje'},at),'aparece em "Hoje" com o horário');
+ const k=await x.ev(()=>{const z=S.sessions[S.sessions.length-1];return z.ses||z.id});await x.act('edit',k);
+ ok(await x.ev(()=>!document.querySelector('[data-eat]')),'edição de hoje: sem campo de horário');
+ await x.ev(()=>{const i=document.querySelector('[data-ed]');i.value=addD(today(),-3);i.dispatchEvent(new Event('input',{bubbles:true}));i.dispatchEvent(new Event('change',{bubbles:true}))});await W(300);
+ ok(await x.ev(()=>{const i=document.querySelector('[data-eat]');return !!i&&i.value===''}),'mudou para data passada: campo de horário aparece vazio');
+ await p.screenshot({path:`${O}/h2-edit.png`});
+ await x.ev(()=>{const i=document.querySelector('[data-eat]');i.value='07:15';i.dispatchEvent(new Event('input',{bubbles:true}));i.dispatchEvent(new Event('change',{bubbles:true}))});
+ await x.act('saveedit');
+ const z=await x.ev(k=>{const s=S.sessions.find(x=>(x.ses||x.id)===k);return s&&{d:s.date,at:s.at}},k);ok(z&&z.at==='07:15'&&z.d===await x.ev(()=>addD(today(),-3)),'salvou data passada com horário 07:15');
+ ok(!errs.length,'sem erros: '+errs.join(' | '));await b.close()}
+console.log(bad?'FALHAS: '+bad:'TUDO OK');

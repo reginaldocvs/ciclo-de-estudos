@@ -1,0 +1,56 @@
+import {open,mk,W} from './lib.mjs';import fs from 'fs';
+const [OUT,WD]=process.argv.slice(2);const w=+(WD||1280);
+const log=[],ok=(c,m)=>log.push((c?'OK   ':'FALHA ')+m);
+const d=JSON.parse(fs.readFileSync('dados/data-rv3.json','utf8'));const S0=JSON.parse(d['ciclo-estudos-v2']);S0.timer={running:false,start:0,acc:0};S0.sx=false;S0.rv=null;S0.mode='study';S0.alt=null;S0.type='regular';S0.progress={};S0.sessions=S0.sessions.filter(x=>x.cycle!==S0.cycle||x.rid||x.review);d['ciclo-estudos-v2']=JSON.stringify(S0);
+const {b,p,errs}=await open({data:d,w,h:900});const x=mk(p);try{
+const shot=n=>p.screenshot({path:`${OUT}/bks-${w}-${n}.png`,fullPage:w<500});
+await x.ev(()=>{S.blk=[{id:'m1',pos:3}];save();render()});
+let k=0;const reg=async id=>{await x.act('rreg',id);await x.ev(k=>{const g=S.sel.groups[0];if(!g.rows.length)g.rows.push({id:uid(),kind:"aula",name:"",link:"",q:""});g.nt='Tópico S'+k;g.rows[0].name='Aula S'+k;render()},++k);await x.submit('#modal form[data-f=man]');await W(250)};
+const A=await x.ev(()=>inCycle().map(s=>s.id));await reg(A[0]);await reg(A[1]);await reg(A[2]);
+const foot=()=>x.ev(()=>{const e=document.querySelector('#app [data-act=blkend]');return e?e.textContent+'|'+e.className:'-'});
+const row=()=>x.ev(()=>{const r=document.querySelector('#app .bkrow');return {sel:r.classList.contains('sel'),act:r.dataset.act||'',txt:r.innerText.replace(/\s+/g,' ')}});
+const breg=async id=>{await x.act('bkreg',id);await x.submit('#modal form[data-f=bkreg]');await W(250)};
+ok((await row()).sel,'bloco na vez: marcador destacado');
+ok(await x.ev(()=>!document.querySelector('#app .srow.cur')),'nenhuma disciplina destacada junto');
+ok((await foot())==='Pular revisão|btn g','sem revisar: Pular revisão (discreto): '+await foot());
+await breg(A[0]);
+ok(/Revisado/.test(await x.ev(()=>document.querySelector('#app .bkok').innerText)),'selo diz Revisado');
+await breg(A[1]);await breg(A[2]);
+ok(await x.ev(()=>{const c=document.querySelector('#app .blkc');return !!c&&/Revisão de bloco · concluída/.test(c.innerText)&&/^Ir para/.test(c.querySelector('[data-act=bkback]')?.textContent||'')&&!c.querySelector('[data-act=blkend]')}),'última revisada: conclui sozinho, cartão fica com "Ir para"');
+ok(/Revisão concluída/.test(await x.ev(()=>document.body.innerText)),'aviso "Revisão concluída" com Desfazer');
+ok(await x.ev(()=>/concluído/.test(document.querySelector('#app .bkrow').innerText)),'marcador vira concluída');
+await shot('1-concluir');
+await x.ev(()=>{const u=[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='Desfazer');u&&u.click()});await W(300);
+ok(await x.ev(()=>!Object.keys(S.blkDone||{}).length&&!!document.querySelector('#app [data-act=blkend]')),'Desfazer volta o bloco para antes da última revisão');
+await x.act('bkunreg',A[1]);
+ok((await foot())==='Pular revisão|btn g','desfazer volta a Pular revisão');
+await x.act('blkend');await W(300);
+ok(/Revisão pulada/.test(await x.ev(()=>document.body.innerText)),'aviso "Revisão pulada"');
+let r=await row();ok(/pulado/.test(r.txt)&&r.act==='bkview'&&!r.sel,'marcador "pulada", tocável e não destacado: '+JSON.stringify(r));
+ok(await x.ev(()=>!document.querySelector('#app .blkc')),'cartão volta para a disciplina da vez');
+await x.ev(()=>document.querySelector('#app .bkrow').click());await W(300);
+r=await row();ok(r.sel,'tocar no marcador destaca a linha');
+ok(await x.ev(()=>/Revisão de bloco · pulada/.test(document.querySelector('#app .blkc').innerText)&&!document.querySelector('#app .srow.cur')),'cartão do bloco pulado, sem disciplina destacada');
+ok(await x.ev(()=>document.querySelectorAll('#app .blkc [data-act=bkgo]').length===2&&!!document.querySelector('#app .blkc .bkok')),'mostra a revisada e as que faltam com Iniciar');
+const back=await x.ev(()=>document.querySelector('#app [data-act=bkback]')?.textContent);ok(/^Ir para/.test(back||''),'botão '+back);
+await shot('2-pulada');
+// foco a partir do bloco pulado
+await x.act('bkgo',A[1]);await W(200);ok(await x.ev(()=>!!document.querySelector('#modal .rvfd')&&/Tópico S2/.test(document.querySelector('#modal .rvfd').innerText)),'foco abre no bloco pulado');
+await x.ev(()=>{S.rvf.acc=10*60000;render()});await x.act('rvfreg');await W(200);
+ok(await x.ev(()=>document.querySelector('#modal [data-f=bkreg] input[name=m]')?.value==='0h10'),'Registrar do foco abre com o tempo');
+await x.submit('#modal form[data-f=bkreg]');await W(250);
+ok(/pulado/.test((await row()).txt),'ainda falta uma: continua pulada');
+await breg(A[2]);
+r=await row();ok(/concluído/.test(r.txt),'última revisada: vira concluída sozinha: '+r.txt);
+ok(/Revisão de bloco · concluída/.test(await x.ev(()=>document.querySelector('#app .blkc').innerText)),'cabeçalho vira concluída');
+await shot('3-concluida');
+await x.act('bkunreg',A[2]);ok(/pulado/.test((await row()).txt),'desfazer uma volta a pulada');
+await x.act('bkback');ok(await x.ev(()=>!document.querySelector('#app .blkc')&&!document.querySelector('#app .bkrow.sel')&&!!document.querySelector('#app .srow.cur')),'Voltar devolve o cartão à disciplina da vez');
+await x.ev(()=>document.querySelector('#app .bkrow').click());await W(200);
+const nid=await x.ev(()=>current().id);await x.act('pickrow',nid);ok(await x.ev(()=>!ui.bkv&&!document.querySelector('#app .blkc')),'tocar numa disciplina sai do bloco');
+// teclado
+await x.ev(()=>document.querySelector('#app .bkrow').focus());await p.keyboard.press('Enter');await W(200);ok(await x.ev(()=>!!ui.bkv),'Enter no marcador abre o bloco');
+// marcador futuro: sem toque
+await x.ev(()=>{S.blk.push({id:'m2',pos:inCycle().length});render()});ok(await x.ev(()=>{const r=[...document.querySelectorAll('#app .bkrow')].pop();return !r.dataset.act}),'marcador que não chegou: sem toque');
+log.push('erros: '+JSON.stringify(errs));
+}catch(e){log.push('EXCEÇÃO '+e.message)}await b.close();console.log(log.join('\n'));

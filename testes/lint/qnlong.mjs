@@ -1,0 +1,12 @@
+/* Nome comprido na linha de Questões: no computador/tablet, nome e acertos na mesma linha com reticências; no celular, duas linhas e reticências; nada estoura */
+import {open,mk,W} from './lib.mjs';import fs from 'fs';
+const [F,OUT]=process.argv.slice(2);let bad=0;const ok=(c,m)=>{console.log((c?'OK    ':'FALHA ')+m);if(!c)bad++};
+const S0=JSON.parse(fs.readFileSync(F,'utf8'));S0.timer={running:false,start:0,acc:0};S0.sx=false;
+for(const w of [1280,768,390,320]){const {b,p,errs}=await open({data:{'ciclo-estudos-v2':JSON.stringify(S0),'ciclo-welcome-skip':'1'},w,h:860});const x=mk(p);
+ const id=await x.ev(()=>actives().find(s=>!gDone(s)).id);await x.act('rreg',id);
+ await x.ev(()=>{const g=S.sel.groups[0];g.nt='Tópico L';g.rows=[{id:uid(),kind:'aula',name:'',link:'',q:'https://q/1',qo:true,ac:'4',tq:'10',lbl:'Testando um nome bem grande para as questões do tópico'},{id:uid(),kind:'aula',name:'',link:'',q:'https://q/2',qo:true,ac:'7',tq:'10'}];render()});await W(300);
+ const r=await x.ev(()=>{const bx=document.querySelector('#modal .qbox'),ln=bx.querySelector('.qln'),ac=bx.querySelector('.qac'),lb=ln.getBoundingClientRect(),ab=ac.getBoundingClientRect(),d=document.querySelector('#modal .dlg')||document.querySelector('#modal > *');const sc=[...document.querySelectorAll('#modal *')].some(e=>e.scrollWidth>e.clientWidth+1&&getComputedStyle(e).overflowX!=='hidden'&&getComputedStyle(e).overflowX!=='clip'&&!e.matches('.qln,input,textarea'));return {mesmaLinha:Math.abs((lb.top+lb.bottom)/2-(ab.top+ab.bottom)/2)<6,corta:ln.scrollWidth>ln.clientWidth,cabe:lb.right<=bx.getBoundingClientRect().right+1,estoura:sc}});
+ console.log('    '+w+':',JSON.stringify(r));if(r.estoura)console.log('    estoura:',await x.ev(()=>[...document.querySelectorAll('#modal *')].filter(e=>e.scrollWidth>e.clientWidth+1&&getComputedStyle(e).overflowX!=='hidden'&&getComputedStyle(e).overflowX!=='clip'&&!e.matches('.qln,input,textarea')).map(e=>e.tagName+'.'+e.className+' '+e.scrollWidth+'/'+e.clientWidth).join(' | ')));
+ if(w>600)ok(r.mesmaLinha&&r.corta&&r.cabe&&!r.estoura,w+': nome e acertos na mesma linha, nome com reticências');else ok(!r.mesmaLinha&&r.corta&&r.cabe&&!r.estoura,w+': celular em duas linhas, nome com reticências, sem rolagem lateral');
+ await p.screenshot({path:`${OUT}/qnlong-${w}.png`,clip:{x:0,y:0,width:w,height:700}});ok(!errs.length,w+': sem erros');await b.close()}
+console.log(bad?'FALHAS: '+bad:'TUDO OK');

@@ -1,0 +1,20 @@
+import puppeteer from 'puppeteer-core';import fs from 'fs';
+const [SHOT,OUT]=process.argv.slice(2);
+const b=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
+const log=[],ok=(x,m)=>log.push((x?'OK   ':'FALHA ')+m),W=ms=>new Promise(r=>setTimeout(r,ms));
+const d=JSON.parse(fs.readFileSync(SHOT+'/data-rv3.json','utf8'));const S0=JSON.parse(d['ciclo-estudos-v2']);S0.timer={running:false,start:0,acc:0};S0.sx=false;d['ciclo-estudos-v2']=JSON.stringify(S0);
+const A=await b.newPage();const ea=[];A.on('pageerror',e=>ea.push(e.message));await A.setViewport({width:1280,height:760,deviceScaleFactor:1.25});await A.goto('http://localhost:8765/');await A.evaluate(d=>{localStorage.clear();for(const k in d)localStorage.setItem(k,d[k])},d);await A.goto('http://localhost:8765/');await W(500);
+ok(await A.evaluate(()=>!document.getElementById('tabblock')&&!window.__ro),'Uma aba só: livre');
+// A em foco com cronômetro rodando
+await A.evaluate(()=>document.querySelector('.nwplay').click());await W(300);await A.evaluate(()=>{S.timer.start=Date.now()-12*60000;save()});
+const B=await b.newPage();const eb=[];B.on('pageerror',e=>eb.push(e.message));await B.setViewport({width:390,height:760,deviceScaleFactor:1.25});await B.goto('http://localhost:8765/');await W(600);
+ok(await A.evaluate(()=>!!document.getElementById('tabblock')&&window.__ro&&[...document.body.children].every(e=>e.id==='tabblock'||e.tagName==='SCRIPT'||e.inert)),'Abrir outra aba bloqueia a anterior (tudo inerte menos o aviso)');
+ok(await B.evaluate(()=>!document.getElementById('tabblock')),'A nova fica livre');
+ok(await B.evaluate(()=>{const id=S.sel.subj;return pzMs(id)>=11*60000&&!S.sx}),'O cronômetro da anterior vira pausa na nova');
+const before=await A.evaluate(()=>localStorage.getItem(KEY));await A.evaluate(()=>{S.cycle=99;save()});ok(await A.evaluate(b=>localStorage.getItem(KEY)===b,before),'Aba bloqueada não grava');
+await A.bringToFront();await W(300);await A.screenshot({path:OUT+'/onetab-bloq-1280.png'});
+await A.evaluate(()=>document.getElementById('tbuse').click());await W(900);
+ok(await A.evaluate(()=>!document.getElementById('tabblock')&&!window.__ro),'Usar aqui: a anterior volta a ficar ativa');
+ok(await B.evaluate(()=>!!document.getElementById('tabblock')),'…e a outra fica bloqueada');
+await B.bringToFront();await W(300);await B.screenshot({path:OUT+'/onetab-bloq-390.png'});
+log.push('erros: '+JSON.stringify([...ea,...eb]));console.log(log.join('\n'));await b.close();

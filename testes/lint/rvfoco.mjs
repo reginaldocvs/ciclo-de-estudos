@@ -1,0 +1,75 @@
+import {open,mk,W} from './lib.mjs';import fs from 'fs';
+const [OUT,WD]=process.argv.slice(2);const w=+(WD||390);
+const log=[],ok=(c,m)=>log.push((c?'OK   ':'FALHA ')+m);
+const d=JSON.parse(fs.readFileSync('dados/data-rv3.json','utf8'));const S0=JSON.parse(d['ciclo-estudos-v2']);S0.timer={running:false,start:0,acc:0};S0.sx=false;S0.rv=null;S0.mode='study';S0.alt=null;S0.type='regular';S0.progress={};S0.sessions=S0.sessions.filter(x=>x.cycle!==S0.cycle||x.rid||x.review);S0.blk=[{id:'m1',pos:2}];d['ciclo-estudos-v2']=JSON.stringify(S0);
+const {b,p,errs}=await open({data:d,w,h:900});const x=mk(p);try{
+const shot=n=>p.screenshot({path:`${OUT}/rvf-${w}-${n}.png`});
+let k=0;
+const reg=async id=>{await x.act('rreg',id);await x.ev(k=>{const g=S.sel.groups[0];if(!g.rows.length)g.rows.push({id:uid(),kind:"aula",name:"",link:"",q:""});g.nt='Tópico F'+k;g.rows[0].name='Aula F'+k;render()},++k);await x.submit('#modal form[data-f=man]');await W(250)};
+await x.ev(()=>{S.blk[0].goal=45;save()});
+const A=await x.ev(()=>inCycle().map(s=>s.id));
+await reg(A[0]);await reg(A[1]);
+ok(await x.ev(()=>!!document.querySelector('#app .blkc')),'vez do bloco');
+const al=await x.ev(()=>[...document.querySelectorAll('.bks')].map(r=>{const d=r.querySelector('.bknl .dot'),a=r.querySelector('.bkact');if(!a)return null;const ico=a.querySelector('.btn>span').getBoundingClientRect().width<2;if(ico){const c=r.closest('.blkc').querySelector('[data-act=blkend]').getBoundingClientRect(),q=a.getBoundingClientRect();return Math.round((q.left+q.right)/2-(c.left+c.right)/2)}return Math.round(a.getBoundingClientRect().left-d.getBoundingClientRect().left)}));
+ok(al.every(v=>v===0),'botões alinhados (ao quadradinho, ou centralizados quando só ícones): '+al);
+ok(await x.ev(()=>[...document.querySelectorAll('.bkact .btn')].every(b=>b.querySelector('svg'))),'Iniciar e Registrar com ícone');
+await x.ev(()=>document.querySelector('.blkc').scrollIntoView({block:'start'}));await W(200);await shot('1-cartao');
+const s1=A[0];
+await x.act('bkgo',s1);await W(1300);
+ok(await x.ev(()=>!!document.querySelector('#modal .rvfd')&&S.rvf&&!S.rvf.run&&document.getElementById('rvft').textContent==='00:00:00'),'Iniciar abre o foco parado');
+ok(await x.ev(()=>S.rvf.goal===45&&document.querySelector('#modal [data-rvfg]').value==='0h45'),'campo traz a meta do marcador (0h45)');
+ok(await x.ev(()=>!document.querySelector('#modal .fmg')&&!document.querySelector('#modal [data-act=rvfreg]')),'antes de iniciar: sem barra e sem Registrar');
+ok(/Tópico F1/.test(await x.ev(()=>document.querySelector('#modal .rvfd').innerText)),'foco mostra o que revisar');
+await shot('2a-antes');
+await x.fill('#modal [data-rvfg]','20');ok(await x.ev(()=>S.rvf.goal===20&&S.blk[0].goal===45),'mudar a meta vale só para esta revisão');
+await x.act('rvfrs');await W(1300);
+ok(await x.ev(()=>S.rvf.run&&document.getElementById('rvft').textContent!=='00:00:00'&&!!document.getElementById('rvfbar')&&!document.querySelector('#modal [data-rvfg]')),'Iniciar dispara o relógio, mostra a barra e esconde o campo');
+ok(/de 00:20:00/.test(await x.ev(()=>document.getElementById('rvfgl').textContent)),'barra com a meta: '+await x.ev(()=>document.getElementById('rvfgl').textContent));
+await shot('2-foco');
+await p.keyboard.press('Space');await W(250);ok(await x.ev(()=>S.rvf&&!S.rvf.run),'Espaço pausa');
+ok(await x.ev(()=>!!document.querySelector('#modal [data-rvfg]')&&!!document.getElementById('rvfbar')),'pausado: o campo da meta volta junto da barra');
+await shot('2b-pausado');
+await x.ev(()=>{S.rvf.acc=21*60000;render()});await W(1200);ok(await x.ev(()=>S.rvf.hit&&/atingida/.test(document.body.innerText)),'atingir a meta avisa');
+await p.keyboard.press('Space');await W(250);ok(await x.ev(()=>S.rvf&&S.rvf.run),'Espaço retoma');
+await W(700);ok(await x.ev(()=>S.rvf.run),'depois da meta o relógio continua');
+await p.keyboard.press('Escape');await W(300);
+ok(await x.ev(()=>!S.rvf&&Object.keys(S.rvp||{}).length===1&&!document.querySelector('#modal .rvfd')),'Esc sai e guarda o tempo em pausa');
+ok(await x.ev(s=>document.querySelector(`[data-act=bkgo][data-id="${s}"]`).textContent==='Retomar',s1),'botão vira Retomar');
+await x.act('bkgo',s1);ok(await x.ev(()=>S.rvf&&S.rvf.acc>500),'Retomar continua do tempo guardado');
+await x.ev(()=>{S.rvf.acc=25*60000;S.rvf.start=Date.now()});
+await x.act('rvfreg');await W(300);
+ok(await x.ev(()=>!S.rvf&&ui.bkreg&&document.querySelector('#modal [data-f=bkreg] input[name=m]').value==='0h25'),'Registrar abre a janela com o tempo: '+await x.ev(()=>document.querySelector('#modal [data-f=bkreg] input[name=m]')?.value));
+await shot('3-registrar');
+await x.submit('#modal form[data-f=bkreg]');await W(300);
+ok(await x.ev(s=>S.sessions.some(z=>z.bkr&&z.subj===s&&Math.round(z.min)===25)&&!Object.keys(S.rvp||{}).length,s1),'registro com 25min e pausa limpa');
+// Cancelar a janela mantém o tempo
+const s2=A[1];await x.act('bkgo',s2);await x.ev(()=>{S.rvf.acc=3*60000;render()});await x.act('rvfreg');await x.act('bkregx');
+ok(await x.ev(s=>document.querySelector(`[data-act=bkgo][data-id="${s}"]`).textContent==='Retomar',s2),'cancelar o registro mantém o tempo em pausa');
+ok(/3min de 45min/.test(await x.ev(()=>document.querySelector('.blkc').innerText)),'cartão mostra o tempo pausado e a meta');
+await x.act('bkreg',s2);ok(await x.ev(()=>document.querySelector('#modal [data-f=bkreg] input[name=m]').value==='0h03'),'Registrar do cartão traz o tempo pausado');await x.act('bkregx');
+// recarregar com o foco aberto e rodando
+await x.act('bkgo',s2);await W(200);await p.reload();await W(700);
+ok(await x.ev(()=>!S.rvf&&Object.values(S.rvp||{})[0].ms>=3*60000),'recarregar: o foco fecha e o tempo fica em pausa');
+// revisão por tópico
+await x.ev(()=>{S.blk=[];S.trv={start:'2026-09-25',t:{}};save();render()});
+
+await x.ev(()=>document.querySelector('nav [data-tab=rev]').click());await W(300);
+await x.ev(()=>{ui.rvt='topicos';render()});await x.act('rvadj');await x.act('trvcfg');await shot('3b-ajustes');await x.fill('#modal [data-f=trvcfg] input[name=tg]','50');await x.submit('#modal form[data-f=trvcfg]');ok(await x.ev(()=>S.trv.goal===50),'ajustes salvam a meta padrão');await x.ev(()=>{ui.rvt=null;render()});
+const tk=await x.ev(()=>{const b=document.querySelector('#app [data-act=rvfgo]');return b&&b.dataset.id});
+ok(!!tk,'Hoje tem Iniciar no tópico');
+ok(await x.ev(()=>{const r=document.querySelector('#app .trvbs');return r&&r.children.length===2&&r.children[1].dataset.act==='trvok'}),'Iniciar e Registrar lado a lado');
+await shot('4-hoje');
+await x.act('rvfgo',tk);await W(1100);
+const ft=await x.ev(()=>document.querySelector('#modal .rvfd')?.innerText||'');
+ok(/Revisão · 1ª de/.test(ft),'foco do tópico com cabeçalho');
+await shot('5-foco-topico');
+ok(await x.ev(()=>S.rvf.goal===50),'tópico usa a meta padrão dos ajustes');await x.ev(()=>{S.rvf.acc=12*60000;render()});await x.act('rvfreg');await W(300);
+ok(await x.ev(()=>document.querySelector('#modal [data-f=trvok] input[name=m]')?.value==='0h12'),'Registrar do tópico com o tempo');
+/* aulas que já tiveram questões: acertos por aula (qa-0); senão, campo único */
+await x.ev(()=>{const f=document.querySelector('#modal [data-f=trvok]'),a=f.querySelector('input[name=qa],input[name="qa-0"]'),t=f.querySelector('input[name=qt],input[name="qt-0"]');a.value='8';t.value='10';a.dispatchEvent(new Event('input',{bubbles:true}));t.dispatchEvent(new Event('input',{bubbles:true}))});
+await x.submit('#modal form[data-f=trvok]');await W(300);
+ok(await x.ev(k=>{const r=S.trv.t[k];return r&&r.h.length>0&&!Object.keys(S.rvp||{}).some(z=>z.startsWith('tp~'))},tk),'revisão do tópico registrada e pausa limpa');
+await x.ev(()=>{ui.rvt='topicos';render()});await W(200);
+ok(await x.ev(()=>[...document.querySelectorAll('#app [data-act=rvfgo]')].length>=0),'visão Tópicos sem erro');
+log.push('erros: '+JSON.stringify(errs));
+}catch(e){log.push('EXCEÇÃO '+e.message)}await b.close();console.log(log.join('\n'));

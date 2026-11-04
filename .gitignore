@@ -1,3 +1,6 @@
 .claude/
 *.bak
 .impeccable/
+testes/node_modules/
+testes/saida/
+testes/lint/s1.js

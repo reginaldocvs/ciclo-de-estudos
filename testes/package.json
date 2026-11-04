@@ -1,0 +1,10 @@
+{
+  "name": "ciclo-de-estudos-testes",
+  "private": true,
+  "description": "Testes automáticos do Ciclo de Estudos (puppeteer com o Chrome instalado)",
+  "devDependencies": {
+    "eslint": "^9.17.0",
+    "globals": "^15.14.0",
+    "puppeteer-core": "^23.11.1"
+  }
+}
