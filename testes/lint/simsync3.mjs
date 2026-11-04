@@ -72,12 +72,30 @@ if(K){await act(A,k=>{trvMark(k,today(),20,null,[],null)},K[0]);await settle(A);
 dd++;const T1=await A.ev(()=>{const s=S.subjects.find(s=>(s.topics||[]).length);return [s.id,s.topics[0].id]});
 online.B=false;await day(B,dd,'abre',true);await act(B,([s,t])=>{S.subjects.find(x=>x.id===s).topics.find(x=>x.id===t).name='Renomeado no celular'},T1);
 await day(A,dd,'volta');const na=new Set(await ids(A));await blocks(A);await study(A);await settle(A);const novoA=[...await ids(A)].filter(x=>!na.has(x));await reconnect();
-cl=cloudIds();ok(novoA.every(x=>cl.has(x))&&await same(),'4a. renomear no celular antes não apaga o registro feito depois no computador');
+cl=cloudIds();const nm4=await A.ev(([s,t])=>S.subjects.find(x=>x.id===s).topics.find(x=>x.id===t).name,T1);ok(novoA.every(x=>cl.has(x))&&nm4==='Renomeado no celular'&&await same(),'4a. renomear no celular antes e registrar no computador depois: ficam os dois ('+nm4+')');
 // 4b. computador registra ANTES; celular sem internet renomeia depois: ficam os dois
 dd++;await day(A,dd,'volta');const na2=new Set(await ids(A));await blocks(A);await study(A);await settle(A);const novoA2=[...await ids(A)].filter(x=>!na2.has(x));
 online.B=false;await day(B,dd,'abre',true);await act(B,([s,t])=>{S.subjects.find(x=>x.id===s).topics.find(x=>x.id===t).name='Renomeado de novo'},T1);await reconnect();
 cl=cloudIds();const nm=await A.ev(([s,t])=>S.subjects.find(x=>x.id===s).topics.find(x=>x.id===t).name,T1);
 ok(novoA2.every(x=>cl.has(x))&&nm==='Renomeado de novo'&&await same(),'4b. registro do computador e nome novo do celular ficam os dois ('+nm+')');
+// 5. celular sem internet muda a meta de uma disciplina; computador renomeia outro tópico: ficam as duas mudanças
+dd++;const [S5,T5]=await A.ev(()=>{const s=S.subjects.filter(s=>!s.off&&!s.of)[1];s.topics=s.topics||[];if(!s.topics.length)s.topics.push({id:'t5',name:'Tópico 5',done:false,links:[]});save();return [s.id,s.topics[0].id]});await settle(A);await resume(B,dd);await gate(B);await settle(B);
+online.B=false;await day(B,dd,'volta',true);await act(B,id=>{S.subjects.find(x=>x.id===id).goal=120},S5);
+await day(A,dd,'volta');await act(A,([s,t])=>{S.subjects.find(x=>x.id===s).topics.find(x=>x.id===t).name='Nome novo no computador'},[S5,T5]);await settle(A);await reconnect();
+const r5=await A.ev(([s,t])=>{const x=S.subjects.find(z=>z.id===s);return {g:x.goal,n:x.topics.find(z=>z.id===t).name}},[S5,T5]);ok(r5.g===120&&r5.n==='Nome novo no computador'&&await same(),'5. meta mudada no celular e tópico renomeado no computador: ficam as duas ('+JSON.stringify(r5)+')');
+// 6. os dois mudam a mesma meta: vale a mais recente
+dd++;online.B=false;await day(B,dd,'abre',true);await act(B,id=>{S.subjects.find(x=>x.id===id).goal=100},S5);await W(300);
+await day(A,dd,'volta');await act(A,id=>{S.subjects.find(x=>x.id===id).goal=75},S5);await settle(A);await reconnect();
+const g6=await B.ev(id=>S.subjects.find(x=>x.id===id).goal,S5);ok(g6===75&&await same(),'6. mesma meta mudada nos dois: vale a mais recente ('+g6+' min)');
+// 7. computador reordena as disciplinas; celular sem internet cria um tópico: ficam as duas
+dd++;online.B=false;await day(B,dd,'abre',true);await act(B,id=>{S.subjects.find(x=>x.id===id).topics.push({id:'t7',name:'Tópico novo do celular',done:false,links:[]})},S5);
+await day(A,dd,'volta');const ord0=await A.ev(()=>S.subjects.map(s=>s.id));await act(A,()=>{const a=S.subjects.filter(s=>!s.off);const x=a[0],y=a[2];const i=S.subjects.indexOf(x),j=S.subjects.indexOf(y);S.subjects[i]=y;S.subjects[j]=x});await settle(A);const ordA=await A.ev(()=>S.subjects.map(s=>s.id));await reconnect();
+const r7=await B.ev(id=>({ord:S.subjects.map(s=>s.id),tp:S.subjects.find(x=>x.id===id).topics.some(t=>t.id==='t7')}),S5);ok(r7.tp&&JSON.stringify(r7.ord)===JSON.stringify(ordA)&&JSON.stringify(ordA)!==JSON.stringify(ord0)&&await same(),'7. ordem nova do computador e tópico novo do celular: ficam os dois');
+// 8. computador apaga um tópico; celular sem internet acrescenta aula em outro: o apagado continua apagado e a aula entra
+dd++;online.B=false;await day(B,dd,'abre',true);await act(B,id=>{S.subjects.find(x=>x.id===id).topics.find(t=>t.id==='t7').name='Renomeado no celular (8)'},S5);
+await day(A,dd,'volta');await act(A,([s,t])=>{const x=S.subjects.find(z=>z.id===s);x.topics=x.topics.filter(z=>z.id!==t)},[S5,T5]);await settle(A);await reconnect();
+const r8=await A.ev(([s,t])=>{const x=S.subjects.find(z=>z.id===s);return {apagado:!x.topics.some(z=>z.id===t),aula:x.topics.find(z=>z.id==='t7').name==='Renomeado no celular (8)'}},[S5,T5]);
+ok(r8.apagado&&r8.aula&&await same(),'8. tópico apagado no computador continua apagado; outro tópico renomeado no celular fica com o nome novo');
 const vh={A:await A.ev(async()=>(await vhAll()).map(v=>v.why)),B:await B.ev(async()=>(await vhAll()).map(v=>v.why))};info('versões anteriores guardadas: computador '+JSON.stringify(vh.A)+', celular '+JSON.stringify(vh.B));
 ok(vh.A.length<=3&&vh.B.length<=3,'versões anteriores: no máximo 3 em cada aparelho');
 info('envios para a conta: computador '+writes.A+', celular '+writes.B);

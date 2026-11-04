@@ -2105,7 +2105,35 @@ const SY={prov:null,user:null,err:null,db:null,uid:null,status:'init',dev:null,l
 const syMeta=()=>{if(!SY.dirty)SY.pend=0;try{localStorage.setItem('ciclo-sync',JSON.stringify({ts:SY.lastTs,dirty:!!SY.dirty,lts:SY.localTs||0,ok:SY.okTs||0,pd:SY.pend||0}))}catch(x){}};
 const syOk=()=>{SY.okTs=Date.now();SY.quota=false};
 /* Registros que existiam na última versão em comum com a conta: na junção, o que saiu de um lado desde então não volta */
-const syBase=json=>{try{const o=JSON.parse(json);localStorage.setItem('ciclo-sync-base',JSON.stringify((o.sessions||[]).map(x=>x.id)))}catch(x){}};
+const syBase=json=>{try{const o=JSON.parse(json);localStorage.setItem('ciclo-sync-base',JSON.stringify((o.sessions||[]).map(x=>x.id)))}catch(x){}
+ sbPut(json)};
+/* a versão em comum inteira fica no IndexedDB (cabe muito mais que o localStorage, onde já ficam os dados) */
+let SBD=null;const sbDb=()=>SBD||(SBD=new Promise((ok,no)=>{try{const r=indexedDB.open('ciclo-base',1);r.onupgradeneeded=()=>r.result.createObjectStore('b');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}catch(e){no(e)}}));
+async function sbPut(j){if(window.__ro)return;try{const db=await sbDb();await new Promise((ok,no)=>{const t=db.transaction('b','readwrite');t.objectStore('b').put(j,'j');t.oncomplete=()=>ok();t.onerror=()=>no(t.error)})}catch(e){}}
+async function syBaseJ(){try{const db=await sbDb();const j=await new Promise((ok,no)=>{const q=db.transaction('b').objectStore('b').get('j');q.onsuccess=()=>ok(q.result||null);q.onerror=()=>no(q.error)});return j?JSON.parse(j):null}catch(e){return null}}
+try{localStorage.removeItem('ciclo-sync-basej')}catch(x){}
+/* Junção campo a campo entre a última versão em comum (b), a deste aparelho (l) e a da conta (c); wl = este aparelho tem a edição mais
+   recente. Só um lado mudou: fica a mudança. Os dois mudaram: listas de itens com id juntam por item (novo entra, apagado sai, editado de
+   um lado e apagado do outro fica); objetos juntam por chave; listas simples juntam os valores; no mesmo campo vale a edição mais recente. */
+const mJ=v=>JSON.stringify(v),mObj=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
+function m3(b,l,c,wl){if(mJ(l)===mJ(c))return l;if(b!==undefined&&mJ(l)===mJ(b))return c;if(b!==undefined&&mJ(c)===mJ(b))return l;
+ if(Array.isArray(l)&&Array.isArray(c)){const B=Array.isArray(b)?b:[];
+  if([...l,...c].every(x=>mObj(x)&&typeof x.id==='string'))return m3a(B,l,c,wl);
+  if([...l,...c].every(x=>x===null||typeof x!=='object')){const W=wl?l:c,O=wl?c:l,bs=new Set(B.map(mJ)),ls=new Set(l.map(mJ)),cs=new Set(c.map(mJ));
+   return [...W,...O.filter(x=>!W.some(y=>mJ(y)===mJ(x)))].filter(x=>{const k=mJ(x);return (ls.has(k)&&cs.has(k))||!bs.has(k)})}
+  return wl?l:c}
+ if(mObj(l)&&mObj(c)){const o={},B=mObj(b)?b:{};new Set([...Object.keys(l),...Object.keys(c)]).forEach(k=>{const bv=B[k];
+  if(!(k in c)){if(bv!==undefined&&mJ(l[k])===mJ(bv))return;o[k]=l[k];return}if(!(k in l)){if(bv!==undefined&&mJ(c[k])===mJ(bv))return;o[k]=c[k];return}
+  o[k]=m3(bv,l[k],c[k],wl)});return o}
+ return wl?l:c}
+function m3a(B,l,c,wl){const bi=new Map(B.map(x=>[x.id,x])),li=new Map(l.map(x=>[x.id,x])),ci=new Map(c.map(x=>[x.id,x])),out=[],seen=new Set();
+ const pick=id=>{const bx=bi.get(id),lx=li.get(id),cx=ci.get(id);if(lx&&cx)return m3(bx,lx,cx,wl);const x=lx||cx;if(!x)return null;return bx&&mJ(x)===mJ(bx)?null:x};
+ [...(wl?l:c),...(wl?c:l)].forEach(x=>{if(seen.has(x.id))return;seen.add(x.id);const r=pick(x.id);if(r)out.push(r)});return out}
+function syMerge3(b,l,c,wl){const o=m3(b,l,c,wl),P=o.progress;
+ /* tempo do ciclo: os dois aparelhos somaram na mesma disciplina → fica o maior */
+ if(mObj(P)&&o.cycle===l.cycle&&o.cycle===c.cycle)Object.keys(P).forEach(k=>{const lv=+((l.progress||{})[k])||0,cv=+((c.progress||{})[k])||0;if(lv!==cv)P[k]=Math.max(lv,cv)});
+ const ids=v=>new Set((v.sessions||[]).map(x=>x.id)),oi=ids(o),li=ids(l),ci=ids(c);
+ return {o,add:[...oi].filter(i=>!(wl?li:ci).has(i)).length,del:[...(wl?li:ci)].filter(i=>!oi.has(i)).length}}
 const syBaseGet=()=>{try{const a=JSON.parse(localStorage.getItem('ciclo-sync-base')||'null');return Array.isArray(a)?new Set(a):null}catch(x){return null}};
 /* Junção: os dois lados mudaram desde a última versão em comum (ex.: um aparelho sem internet e o outro com). Parte da versão da conta e
    traz deste aparelho os registros novos (com tópico e aulas), tira os que ele apagou, junta revisões por tópico, marcações e blocos;
@@ -2179,8 +2207,8 @@ async function syOnMeta(snap){
  /* os dois lados mudaram desde a última versão em comum: junta em vez de um passar por cima do outro */
  if(SY.dirty&&SY.lastTs>0&&SY.localTs>SY.lastTs&&m.dev!==SY.dev&&localHasData()){let r=null;const L0=JSON.stringify(S);
   /* parte da versão mais recente e traz da outra os registros novos e os apagados */
-  try{r=SY.localTs>m.ts?syMerge(JSON.parse(L0),JSON.parse(json),syBaseGet()):syMerge(JSON.parse(json),JSON.parse(L0),syBaseGet())}catch(x){r=null}
-  if(r){const mj=JSON.stringify(r.o);if(mj===L0||syApply(mj,m.ts)){SY.lastTs=m.ts;SY.lastJson=json;SY.dirty=true;SY.localTs=Date.now();syMeta();SY.status='on';if(r.add||r.del)setTimeout(()=>toast('Registros deste aparelho e da conta foram juntados.'),0);syPush();return}}}
+  const bj=await syBaseJ();try{const wl=SY.localTs>m.ts;r=bj?syMerge3(bj,JSON.parse(L0),JSON.parse(json),wl):wl?syMerge(JSON.parse(L0),JSON.parse(json),syBaseGet()):syMerge(JSON.parse(json),JSON.parse(L0),syBaseGet())}catch(x){r=null}
+  if(r){const mj=JSON.stringify(r.o);if(mj===L0||syApply(mj,m.ts)){syBase(json);SY.lastTs=m.ts;SY.lastJson=json;SY.dirty=true;SY.localTs=Date.now();syMeta();SY.status='on';if(r.add||r.del)setTimeout(()=>toast('Registros deste aparelho e da conta foram juntados.'),0);syPush();return}}}
  let cloud=true;
  if((first||SY.dirty)&&localHasData()){let cs=0;try{cs=(JSON.parse(json).sessions||[]).length}catch(x){}
   if(SY.localTs>m.ts||(!SY.localTs&&S.sessions.length>cs))cloud=false}
