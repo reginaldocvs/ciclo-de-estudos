@@ -2093,6 +2093,23 @@ const loadJs=src=>new Promise((ok,no)=>{const s=document.createElement('script')
 const SY={prov:null,user:null,err:null,db:null,uid:null,status:'init',dev:null,lastTs:0,lastJson:null,timer:null,busy:false,again:false,dirty:false,localTs:0};
 (()=>{try{SY.dev=localStorage.getItem('ciclo-dev')||(()=>{const d=Math.random().toString(36).slice(2,10);localStorage.setItem('ciclo-dev',d);return d})();const m=JSON.parse(localStorage.getItem('ciclo-sync')||'{}');SY.lastTs=m.ts||0;SY.dirty=!!m.dirty;SY.localTs=m.lts||0}catch(x){SY.dev=SY.dev||'x'}})();
 const syMeta=()=>{try{localStorage.setItem('ciclo-sync',JSON.stringify({ts:SY.lastTs,dirty:!!SY.dirty,lts:SY.localTs||0}))}catch(x){}};
+/* Registros que existiam na última versão em comum com a conta: na junção, o que saiu de um lado desde então não volta */
+const syBase=json=>{try{const o=JSON.parse(json);localStorage.setItem('ciclo-sync-base',JSON.stringify((o.sessions||[]).map(x=>x.id)))}catch(x){}};
+const syBaseGet=()=>{try{const a=JSON.parse(localStorage.getItem('ciclo-sync-base')||'null');return Array.isArray(a)?new Set(a):null}catch(x){return null}};
+/* Junção: os dois lados mudaram desde a última versão em comum (ex.: um aparelho sem internet e o outro com). Parte da versão da conta e
+   traz deste aparelho os registros novos (com tópico e aulas), tira os que ele apagou, junta revisões por tópico, marcações e blocos;
+   o tempo do ciclo atual fica com o maior de cada disciplina. Registros editados dos dois lados ficam como na conta. */
+function syMerge(C,Lc,base){const cI=new Set((C.sessions||[]).map(x=>x.id)),lI=new Set((Lc.sessions||[]).map(x=>x.id)),B=base||new Set([...cI].filter(i=>lI.has(i)));
+ const add=(Lc.sessions||[]).filter(x=>!B.has(x.id)&&!cI.has(x.id)),del=new Set([...B].filter(i=>!lI.has(i)&&cI.has(i)));
+ C.sessions=(C.sessions||[]).filter(x=>!del.has(x.id)).concat(add);
+ add.forEach(x=>{if(!x.topic)return;const cs=(C.subjects||[]).find(s=>s.id===x.subj),ls=(Lc.subjects||[]).find(s=>s.id===x.subj);if(!cs||!ls)return;const lt=(ls.topics||[]).find(t=>t.id===x.topic);if(!lt)return;
+  const ct=(cs.topics=cs.topics||[]).find(t=>t.id===x.topic);if(!ct){cs.topics.push(JSON.parse(JSON.stringify(lt)));return}(lt.links||[]).forEach(l=>{if(!(ct.links||[]).some(z=>sameIt(z,l)))(ct.links=ct.links||[]).push({...l})})});
+ if(add.length&&C.cycle===Lc.cycle&&(C.set||1)===(Lc.set||1)){C.progress=C.progress||{};Object.keys(Lc.progress||{}).forEach(k=>{C.progress[k]=Math.max(+C.progress[k]||0,+Lc.progress[k]||0)})}
+ if(Lc.trv&&Lc.trv.t){C.trv=C.trv||{};C.trv.t=C.trv.t||{};Object.entries(Lc.trv.t).forEach(([k,r])=>{const c=C.trv.t[k];if(!c){C.trv.t[k]=r;return}c.h=[...new Set([...(c.h||[]),...(r.h||[])])].sort();c.q={...(r.q||{}),...(c.q||{})};if(r.end&&!c.end)c.end=r.end})}
+ C.checked={...(Lc.checked||{}),...(C.checked||{})};
+ ['blkDone','reviewed'].forEach(k=>{if(Lc[k])C[k]={...Lc[k],...(C[k]||{})}});
+ if(Lc.blkRev){C.blkRev=C.blkRev||{};Object.entries(Lc.blkRev).forEach(([k,a])=>{C.blkRev[k]=[...new Set([...(C.blkRev[k]||[]),...(a||[])])]})}
+ return {o:C,add:add.length,del:del.size}}
 const syCol=()=>SY.db.collection(SY.prov==='firebase'?'users/'+SY.uid+'/ciclo':'data/users/'+SY.uid);
 /* Hora da última ação da pessoa (toque, tecla, digitação, envio). Só uma gravação logo depois de uma ação conta como "mudança feita agora"
    para decidir quem vence entre o aparelho e a conta; a arrumação automática ao abrir ou na virada do dia não conta (senão um aparelho
@@ -2102,10 +2119,12 @@ const userAct=()=>Date.now()-(SY.uact||0)<5000;
 function syMark(){SY.dirty=true;if(userAct())SY.localTs=Date.now();syMeta();if(SY.status==='on'||SY.status==='saving'||SY.status==='err'){clearTimeout(SY.timer);SY.timer=setTimeout(syPush,1500)}}
 async function syPush(){if(window.__ro||!SY.db||SY.status==='off'||SY.status==='init'||SY.status==='denied')return;if(SY.busy){SY.again=true;return}
  const json=JSON.stringify(S);if(json===SY.lastJson&&!SY.dirty)return;SY.busy=true;SY.status='saving';
- try{const CH=180000,n=Math.max(1,Math.ceil(json.length/CH)),ts=Math.max(Date.now(),SY.lastTs+1);
+ try{/* outro aparelho enviou desde a última versão em comum: junta antes, em vez de mandar por cima */
+  const mm=await syCol().doc('meta').get();const md=mm.exists&&mm.data();if(md&&md.ts>SY.lastTs&&md.dev!==SY.dev){SY.busy=false;SY.status='on';await syOnMeta(mm);return}
+  const CH=180000,n=Math.max(1,Math.ceil(json.length/CH)),ts=Math.max(Date.now(),SY.lastTs+1);
   for(let i=0;i<n;i++)await syCol().doc('c'+i).set({d:json.slice(i*CH,(i+1)*CH),ts});
   await syCol().doc('meta').set({ts,n,dev:SY.dev,size:json.length});
-  SY.lastTs=ts;SY.lastJson=json;SY.dirty=JSON.stringify(S)!==json;SY.status='on';syMeta()}
+  SY.lastTs=ts;SY.lastJson=json;syBase(json);SY.dirty=JSON.stringify(S)!==json;SY.status='on';syMeta()}
  catch(e){if(e&&e.code==='permission-denied'){SY.busy=false;syDenied();return}SY.status='err';setTimeout(()=>{if(SY.status==='err'){SY.status='on';syPush()}},e&&e.code==='quota_exceeded'?60000:8000)}
  SY.busy=false;if(SY.status==='on'&&(SY.again||SY.dirty)){SY.again=false;clearTimeout(SY.timer);SY.timer=setTimeout(syPush,1500)}}
 async function syFetch(m){const parts=[];for(let i=0;i<m.n;i++){const s=await syCol().doc('c'+i).get();if(!s.exists)return null;const d=s.data();if(d.ts!==m.ts)return null;parts.push(d.d)}return parts.join('')}
@@ -2134,7 +2153,7 @@ function syApply(json,ts){const prev=S;let o;try{o=JSON.parse(json)}catch(x){ret
  if(!o||!Array.isArray(o.subjects)||!o.subjects.every(x=>x&&typeof x==='object'&&x.id)||(o.sessions!==undefined&&!Array.isArray(o.sessions)))return false;
  try{S=Object.assign(seed(),o);norm();pzKeep(prev,S)}catch(x){S=prev;return false}
  if(!window.__ro)try{vhSave(JSON.stringify(prev),'aparelho');localStorage.setItem(KEY+'-bak',JSON.stringify(prev));const j=JSON.stringify(S);localStorage.setItem(KEY,j);LJ=j}catch(x){}
- UST.length=0;RST.length=0;SY.lastTs=ts;SY.lastJson=json;SY.dirty=false;syMeta();if(!TABS.includes(tab))tab='ciclo';render();return true}
+ UST.length=0;RST.length=0;SY.lastTs=ts;SY.lastJson=json;syBase(json);SY.dirty=false;syMeta();if(!TABS.includes(tab))tab='ciclo';render();return true}
 const localHasData=()=>S.sessions.length>0||(S.editais||[]).length>1||S.subjects.some(s=>s.topics&&s.topics.length);
 /* Dados diferentes no navegador e na conta: vence a versão mais recente, sem perguntar. */
 async function syOnMeta(snap){
@@ -2144,7 +2163,12 @@ async function syOnMeta(snap){
  if(m.ts<=SY.lastTs&&SY.status!=='init')return;
  const json=await syFetch(m);if(json==null){syRetry(snap);return}
  const first=SY.status==='init';
- if(json===JSON.stringify(S)){SY.lastTs=m.ts;SY.lastJson=json;SY.dirty=false;syMeta();SY.status='on';return}
+ if(json===JSON.stringify(S)){SY.lastTs=m.ts;SY.lastJson=json;syBase(json);SY.dirty=false;syMeta();SY.status='on';return}
+ /* os dois lados mudaram desde a última versão em comum: junta em vez de um passar por cima do outro */
+ if(SY.dirty&&SY.lastTs>0&&SY.localTs>SY.lastTs&&m.dev!==SY.dev&&localHasData()){let r=null;const L0=JSON.stringify(S);
+  /* parte da versão mais recente e traz da outra os registros novos e os apagados */
+  try{r=SY.localTs>m.ts?syMerge(JSON.parse(L0),JSON.parse(json),syBaseGet()):syMerge(JSON.parse(json),JSON.parse(L0),syBaseGet())}catch(x){r=null}
+  if(r){const mj=JSON.stringify(r.o);if(mj===L0||syApply(mj,m.ts)){SY.lastTs=m.ts;SY.lastJson=json;SY.dirty=true;SY.localTs=Date.now();syMeta();SY.status='on';if(r.add||r.del)setTimeout(()=>toast('Registros deste aparelho e da conta foram juntados.'),0);syPush();return}}}
  let cloud=true;
  if((first||SY.dirty)&&localHasData()){let cs=0;try{cs=(JSON.parse(json).sessions||[]).length}catch(x){}
   if(SY.localTs>m.ts||(!SY.localTs&&S.sessions.length>cs))cloud=false}
