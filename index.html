@@ -200,6 +200,13 @@ mark.hl{background:color-mix(in srgb,var(--ac) 22%,transparent);color:inherit;bo
 .pvh .rvt{margin:0;padding:0;border:0;flex:1}
 .pvb{padding-left:32px}
 .pvbox.open .pvh{padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid var(--line)}.rvtn{font-weight:600;font-size:.95rem;margin-bottom:6px}
+/* aviso discreto de sincronização parada */
+.sypw{position:relative;flex:none}.sypd{float:right;margin:6px 0 0 12px}.sypm{margin-left:auto}
+@media (max-width:860px){.sypd{display:none!important}}
+/* no celular, só o ícone (o nome do app não quebra); o quadrinho explica */
+.sypm .sypill{width:40px;height:40px;min-height:0;padding:0;justify-content:center}.sypm .sypill span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.sypm .sypill svg{width:18px;height:18px}
+.sypill{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:4px 12px;border:0;border-radius:999px;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;background:var(--m-scv,color-mix(in srgb,var(--ink) 10%,transparent));color:var(--ink)}.sypill.lim{background:var(--m-ec);color:var(--m-onec)}
+.syppop{position:absolute;right:0;top:calc(100% + 6px);z-index:60;width:min(300px,calc(100vw - 32px));padding:12px 14px;border-radius:var(--r-l,16px);background:var(--card);color:var(--ink);box-shadow:var(--sh-pop);font-size:.875rem;line-height:1.45}.syppop b{display:block;margin-bottom:4px}.sypl{margin-top:6px;color:var(--mut);font-size:.85rem}
 /* Adicionar tópicos: os que já existem, só para consulta (rola se a lista for longa) */
 .pdcur{margin-bottom:12px}.pdcurh{font-size:.85rem;margin-bottom:4px}.pdcurl{max-height:160px;overflow:auto;display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:12px;background:var(--bg);font-size:.9rem;line-height:1.35}.pdcurl>*{flex:none}
 /* nome de tópico: até 2 linhas, com reticências; o nome inteiro fica no title */
@@ -1068,8 +1075,8 @@ body{text-wrap:pretty}
 <div class="shell">
 <aside class="side"><div class="sbrand"><svg class="logo" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" rx="24" fill="#00687A"/><g transform="translate(0 7)"><path d="M48 38c-6-5-14-6-22-5v30c8-1 16 0 22 5 6-5 14-6 22-5V33c-8-1-16 0-22 5z" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/><path d="M48 38v30" stroke="#fff" stroke-width="5"/><path d="M30 21a28 28 0 0 1 36 0" fill="none" stroke="#BAD963" stroke-width="5"/><circle cx="30" cy="21" r="2.5" fill="#BAD963"/><path d="M62.5 25.2 69.5 16.8 72.5 26.5z" fill="#BAD963" stroke="#BAD963" stroke-width="1" stroke-linejoin="round"/></g></svg><span class="bnm"><span>Ciclo</span> <span>de&nbsp;Estudos</span></span></div><nav class="sidenav" aria-label="Seções"><button type="button" data-tab="ciclo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/><circle cx="12" cy="12" r="2.5"/></svg><span>Ciclo</span></button><button type="button" data-tab="rev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.5 21H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"/><path d="M16 3v4M8 3v4M4 11h12"/><path d="M20 14l2 2h-3M20 18l2-2"/><path d="M19 16a3 3 0 1 0 2 5.236"/></svg><span>Revisão</span></button><button type="button" data-act="plopen" data-nav="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4"/><path d="M10 12h6M10 16h6"/></svg><span>Planos</span></button><button type="button" data-tab="reg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7.5V12l3 2"/></svg><span>Histórico</span></button><button type="button" data-tab="st"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20v-6M12 20V5M19 20v-9"/></svg><span>Estatísticas</span></button><button type="button" data-tab="bk" class="navend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span>Configurações</span></button></nav></aside>
 <main>
-<header class="mbar"><p class="brand"><svg class="logo" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" rx="24" fill="#00687A"/><g transform="translate(0 7)"><path d="M48 38c-6-5-14-6-22-5v30c8-1 16 0 22 5 6-5 14-6 22-5V33c-8-1-16 0-22 5z" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/><path d="M48 38v30" stroke="#fff" stroke-width="5"/><path d="M30 21a28 28 0 0 1 36 0" fill="none" stroke="#BAD963" stroke-width="5"/><circle cx="30" cy="21" r="2.5" fill="#BAD963"/><path d="M62.5 25.2 69.5 16.8 72.5 26.5z" fill="#BAD963" stroke="#BAD963" stroke-width="1" stroke-linejoin="round"/></g></svg><span class="bnm"><span>Ciclo</span> <span>de&nbsp;Estudos</span></span></p><span id="sub"></span></header>
-<div class="pagehead"><h1 id="mtt"></h1><p id="msub"></p></div>
+<header class="mbar"><p class="brand"><svg class="logo" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" rx="24" fill="#00687A"/><g transform="translate(0 7)"><path d="M48 38c-6-5-14-6-22-5v30c8-1 16 0 22 5 6-5 14-6 22-5V33c-8-1-16 0-22 5z" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/><path d="M48 38v30" stroke="#fff" stroke-width="5"/><path d="M30 21a28 28 0 0 1 36 0" fill="none" stroke="#BAD963" stroke-width="5"/><circle cx="30" cy="21" r="2.5" fill="#BAD963"/><path d="M62.5 25.2 69.5 16.8 72.5 26.5z" fill="#BAD963" stroke="#BAD963" stroke-width="1" stroke-linejoin="round"/></g></svg><span class="bnm"><span>Ciclo</span> <span>de&nbsp;Estudos</span></span></p><span class="sypw sypm" data-syp hidden></span><span id="sub"></span></header>
+<div class="pagehead"><span class="sypw sypd" data-syp hidden></span><h1 id="mtt"></h1><p id="msub"></p></div>
 <div id="app"></div>
 </main>
 </div>
@@ -2091,8 +2098,9 @@ const FB_SDK='https://www.gstatic.com/firebasejs/10.12.2/';
 const fbOn=()=>!!(FIREBASE_CONFIG&&FIREBASE_CONFIG.apiKey&&FIREBASE_CONFIG.projectId);
 const loadJs=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=()=>ok();s.onerror=()=>no(new Error(src));document.head.appendChild(s)});
 const SY={prov:null,user:null,err:null,db:null,uid:null,status:'init',dev:null,lastTs:0,lastJson:null,timer:null,busy:false,again:false,dirty:false,localTs:0};
-(()=>{try{SY.dev=localStorage.getItem('ciclo-dev')||(()=>{const d=Math.random().toString(36).slice(2,10);localStorage.setItem('ciclo-dev',d);return d})();const m=JSON.parse(localStorage.getItem('ciclo-sync')||'{}');SY.lastTs=m.ts||0;SY.dirty=!!m.dirty;SY.localTs=m.lts||0}catch(x){SY.dev=SY.dev||'x'}})();
-const syMeta=()=>{try{localStorage.setItem('ciclo-sync',JSON.stringify({ts:SY.lastTs,dirty:!!SY.dirty,lts:SY.localTs||0}))}catch(x){}};
+(()=>{try{SY.dev=localStorage.getItem('ciclo-dev')||(()=>{const d=Math.random().toString(36).slice(2,10);localStorage.setItem('ciclo-dev',d);return d})();const m=JSON.parse(localStorage.getItem('ciclo-sync')||'{}');SY.lastTs=m.ts||0;SY.dirty=!!m.dirty;SY.localTs=m.lts||0;SY.okTs=m.ok||0;SY.pend=m.pd||0}catch(x){SY.dev=SY.dev||'x'}})();
+const syMeta=()=>{if(!SY.dirty)SY.pend=0;try{localStorage.setItem('ciclo-sync',JSON.stringify({ts:SY.lastTs,dirty:!!SY.dirty,lts:SY.localTs||0,ok:SY.okTs||0,pd:SY.pend||0}))}catch(x){}};
+const syOk=()=>{SY.okTs=Date.now();SY.quota=false};
 /* Registros que existiam na última versão em comum com a conta: na junção, o que saiu de um lado desde então não volta */
 const syBase=json=>{try{const o=JSON.parse(json);localStorage.setItem('ciclo-sync-base',JSON.stringify((o.sessions||[]).map(x=>x.id)))}catch(x){}};
 const syBaseGet=()=>{try{const a=JSON.parse(localStorage.getItem('ciclo-sync-base')||'null');return Array.isArray(a)?new Set(a):null}catch(x){return null}};
@@ -2116,7 +2124,7 @@ const syCol=()=>SY.db.collection(SY.prov==='firebase'?'users/'+SY.uid+'/ciclo':'
    desatualizado, só por ser aberto, passava por cima da versão mais nova da conta). */
 ['pointerdown','keydown','input','change','submit'].forEach(t=>document.addEventListener(t,e=>{if(e.target&&e.target.closest&&e.target.closest('#sygate'))return;SY.uact=Date.now();if(typeof SYL!=='undefined'&&SYL.off&&document.visibilityState==='visible')syListenOn(true)},true)); /* voltou a usar depois de parado: confere e volta a escutar */
 const userAct=()=>Date.now()-(SY.uact||0)<5000;
-function syMark(){SY.dirty=true;if(userAct())SY.localTs=Date.now();syMeta();if(SY.status==='on'||SY.status==='saving'||SY.status==='err'){clearTimeout(SY.timer);SY.timer=setTimeout(syPush,1500)}}
+function syMark(){SY.dirty=true;if(!SY.pend)SY.pend=Date.now();if(userAct())SY.localTs=Date.now();syMeta();if(SY.status==='on'||SY.status==='saving'||SY.status==='err'){clearTimeout(SY.timer);SY.timer=setTimeout(syPush,1500)}}
 async function syPush(){if(window.__ro||!SY.db||SY.status==='off'||SY.status==='init'||SY.status==='denied')return;if(SY.busy){SY.again=true;return}
  const json=JSON.stringify(S);if(json===SY.lastJson&&!SY.dirty)return;SY.busy=true;SY.status='saving';
  try{/* outro aparelho enviou desde a última versão em comum: junta antes, em vez de mandar por cima */
@@ -2124,8 +2132,9 @@ async function syPush(){if(window.__ro||!SY.db||SY.status==='off'||SY.status==='
   const CH=180000,n=Math.max(1,Math.ceil(json.length/CH)),ts=Math.max(Date.now(),SY.lastTs+1);
   for(let i=0;i<n;i++)await syCol().doc('c'+i).set({d:json.slice(i*CH,(i+1)*CH),ts});
   await syCol().doc('meta').set({ts,n,dev:SY.dev,size:json.length});
-  SY.lastTs=ts;SY.lastJson=json;syBase(json);SY.dirty=JSON.stringify(S)!==json;SY.status='on';syMeta()}
- catch(e){if(e&&e.code==='permission-denied'){SY.busy=false;syDenied();return}SY.status='err';setTimeout(()=>{if(SY.status==='err'){SY.status='on';syPush()}},e&&e.code==='quota_exceeded'?60000:8000)}
+  SY.lastTs=ts;SY.lastJson=json;syBase(json);syOk();SY.dirty=JSON.stringify(S)!==json;SY.status='on';syMeta()}
+ catch(e){if(e&&e.code==='permission-denied'){SY.busy=false;syDenied();return}SY.status='err';const qx=!!e&&/resource-exhausted|quota/.test(String(e.code||'')+' '+String(e.message||''));SY.quota=qx; /* limite gratuito do Firebase: tenta de novo a cada 10 min */
+  setTimeout(()=>{if(SY.status==='err'){SY.status='on';syPush()}},qx?600000:8000)}
  SY.busy=false;if(SY.status==='on'&&(SY.again||SY.dirty)){SY.again=false;clearTimeout(SY.timer);SY.timer=setTimeout(syPush,1500)}}
 async function syFetch(m){const parts=[];for(let i=0;i<m.n;i++){const s=await syCol().doc('c'+i).get();if(!s.exists)return null;const d=s.data();if(d.ts!==m.ts)return null;parts.push(d.d)}return parts.join('')}
 /* Tempo pausado ao adotar o estado de outra aba ou da conta: uma cópia do app aberta antes da atualização apaga as pausas
@@ -2153,7 +2162,7 @@ function syApply(json,ts){const prev=S;let o;try{o=JSON.parse(json)}catch(x){ret
  if(!o||!Array.isArray(o.subjects)||!o.subjects.every(x=>x&&typeof x==='object'&&x.id)||(o.sessions!==undefined&&!Array.isArray(o.sessions)))return false;
  try{S=Object.assign(seed(),o);norm();pzKeep(prev,S)}catch(x){S=prev;return false}
  if(!window.__ro)try{vhSave(JSON.stringify(prev),'aparelho');localStorage.setItem(KEY+'-bak',JSON.stringify(prev));const j=JSON.stringify(S);localStorage.setItem(KEY,j);LJ=j}catch(x){}
- UST.length=0;RST.length=0;SY.lastTs=ts;SY.lastJson=json;syBase(json);SY.dirty=false;syMeta();if(!TABS.includes(tab))tab='ciclo';render();return true}
+ UST.length=0;RST.length=0;SY.lastTs=ts;SY.lastJson=json;syBase(json);syOk();SY.dirty=false;syMeta();if(!TABS.includes(tab))tab='ciclo';render();return true}
 const localHasData=()=>S.sessions.length>0||(S.editais||[]).length>1||S.subjects.some(s=>s.topics&&s.topics.length);
 /* Dados diferentes no navegador e na conta: vence a versão mais recente, sem perguntar. */
 async function syOnMeta(snap){
@@ -2163,7 +2172,7 @@ async function syOnMeta(snap){
  if(m.ts<=SY.lastTs&&SY.status!=='init')return;
  const json=await syFetch(m);if(json==null){syRetry(snap);return}
  const first=SY.status==='init';
- if(json===JSON.stringify(S)){SY.lastTs=m.ts;SY.lastJson=json;syBase(json);SY.dirty=false;syMeta();SY.status='on';return}
+ if(json===JSON.stringify(S)){SY.lastTs=m.ts;SY.lastJson=json;syBase(json);syOk();SY.dirty=false;syMeta();SY.status='on';return}
  /* os dois lados mudaram desde a última versão em comum: junta em vez de um passar por cima do outro */
  if(SY.dirty&&SY.lastTs>0&&SY.localTs>SY.lastTs&&m.dev!==SY.dev&&localHasData()){let r=null;const L0=JSON.stringify(S);
   /* parte da versão mais recente e traz da outra os registros novos e os apagados */
@@ -2179,7 +2188,7 @@ function syRetry(snap){clearTimeout(SY.rtimer);SY.rtimer=setTimeout(()=>{if(SY.l
 /* As regras do Firebase recusaram esta conta: para de tentar e avisa; os dados seguem no navegador. */
 function syDenied(){try{if(SY.unsub)SY.unsub()}catch(x){}SY.unsub=null;clearTimeout(SY.timer);SY.status='denied';render()}
 function sySub(){try{if(SY.unsub)SY.unsub()}catch(x){}
- try{SY.unsub=syCol().doc('meta').onSnapshot(s=>{syOnMeta(s).catch(()=>syRetry(s))},e=>{if(e&&e.code==='permission-denied'){syDenied();return}SY.status='err';setTimeout(sySub,15000)})}catch(x){SY.status='off'}}
+ try{SY.unsub=syCol().doc('meta').onSnapshot(s=>{syOnMeta(s).catch(()=>syRetry(s))},e=>{if(e&&e.code==='permission-denied'){syDenied();return}SY.status='err';if(e&&/resource-exhausted|quota/.test(String(e.code||'')))SY.quota=true;setTimeout(sySub,SY.quota?600000:15000)})}catch(x){SY.status='off'}}
 async function syInit(){if(OFFLINE)return fbInit();let db=null,uid=null;
  try{db=await claude.use('db');const user=await claude.use('user');uid=user?await user.id():null}catch(x){}
  if(!db||!uid){SY.status='off';SY.ready=true;return}
@@ -2204,8 +2213,24 @@ function fbLogin(){if(!window.firebase)return;const p=new firebase.auth.GoogleAu
 function fbLogout(){if(!window.firebase)return;firebase.auth().signOut();SY.lastTs=0;SY.lastJson=null;SY.dirty=false;SY.localTs=0;syMeta()}
 /* Texto e botões do cartão "Seus dados" */
 const SYST={on:'Sincronizado',saving:'Sincronizando…',init:'Conectando…',err:'Sem conexão — tentando de novo'};
-setInterval(()=>{const e=document.getElementById('systat');if(e){const v=SYST[SY.status]||'';if(e.textContent!==v)e.textContent=v}},1000);
-function syCard(){const st={on:'Sincronizado',saving:'Sincronizando…',init:'Conectando…',err:'Sem conexão — tentando de novo'}[SY.status]||'';
+/* hora de uma sincronização: "hoje, 14:32", "ontem, 09:10" ou "seg, 03/11, 14:32" */
+const syWhen=ts=>{if(!ts)return '';const d=new Date(ts),hm=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'),k=x=>x.toDateString(),n=new Date(),y=new Date(n-864e5);return (k(d)===k(n)?'hoje':k(d)===k(y)?'ontem':d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'}).replace('.',''))+', '+hm};
+const syStat=()=>{const b=SY.quota?'Limite gratuito da conta atingido':SYST[SY.status]||'';if(!b||!SY.okTs)return b;return SY.status==='on'&&!SY.quota?b+' · '+syWhen(SY.okTs):b+' · última sincronização '+syWhen(SY.okTs)};
+setInterval(()=>{const e=document.getElementById('systat');if(e){const v=syStat();if(e.textContent!==v)e.textContent=v}},1000);
+/* Aviso discreto de sincronização parada: com a conta conectada e mudança deste aparelho sem chegar à conta há 2 min (ou limite
+   atingido), uma etiqueta no topo (celular) ou ao lado do título (computador); tocando, um quadrinho explica. Some quando volta. */
+const CLOUDOFF='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M18.4 18.4A4.5 4.5 0 0 1 17.5 18H7a5 5 0 0 1-1-9.9"/><path d="M9.1 5.3A6 6 0 0 1 18.8 10a4.5 4.5 0 0 1 3 5.6"/></svg>';
+const SYW={k:null,open:false};
+const syWarn=()=>!SY.uid||window.__ro?null:SY.quota?'limite':SY.dirty&&SY.pend&&Date.now()-SY.pend>120000?'parado':null;
+function sywDraw(){const k=syWarn();if(k!==SYW.k){if(SYW.k&&!k&&SY.status==='on')toast('Sincronizado');SYW.k=k;SYW.open=false}
+ const t=k==='limite'?'Limite da conta':'Não sincronizado',last=SY.okTs?`<div class="sypl">Última sincronização: ${syWhen(SY.okTs)}</div>`:'';
+ const body=k==='limite'?'<b>A conta atingiu o limite gratuito do dia</b>Suas mudanças estão salvas neste aparelho e vão para a conta quando o limite renovar (por volta das 4h–5h). Evite usar outro aparelho até lá.':'<b>Sem conexão com a sua conta</b>Suas mudanças estão salvas neste aparelho e vão para a conta quando a internet voltar.';
+ const html=k?`<button type="button" class="sypill${k==='limite'?' lim':''}" data-sywt aria-expanded="${SYW.open}" title="${t}">${CLOUDOFF}<span>${t}</span></button>${SYW.open?`<div class="syppop" role="status">${body}${last}</div>`:''}`:'';
+ document.querySelectorAll('[data-syp]').forEach(e=>{if(e.dataset.h!==html){e.innerHTML=html;e.dataset.h=html}e.hidden=!k})}
+setInterval(sywDraw,2000);
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-sywt]');if(b){SYW.open=!SYW.open;sywDraw();return}if(SYW.open&&!(e.target.closest&&e.target.closest('.syppop'))){SYW.open=false;sywDraw()}},true);
+
+function syCard(){const st=syStat();
  const err=SY.err?`<div role="alert" style="color:var(--bad);font-size:.85rem;margin-top:8px">${esc(SY.err)}</div>`:'';
  if(SY.prov==='claude')return '<p class="mut" style="margin:4px 0 0">Tudo o que você registra é salvo automaticamente neste navegador e na sua conta. Você não precisa fazer backup.</p>';
  if(!fbOn())return '<p class="mut" style="margin:4px 0 0">Seus dados ficam salvos neste navegador. A sincronização entre aparelhos ainda não foi configurada.</p>';
