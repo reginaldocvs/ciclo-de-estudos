@@ -37,11 +37,12 @@ await x.ev(()=>{const e=document.querySelector('#app .qprev')||document.querySel
 // 3. limite nos ajustes da revisão por tópico
 await x.ev(()=>document.querySelector('[data-tab=bk]').click());await W(300);
 ok(await x.ev(()=>!document.querySelector('#app [data-qlim]')&&!/Reforçar/.test(document.getElementById('app').innerText)),'Configurações sem o limite');
-await x.ev(()=>{document.querySelector('nav [data-tab=rev]').click()});await W(200);await x.act('rvadj');await x.act('trvcfg');
-ok(await x.ev(()=>document.querySelector('#modal [data-tvl]')?.value==='70'),'ajustes da revisão por tópico: limite 70%');
-await x.act('tvlstep','-5');ok(await x.ev(()=>ui.tvl===65&&S.qlim!==65),'− baixa para 65 sem salvar ainda');
-await x.fill('#modal [data-tvl]','50');await shot('2-ajustes');await x.submit('#modal form[data-f=trvcfg]');await W(200);
-ok(await x.ev(()=>S.qlim===50),'Salvar grava 50%');
+await x.ev(()=>{document.querySelector('nav [data-tab=rev]').click()});await W(200);await x.act('rvadj');
+ok(await x.ev(()=>document.querySelector('#modal .rvql [data-qlv]')?.value==='70'),'Ajustes de revisão (janela principal): limite 70%');
+await x.act('qlstep','-5');ok(await x.ev(()=>S.qlim===65&&document.querySelector('#modal [data-qlv]').value==='65'),'− baixa para 65 e já vale');
+await x.fill('#modal [data-qlv]','50');await shot('2-ajustes');
+ok(await x.ev(()=>S.qlim===50),'digitar 50 grava 50%');
+await x.act('trvcfg');ok(await x.ev(()=>!document.querySelector('#modal [data-qlv],#modal [data-tvl]')&&!/Reforçar/.test(document.getElementById('modal').innerText)),'janela da revisão por tópico sem o limite');
 await x.ev(()=>{ui.rvadj=null;render()});
 await x.ev(()=>document.querySelector('nav [data-tab=rev]').click());await W(300);
 ok(await x.ev(()=>![...document.querySelectorAll('#app .tagrf')].some(e=>/· 6\d%|· 5[0-9]%/.test(e.textContent)&&+e.textContent.match(/(\d+)%/)[1]>=50)),'limite 50%: some o selo de quem está acima');

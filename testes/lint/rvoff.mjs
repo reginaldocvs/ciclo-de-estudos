@@ -17,7 +17,7 @@ await c('[data-act=trvres]');await Wt(300);
 ok(await ev(k=>{const o=trvList().find(x=>x.k===k);return !o.fix&&o.due===addD(today(),trvIv()[o.n])},k),'Retomar recomeça a agenda a partir de hoje');
 // Desligar grupos
 await c('[data-act=rvadj]');await Wt(250);
-ok(await ev(()=>document.querySelectorAll('#modal .swt').length===3),'Ajustes com três interruptores (grupos, ciclos, tópico)');
+ok(await ev(()=>document.querySelectorAll('#modal .swt').length===4),'Ajustes com quatro interruptores (grupos, ciclos, tópico, sessões)');
 await p.screenshot({path:OUT+'/rvoff-adj.png'});
 await c('#modal .swt[data-id=g]');await Wt(250);
 ok(await ev(()=>S.rvgOff===true&&!document.querySelector('[data-act=rvt][data-id=grupos]')),'Desligar grupos: some a visão Grupos');
