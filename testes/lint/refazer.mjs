@@ -32,8 +32,8 @@ const r1=await x.ev(()=>({n:redoList().length,ses:S.sessions.filter(z=>z.redo).l
 // Histórico mostra "refazer"
 await x.ev(()=>{document.querySelector('nav [data-tab=reg]').click()});await W(500);const tag=await x.ev(()=>[...document.querySelectorAll('#app .tag,#app [class*=tag]')].map(e=>e.textContent).find(t=>/refazer/.test(t)));ok(!!tag,'Histórico mostra o registro com a etiqueta "'+tag+'"');
 // dispensar
-await x.ev(()=>{document.querySelector('nav [data-tab=rev]').click()});await W(300);await x.ev(()=>document.querySelector('.rdcard [data-act=redoall].rdall').click());await W(300);
-await x.ev(()=>document.querySelector('.rddlg .rdi').click());await W(300);await x.ev(()=>document.querySelector('.rddlg .rdi.on [data-act=redoskip]').click());await W(400);
+await x.ev(()=>{document.querySelector('nav [data-tab=rev]').click()});await W(300);ok(!(await x.ev(()=>!!document.querySelector('.rdcard .rdall'))),'com 3 ou menos, o cartão mostra todas e não tem "Ver todas"');await x.ev(()=>document.querySelector('.rdcard [data-act=redoall]').click());await W(300);
+await x.ev(()=>{if(!document.querySelector('.rddlg .rdi.on'))document.querySelector('.rddlg .rdi').click()});await W(300);await x.ev(()=>document.querySelector('.rddlg .rdi.on [data-act=redoskip]').click());await W(400);
 ok(await x.ev(()=>redoList().length)===1,'Dispensar tira da lista');
 // nova tentativa baixa do item dispensado (numa revisão): volta
 await x.ev(Q=>{const t=S.sessions[0];S.sessions.push({id:'r9',ses:'r9',subj:t.subj,topic:'tR',min:20,cycle:1,set:1,review:true,kind:'aula',date:today(),items:[{kind:'aula',name:'Questões',link:'',qo:true,q:Q+'2',ac:3,tq:9}]});save();render()},Q);
