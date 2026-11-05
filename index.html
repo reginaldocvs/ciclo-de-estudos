@@ -2203,8 +2203,9 @@ const UST=[],RST=[];
 function pushU(msg,snap){UST.push({snap:snap||JSON.stringify(S),msg});if(UST.length>10)UST.shift();RST.length=0}
 function toast(msg,act,lbl){hideUndo();ui.undo={msg};const t=document.createElement('div');t.id='undo';t.className='undo';t.setAttribute('role','status');t.innerHTML=`<span>${esc(msg)}</span>${act?`<button class="undob" data-act="${act}">${lbl}</button>`:''}`;document.body.appendChild(t);ui.undoT=setTimeout(hideUndo,5000)}
 function showUndo(u){pushU(u.msg,u.snap);toast(u.msg,'undo','Desfazer')}
-function doUndo(){const u=UST.pop();if(!u){toast('Nada para desfazer');return}RST.push({snap:JSON.stringify(S),msg:u.msg});S=JSON.parse(u.snap);norm();save();render();toast('Desfeito: '+u.msg,'redo','Refazer')}
-function doRedo(){const r=RST.pop();if(!r){toast('Nada para refazer');return}UST.push({snap:JSON.stringify(S),msg:r.msg});S=JSON.parse(r.snap);norm();save();render();toast('Refeito: '+r.msg,'undo','Desfazer')}
+/* Desfazer/refazer não reabrem a edição de um registro: se ela estava fechada (ex.: excluir pela edição e desfazer), continua fechada */
+function doUndo(){const u=UST.pop();if(!u){toast('Nada para desfazer');return}RST.push({snap:JSON.stringify(S),msg:u.msg});const ed=S.edit;S=JSON.parse(u.snap);if(!ed)S.edit=null;norm();save();render();toast('Desfeito: '+u.msg,'redo','Refazer')}
+function doRedo(){const r=RST.pop();if(!r){toast('Nada para refazer');return}UST.push({snap:JSON.stringify(S),msg:r.msg});const ed=S.edit;S=JSON.parse(r.snap);if(!ed)S.edit=null;norm();save();render();toast('Refeito: '+r.msg,'undo','Desfazer')}
 document.addEventListener('keydown',e=>{if(!(e.ctrlKey||e.metaKey)||e.altKey)return;const k=(e.key||'').toLowerCase();if(k!=='z'&&k!=='y')return;const tg=e.target,ed=tg&&(tg.isContentEditable||(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)&&!/^(checkbox|radio|button|submit)$/.test(tg.type||'')));if(ed)return;e.preventDefault();e.stopImmediatePropagation();if(k==='y'||e.shiftKey)doRedo();else doUndo()},true);
 /* ===== Salvamento automático: navegador + nuvem =====
    Dentro do claude.ai usa o banco do artifact. Fora dele (ex.: GitHub Pages) usa o Firebase:
