@@ -38,5 +38,9 @@ ok(await x.ev(()=>redoList().length)===1,'Dispensar tira da lista');
 // nova tentativa baixa do item dispensado (numa revisão): volta
 await x.ev(Q=>{const t=S.sessions[0];S.sessions.push({id:'r9',ses:'r9',subj:t.subj,topic:'tR',min:20,cycle:1,set:1,review:true,kind:'aula',date:today(),items:[{kind:'aula',name:'Questões',link:'',qo:true,q:Q+'2',ac:3,tq:9}]});save();render()},Q);
 ok(await x.ev(()=>redoList().length)===2,'item dispensado volta se vier outra tentativa abaixo do limite');
+// dispensar até esvaziar: a janela fecha sozinha (não fica "Para refazer (0)" vazia)
+await x.ev(()=>{const c=document.querySelector('.rdcard [data-act=redoall]');c&&c.click()});await W(300);
+for(let i=0;i<5&&await x.ev(()=>redoList().length);i++){await x.ev(()=>{if(!document.querySelector('.rddlg .rdi.on'))document.querySelector('.rddlg .rdi').click()});await W(250);await x.ev(()=>document.querySelector('.rddlg .rdi.on [data-act=redoskip]').click());await W(400)}
+ok(await x.ev(()=>!redoList().length&&!document.querySelector('.rddlg')&&!document.querySelector('.rdcard')),'dispensar o último fecha a janela e tira o cartão');
 // desktop: cartão ao lado de "Para hoje"
 ok(!errs.length,'sem erros '+JSON.stringify(errs));console.log(bad?'FALHAS: '+bad:'TUDO OK');await b.close();
