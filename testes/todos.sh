@@ -17,7 +17,7 @@ case "$1" in
    for t in edscroll edhead edatrow hsrow popcel; do r $t node lint/$t.mjs dados/data-rv2.json "$O"; done
    r irpara node lint/irpara.mjs "$O/x.png"; r acalign node lint/acalign.mjs
    for t in metaguia mvsetas mvtablet cyn5; do r $t node lint/$t.mjs $F "$O" 390; done; r notif node lint/notif.mjs $F; r fmrev node lint/fmrev.mjs
-   r refazer node lint/refazer.mjs $F "$O" 390; r refazerD node lint/refazer.mjs $F "$O" 1280; r paginas node lint/paginas.mjs $F "$O" 390; r paginasD node lint/paginas.mjs $F "$O" 1280
+   r refazer node lint/refazer.mjs $F "$O" 390; r refazerD node lint/refazer.mjs $F "$O" 1280; r paginas node lint/paginas.mjs $F "$O" 390; r paginasD node lint/paginas.mjs $F "$O" 1280; r paginas2 node lint/paginas2.mjs $F "$O" 390; r paginas2D node lint/paginas2.mjs $F "$O" 1280
    r qolinks node lint/qolinks.mjs $F "$O"; r qonome node lint/qonome.mjs $F "$O"; r qnlong node lint/qnlong.mjs $F "$O"; r syncfix node lint/syncfix.mjs $F "$O"; r sygate node lint/sygate.mjs $F "$O"
    r tpclamp node lint/tpclamp.mjs $F "$O"; r pdaddlist node lint/pdaddlist.mjs dados/rico.json "$O"; for w in 390 1280; do r alinha1-$w node lint/alinha1.mjs dados/rico.json "$O" $w; done; r bkremind node lint/bkremind.mjs $F "$O" ;;
 4) r simsync node lint/simsync.mjs $F "$O"; r simsync2 node lint/simsync2.mjs $F "$O"; r simsync3 node lint/simsync3.mjs $F "$O"; r syncidle node lint/syncidle.mjs $F "$O"; r syncwarn node lint/syncwarn.mjs $F "$O" ;;

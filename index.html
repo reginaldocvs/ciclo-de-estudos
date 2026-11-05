@@ -1590,7 +1590,8 @@ function rgInfo(){syncRg();let pos=0;const W=rvWait(),td=today();
 const rgMap=()=>{if(!RG.gm){RG.gm={};(S.rgs||[]).forEach(g=>g.dates.forEach(d=>RG.gm[d]=g.id))}return RG.gm};
 const inSrc=x=>S.reviewSrc.some(k=>typeof k==='number'?x.cycle===k:rgMap()[x.date]===k);
 const rgLabel=o=>'Grupo '+o.g.idx;
-const rgTopics=g=>{const set=new Set(g.dates),by=new Map();CS().filter(x=>!x.review&&!x.rid&&set.has(x.date)&&sesHasIt(x)).forEach(x=>{const sb=subjAny(x.subj),b=sb&&(sb.of?S.subjects.find(y=>y.id===sb.of)||sb:sb);if(!b)return;if(!by.has(b.id))by.set(b.id,[]);if(!by.get(b.id).includes(x.topic))by.get(b.id).push(x.topic)});return by};
+/* Tópicos do grupo por disciplina; a mesma regra da revisão (actives): fora a disciplina removida do ciclo e o tópico apagado */
+const rgTopics=g=>{const set=new Set(g.dates),by=new Map();CS().filter(x=>!x.review&&!x.rid&&set.has(x.date)&&sesHasIt(x)).forEach(x=>{const sb=subjAny(x.subj),b=sb&&(sb.of?S.subjects.find(y=>y.id===sb.of)||sb:sb);if(!b||gone(b)||!(topicOf(b,x.topic)||topicOf(sb,x.topic)))return;if(!by.has(b.id))by.set(b.id,[]);if(!by.get(b.id).includes(x.topic))by.get(b.id).push(x.topic)});return by};
 
 const RCM=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const rgCol=g=>g.idx%2?'#0B7A8A':'#7A9EA4';

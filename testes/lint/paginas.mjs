@@ -4,7 +4,7 @@ import {open,mk,W} from './lib.mjs';import fs from 'fs';
 const [F,OUT,WD]=process.argv.slice(2);const w=+(WD||390);let bad=0;const ok=(c,m)=>{console.log((c?'OK    ':'FALHA ')+m);if(!c)bad++};
 const N=6;
 const S0=JSON.parse(fs.readFileSync(F,'utf8'));S0.timer={running:false,start:0,acc:0};S0.sx=false;
-const dA=n=>new Date(Date.now()-n*864e5).toISOString().slice(0,10);
+const dA=n=>{const d=new Date(Date.now()-n*864e5);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const s=S0.subjects.find(x=>!x.off&&!x.of);s.topics=[];S0.sessions=[];
 /* 30 tópicos estudados em dias passados (revisão vencida), 12 estudados hoje (próximas, em breve); 13 com questões abaixo do limite */
 for(let i=0;i<42;i++){const id='tp'+i,old=i<30;s.topics.push({id,name:'Tópico de exemplo '+(i+1),done:false,links:[]});
