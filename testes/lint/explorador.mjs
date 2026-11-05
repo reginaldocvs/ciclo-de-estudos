@@ -121,6 +121,9 @@ for(const seed of SEEDS.split(',').map(Number)){
  R=rng(seed);const [w,h]=pick(WIDTHS);
  const {b,p,errs}=await open({w,h,data:{[KEY]:DATA,'ciclo-welcome-skip':'1'}});
  p.on('dialog',d=>d.accept());
+ /* TRAIL=1: vigia de travamento — se um passo passar de 60 s, pausa a página e grava onde o código está preso */
+ if(process.env.TRAIL){const cdp=await p.target().createCDPSession();await cdp.send('Debugger.enable');cdp.on('Debugger.paused',ev=>{fs.writeFileSync(`${OUT}/travou-s${seed}.txt`,ev.callFrames.map(f=>(f.functionName||'(anônima)')+' linha '+(f.location.lineNumber+1)+':'+f.location.columnNumber).join(String.fromCharCode(10)));console.log('TRAVOU: pilha gravada');process.exit(3)});
+  let last=Date.now();globalThis.__tick=()=>{last=Date.now()};setInterval(()=>{if(Date.now()-last>60000){last=Date.now();cdp.send('Debugger.pause').catch(()=>{})}},5000).unref()}
  const trail=[];let step=0;
  const note=async(list)=>{for(const x of list){const k=sig(x);if(found.has(k)){found.get(k).n++;continue}
   const shot=`${OUT}/s${seed}-p${step}.png`;await p.screenshot({path:shot}).catch(()=>{});
@@ -130,7 +133,7 @@ for(const seed of SEEDS.split(',').map(Number)){
  for(step=1;step<=+NSTEPS;step++){
   let desc='';
   try{
-   const roll=R();
+   if(globalThis.__tick)globalThis.__tick();const roll=R();const pre=t=>{if(process.env.TRAIL)fs.appendFileSync(`${OUT}/andamento-s${seed}.txt`,'   … '+step+' '+t+String.fromCharCode(10))};pre('sorteio '+roll.toFixed(3));
    if(roll<0.03){const n=pick([1,1,2,7]);await p.evaluate(n=>localStorage.setItem('__fkoff',String(+(localStorage.getItem('__fkoff')||0)+n*86400000)),n);await p.reload();await W(700);desc='avança '+n+' dia(s) e reabre'}
    else if(roll<0.05){const [w2,h2]=pick(WIDTHS);await p.setViewport({width:w2,height:h2});await W(300);desc='muda a tela para '+w2+'px'}
    else if(roll<0.08){desc='recarrega a página';const l=await reloadCheck(p,errs);if(l.length){trail.push({step,desc});await note(l)}}
@@ -139,14 +142,15 @@ for(const seed of SEEDS.split(',').map(Number)){
    else{
     const cs=await controls(p);if(!cs.length){await p.keyboard.press('Escape');desc='nada clicável; Esc'}
     else{const types=cs.filter(c=>c.kind==='type'),clicks=cs.filter(c=>c.kind!=='type'&&!BLOCKACT.has(c.act));
-     const c=types.length&&chance(0.3)?pick(types):pick(clicks.length?clicks:cs);const sel=`[data-xp="${c.i}"]`;
+     const c=types.length&&chance(0.3)?pick(types):pick(clicks.length?clicks:cs);const sel=`[data-xp="${c.i}"]`;pre(c.kind+' '+c.t+' '+c.act);
      if(c.kind==='type'){const v=valueFor(c);if(v===null){desc='pula campo de data'}else{
-       await p.click(sel,{clickCount:3}).catch(()=>p.focus(sel));await p.keyboard.down('Control');await p.keyboard.press('a');await p.keyboard.up('Control');await p.keyboard.press('Backspace');
+       await Promise.race([p.click(sel,{clickCount:3}),new Promise((_,no)=>setTimeout(()=>no(new Error('clique sem resposta')),8000))]).catch(()=>p.focus(sel));await p.keyboard.down('Control');await p.keyboard.press('a');await p.keyboard.up('Control');await p.keyboard.press('Backspace');
        await p.keyboard.type(v,{delay:8});if(chance(0.35)){await p.keyboard.press('Enter')}await W(250);desc=`digita "${v.replace(/\n/g,'⏎')}" em ${c.tag.toLowerCase()} ${c.name||c.id||c.ph||c.t}`}}
      else if(c.kind==='select'){await p.evaluate(s=>{const e=document.querySelector(s),o=e.options;e.selectedIndex=Math.floor(Math.random()*o.length);e.dispatchEvent(new Event('change',{bubbles:true}))},sel);await W(250);desc='escolhe opção em '+(c.name||c.id)}
-     else{await p.click(sel).catch(async()=>{await p.evaluate(s=>document.querySelector(s)&&document.querySelector(s).click(),sel)});await W(300);desc=`clica "${c.t}"`+(c.act?` (${c.act})`:'')}}}
+     else{/* o clique do Puppeteer espera um IntersectionObserver que às vezes nunca responde (a página segue livre): com 8 s sem resposta, clica direto */
+      await Promise.race([p.click(sel),new Promise((_,no)=>setTimeout(()=>no(new Error('clique sem resposta')),8000))]).catch(async()=>{await p.evaluate(s=>document.querySelector(s)&&document.querySelector(s).click(),sel)});await W(300);desc=`clica "${c.t}"`+(c.act?` (${c.act})`:'')}}}
   }catch(e){desc+=' — exceção: '+e.message.split('\n')[0];errs.push('exceção do explorador: '+e.message.split('\n')[0])}
-  trail.push({step,desc});
+  trail.push({step,desc});if(process.env.TRAIL)fs.appendFileSync(`${OUT}/andamento-s${seed}.txt`,step+'. '+desc+String.fromCharCode(10)); /* TRAIL=1: grava cada passo (para achar onde travou) */
   await W(150);
   await note(await rules(p,errs,desc));
  }

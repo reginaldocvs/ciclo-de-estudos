@@ -35,7 +35,9 @@ ok(await ev(()=>/Disponível/.test(document.querySelector('.srsc').innerText)&&/
 await p.screenshot({path:`${OUT}/sessoes-${w}-aba.png`,fullPage:true});
 // 4. foco: abre com a lista e "Registrar" leva à janela de registro
 await ev(()=>document.querySelector('.srsc [data-act=srgo]').click());await W(300);
-ok(await ev(()=>{const d=document.querySelector('.rvfd');return !!d&&/Revisão por sessões/.test(d.innerText)&&d.querySelectorAll('.srit').length===3}),'foco: "Revisão por sessões" com as 3 aulas');
+ok(await ev(()=>{const d=document.querySelector('.rvfd');return !!d&&/Revisão por sessões/.test(d.innerText)&&d.querySelectorAll('.srit input[data-srk]').length===3&&/Marque o que você revisou/.test(d.innerText)}),'foco: "Revisão por sessões" com as 3 aulas para marcar');
+await ev(()=>document.querySelector('.rvfd [data-act=srall]').click());await W(250);
+ok(await ev(()=>document.querySelectorAll('.rvfd .srit.on').length===3&&/3 de 3 marcadas/.test(document.querySelector('.rvfd').innerText)&&/Desmarcar todas/.test(document.querySelector('.rvfd').innerText)),'foco: "Marcar todas" marca as 3 (riscadas) e vira "Desmarcar todas"');
 await ev(()=>{S.rvf.acc=20*60000;save();render()});await W(200);await ev(()=>document.querySelector('[data-act=rvfreg]').click());await W(300);
 ok(await ev(()=>{const d=document.querySelector('form[data-f=srreg]');return !!d&&d.querySelector('[name=m]').value==='0h20'}),'Registrar do foco abre a janela com 0h20');
 // 5. registrar com acertos: ponto conta 1 para cada item, sai da vez, vai para o Histórico
@@ -52,10 +54,14 @@ ok(c==='1ª de 2,1ª de 2,1ª de 2,2ª de 2,2ª de 2,2ª de 2','segunda vez: 3 i
 await ev(()=>document.querySelector('.srvc [data-act=srskip]').click());await W(300);
 s1=await st();ok(!s1.due&&s1.todo.split(',').length>1&&s1.pts===2&&!(await ev(()=>!!document.querySelector('.srvc'))),'Pular: sai da vez sem contar '+JSON.stringify(s1));
 // 8. mais 3: registrar sem nada → os 3 primeiros chegam a 2 e ganham ✓
-await study(6);await goTab('rev','hoje');await ev(()=>document.querySelector('.rvtoday [data-act=srreg]').click());await W(300);await x.submit('form[data-f=srreg]');await W(300);
+await study(6);await goTab('rev','hoje');
+ok(await ev(()=>{const b=document.querySelector('.rvtoday [data-act=srreg]');return b&&b.disabled&&/Marque o que você revisou/.test(b.title)}),'sem nada marcado: Registrar desativado, com a dica');
+await goTab('rev','sessoes');await ev(()=>document.querySelector('.srsc [data-act=srall]').click());await W(250);
+ok(await ev(()=>/9 de 9 marcadas/.test(document.querySelector('.srsc').innerText)),'aba Sessões: "Marcar todas" (9 de 9, inclusive as da próxima página)');
+await ev(()=>document.querySelector('.srsc [data-act=srreg]').click());await W(300);await x.submit('form[data-f=srreg]');await W(300);
 s1=await st();ok(s1.fin===3&&!s1.due&&s1.todo==='Crase:1,1 Regência verbal:1,1 Concordância:1,1','terceira vez: os 3 primeiros chegam a 2 revisões e vão para Concluídos ✓ (o pulo não contou) '+JSON.stringify(s1));
 await goTab('rev','sessoes');await ev(()=>document.querySelector('.srsc .srfg [data-act=trvtog]').click());await W(200);
-ok(await ev(()=>document.querySelectorAll('.srsc .srok').length===3&&/Concluídos ✓ \(3\)/.test(document.querySelector('.srsc').innerText)),'aba Sessões: "Concluídos ✓ (3)" com ✓ em cada um');
+ok(await ev(()=>document.querySelectorAll('.srsc .srok').length===3&&/Concluídos ✓ \(3\)/.test(document.querySelector('.srsc').innerText)),'aba Sessões: "Concluídos ✓ (3)" com ✓ em cada um'+JSON.stringify(await ev(()=>({n:document.querySelectorAll('.srsc .srok').length,t:document.querySelector('.srsc').innerText.slice(-200)}))));
 await p.screenshot({path:`${OUT}/sessoes-${w}-concl.png`,fullPage:true});
 // 9. desfazer a última revisão: volta a valer
 await ev(()=>document.querySelector('.srsc [data-act=srundo]').click());await W(300);
@@ -66,6 +72,16 @@ await ev(()=>{const f=document.querySelector('form[data-f=srcfg]');f.elements.sn
 ok(await ev(()=>/A cada 4 sessões[\s\S]*até 3 revisões/.test(document.getElementById('rvsum').innerText)),'resumo dos ajustes acompanha os números');
 await x.submit('form[data-f=srcfg]');await W(300);
 ok(await ev(()=>srN()===4&&srY()===3),'salva: a cada 4 sessões, até 3 revisões');
+// 10b. marcar só uma: só ela conta, as outras esperam; a revisão sai da vez e as marcas somem
+await study(9);await goTab('ciclo');
+const pk=await ev(()=>{const i=document.querySelector('.srvc input[data-srk]');i.click();return i.dataset.srk});await W(250);
+const b0=await ev(()=>{const s=current();return Object.fromEntries(srItems(s.id).flatMap(t=>t.its.map(z=>[z.k,z.n])))});
+ok(await ev(()=>document.querySelectorAll('.srvc .srit.on').length===1&&/1 de \d+ marcada/.test(document.querySelector('.srvc').innerText)),'cartão: 1 marcada (riscada) e "1 de N marcada"'+JSON.stringify(await ev(()=>({on:document.querySelectorAll('.srvc .srit.on').length,t:(document.querySelector('.srvc')||{}).innerText}))));
+await ev(()=>document.querySelector('.srvc [data-act=srreg]').click());await W(300);
+ok(await ev(()=>document.querySelectorAll('#modal .actp').length===1&&/1 tópico · 1 marcado/.test(document.getElementById('modal').innerText)),'janela de registro só com a marcada');
+await x.submit('form[data-f=srreg]');await W(300);
+const a0=await ev(()=>{const s=current();return {c:Object.fromEntries(srItems(s.id).flatMap(t=>t.its.map(z=>[z.k,z.n]))),due:srDue(s.id),mk:Object.keys(S.srMk||{}).length}});
+ok(a0.c[pk]===b0[pk]+1&&Object.keys(b0).filter(k=>k!==pk).every(k=>a0.c[k]===b0[k])&&!a0.due&&!a0.mk,'só a marcada ganhou +1; as outras ficaram como estavam; saiu da vez e as marcas somem');
 // 11. histórico: filtro e etiqueta
 await goTab('reg');
 ok(await ev(()=>/rev\. sessões/.test(document.querySelector('main').innerText)),'Histórico: registro com a etiqueta "rev. sessões"');
