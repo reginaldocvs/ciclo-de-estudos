@@ -58,6 +58,8 @@ await study(6);await goTab('rev','hoje');
 ok(await ev(()=>{const b=document.querySelector('.rvtoday [data-act=srreg]');return b&&b.disabled&&/Marque o que você revisou/.test(b.title)}),'sem nada marcado: Registrar desativado, com a dica');
 await goTab('rev','sessoes');await ev(()=>document.querySelector('.srsc [data-act=srall]').click());await W(250);
 ok(await ev(()=>/9 de 9 marcadas/.test(document.querySelector('.srsc').innerText)),'aba Sessões: "Marcar todas" (9 de 9, inclusive as da próxima página)');
+ok(await ev(()=>{const c=document.querySelector('.srsc');return c.querySelectorAll('input[data-srk]').length===9&&!c.querySelector('[data-act=pgmore]')}),'lista de marcar mostra tudo: 9 caixinhas, sem "Mostrar mais"');
+await goTab('ciclo');ok(await ev(()=>{const c=document.querySelector('.srvc');return !!c&&c.querySelectorAll('input[data-srk]').length===9&&!c.querySelector('[data-act=pgmore]')}),'cartão do Ciclo: as 9 para marcar, sem "Mostrar mais"');await goTab('rev','sessoes');
 await ev(()=>document.querySelector('.srsc [data-act=srreg]').click());await W(300);await x.submit('form[data-f=srreg]');await W(300);
 s1=await st();ok(s1.fin===3&&!s1.due&&s1.todo==='Crase:1,1 Regência verbal:1,1 Concordância:1,1','terceira vez: os 3 primeiros chegam a 2 revisões e vão para Concluídos ✓ (o pulo não contou) '+JSON.stringify(s1));
 await goTab('rev','sessoes');await ev(()=>document.querySelector('.srsc .srfg [data-act=trvtog]').click());await W(200);
