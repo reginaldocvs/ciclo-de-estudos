@@ -80,7 +80,7 @@ const pk=await ev(()=>{const i=document.querySelector('.srvc input[data-srk]');i
 const b0=await ev(()=>{const s=current();return Object.fromEntries(srItems(s.id).flatMap(t=>t.its.map(z=>[z.k,z.n])))});
 ok(await ev(()=>document.querySelectorAll('.srvc .srit.on').length===1&&/1 de \d+ marcada/.test(document.querySelector('.srvc').innerText)),'cartão: 1 marcada (riscada) e "1 de N marcada"'+JSON.stringify(await ev(()=>({on:document.querySelectorAll('.srvc .srit.on').length,t:(document.querySelector('.srvc')||{}).innerText}))));
 await ev(()=>document.querySelector('.srvc [data-act=srreg]').click());await W(300);
-ok(await ev(()=>document.querySelectorAll('#modal .actp').length===1&&/1 tópico · 1 marcado/.test(document.getElementById('modal').innerText)),'janela de registro só com a marcada');
+ok(await ev(()=>document.querySelectorAll('#modal .actp').length===1&&/1 tópico · 1 marcada/.test(document.getElementById('modal').innerText)),'janela de registro só com a marcada');
 await x.submit('form[data-f=srreg]');await W(300);
 const a0=await ev(()=>{const s=current();return {c:Object.fromEntries(srItems(s.id).flatMap(t=>t.its.map(z=>[z.k,z.n]))),due:srDue(s.id),mk:Object.keys(S.srMk||{}).length}});
 ok(a0.c[pk]===b0[pk]+1&&Object.keys(b0).filter(k=>k!==pk).every(k=>a0.c[k]===b0[k])&&!a0.due&&!a0.mk,'só a marcada ganhou +1; as outras ficaram como estavam; saiu da vez e as marcas somem');

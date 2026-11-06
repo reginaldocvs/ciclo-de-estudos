@@ -74,7 +74,7 @@ ok(L&&L.h==='Atrasadas (2)'&&L.ck===2&&L.dis&&L.rest,'aba Sessões: "Atrasadas (
 await p.screenshot({path:`${OUT}/sessoes2-${w}-atrasadas.png`,fullPage:true});
 await ev(C=>{const c=[...document.querySelectorAll('.srlate')].find(e=>e.querySelector(`[data-id="${C}"]`));c.querySelector('input[data-srk]').click()},C);await W(250);
 await ev(C=>document.querySelector(`.srlate [data-act=srreg][data-id="${C}"]`).click(),C);await W(300);
-ok(await ev(()=>/atrasadas · 1 tópico · 1 marcado/.test(document.getElementById('modal').innerText)),'janela de registro das atrasadas, só com a marcada');
+ok(await ev(()=>/atrasadas · 1 tópico · 1 marcada/.test(document.getElementById('modal').innerText)&&document.querySelectorAll('#modal .acit').length===1),'janela de registro das atrasadas, só com a marcada');
 await x.submit('#modal form[data-f=srreg]');await W(300);
 k1=await cnt();ok(k1['Aula b']==='1'&&k1['Aula c']==='0L'&&await ev(C=>{const P=srPts(C),l=P[P.length-1];return l.late&&!l.ses.length&&!srDue(C)},C),'pôs em dia a "Aula b" fora da vez, sem gastar sessões '+JSON.stringify(k1));
 ok(await ev(C=>{const c=[...document.querySelectorAll('.srsc')].find(e=>e.querySelector(`[data-id="${C}"]`));return /Atrasadas \(1\)/.test(c.innerText)&&/Última revisão: \d\d\/\d\d \(atrasadas\)/.test(c.innerText)},C),'fica "Atrasadas (1)" e a última revisão diz "(atrasadas)"');
