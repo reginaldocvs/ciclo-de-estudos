@@ -31,7 +31,7 @@ await p.screenshot({path:`${OUT}/sessoes-${w}-ciclo.png`,fullPage:true});
 await goTab('rev','hoje');
 ok(await ev(()=>/Para hoje \(1\)/.test(document.querySelector('.rvtoday').innerText)&&!!document.querySelector('.rvtoday [data-act=srgo]')),'Hoje: "Para hoje (1)" com a revisão por sessões');
 await goTab('rev','sessoes');
-ok(await ev(()=>/Disponível/.test(document.querySelector('.srsc').innerText)&&/Em revisão \(3\)/.test(document.querySelector('.srsc').innerText)),'aba Sessões: disponível, "Em revisão (3)"');
+ok(await ev(()=>/Disponível/.test(document.querySelector('.srsc').innerText)&&/Para revisar agora \(3\)/.test(document.querySelector('.srsc').innerText)),'aba Sessões: disponível, "Para revisar agora (3)"');
 await p.screenshot({path:`${OUT}/sessoes-${w}-aba.png`,fullPage:true});
 // 4. foco: abre com a lista e "Registrar" leva à janela de registro
 await ev(()=>document.querySelector('.srsc [data-act=srgo]').click());await W(300);
