@@ -21,6 +21,8 @@ const scan=nm=>x.ev(nm=>{const out=[],vis=e=>e.offsetParent!==null;
  });
  /* contagem no título que não bate com as linhas visíveis (quando não há "Mostrar mais") */
  document.querySelectorAll('#app h2, #app h3, #modal h2, #modal h3').forEach(h=>{if(!vis(h))return;const m=h.textContent.match(/\((\d+)\)\s*$/);if(!m)return;if(+m[1]===0)out.push(`${nm}: título com (0): "${h.textContent.trim()}"`)});
+ /* listas que crescem sem limite: mais de 6 linhas pede "Mostrar mais" (listas de marcar e as de tamanho fixo ficam de fora) */
+ [['.rfl','.rfr'],['.stab tbody','tr'],['.tdsoon .trvl','.trvli'],['.rvtoday','.trvr'],['.trvc','.trvr'],['.rdcard','.rdi']].forEach(([c,r])=>document.querySelectorAll('#app '+c).forEach(e=>{if(!vis(e))return;const n=[...e.querySelectorAll(r)].filter(vis).length,card=e.closest('.card')||e;if(n>6&&!card.querySelector('[data-act=pgmore],[data-act=pgless]'))out.push(`${nm}: lista com ${n} linhas sem "Mostrar mais" (${c})`)}));
  return [...new Set(out)]},nm);
 const tab=async(t,sub)=>{await x.ev(t=>{const e=document.querySelector(`nav [data-tab=${t}]`);e&&e.click()},t);await W(250);if(sub){await x.ev(s=>{const e=document.querySelector(`[data-act=rvt][data-id=${s}]`);e&&e.click()},sub);await W(250)}};
 let all=[];

@@ -74,7 +74,7 @@ async function srvReview(id){const a=await ev(id=>({due:srDue(id),nw:srNew(id).l
  const M=new Set(mk),bad=a.todo.filter(k=>z.cnt[k]!==a.cnt[k]+(M.has(k)?1:0));if(bad.length)ok(false,'sessões: contagem errada');if(z.due)ok(false,'sessões: continua na vez depois de registrar')}
 async function lateReviews(){if(rnd()>.3)return;const id=await ev(()=>{const s=srSubs().find(s=>!srDue(s.id)&&srLate(s.id).length);return s&&s.id});if(!id)return;
  await tabTo('rev','sessoes');const a=await ev(id=>({nw:srNew(id).length,late:srLate(id).flatMap(t=>t.its.map(z=>z.k))}),id);
- if(!(await ev(id=>!!document.querySelector(`.srlate [data-act=srreg][data-id="${id}"]`),id))){ok(false,'atrasadas: sem botão Registrar');return}await once('sessoes-atrasadas');
+ if(!(await ev(id=>!!document.querySelector(`.srlate [data-act=srreg][data-id="${id}"]`),id))){ok(false,'atrasadas: sem botão Registrar');return}await once('sessoes-atrasadas');/* fora da vez a lista vem fechada: abre */await ev(id=>{const c=[...document.querySelectorAll('.srsc')].find(e=>e.querySelector(`.srlate [data-act=srreg][data-id="${id}"]`));const t=c&&c.querySelector('.srlate .srtg');if(t&&t.getAttribute('aria-expanded')==='false')t.click()},id);await W(200);
  await ev(id=>{const e=document.querySelector(`.srlate [data-act=srall][data-id="${id}"]`);e&&e.click()},id);await W(200);
  await ev(id=>document.querySelector(`.srlate [data-act=srreg][data-id="${id}"]`).click(),id);await W(250);await x.submit('#modal form[data-f=srreg]');await W(250);st.atras++;
  const z=await ev(id=>({nw:srNew(id).length,late:srLate(id).length}),id);if(z.nw!==a.nw||z.late)ok(false,'atrasadas: pôr em dia não zerou ou mexeu nas sessões')}

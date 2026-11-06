@@ -65,6 +65,10 @@ ok(await ev(C=>srDue(C),C),'Disciplina C disponível (2 sessões, 3 aulas)');
 await ev(C=>{S.srMk=S.srMk||{};const z=srTodo(C)[0].its.find(z=>z.l.title==='Aula a');S.srMk[z.k]=true;ui.srreg=C;save();render()},C);await W(300);await x.submit('#modal form[data-f=srreg]');await W(300);
 let k1=await cnt();ok(k1['Aula a']==='1'&&k1['Aula b']==='0L'&&k1['Aula c']==='0L'&&!(await ev(C=>srDue(C),C)),'marcou só a "Aula a": ela conta 1; b e c ficam atrasadas '+JSON.stringify(k1));
 await goTab('rev','sessoes');
+/* fora da vez, a disciplina fica com a lista fechada: título, contagem e as ações; toca no título para abrir */
+let F0=await ev(C=>{const c=[...document.querySelectorAll('.srsc')].find(e=>e.querySelector(`[data-act=srreg][data-id="${C}"]`));const t=c&&c.querySelector('.srlate .srtg');return c?{tg:t&&t.getAttribute('aria-expanded'),ck:c.querySelectorAll('input[data-srk]').length,h:t&&t.textContent.trim()}:null},C);
+ok(F0&&F0.tg==='false'&&F0.ck===0&&F0.h==='Atrasadas (2)','aba Sessões: disciplina fora da vez com a lista fechada ("Atrasadas (2)", sem caixinhas) '+JSON.stringify(F0));
+await ev(C=>{const c=[...document.querySelectorAll('.srsc')].find(e=>e.querySelector(`[data-act=srreg][data-id="${C}"]`));c.querySelector('.srtg').click()},C);await W(250);
 let L=await ev(C=>{const c=[...document.querySelectorAll('.srsc')].find(e=>e.querySelector(`[data-act=srall][data-id="${C}"]`));if(!c)return null;const l=c.querySelector('.srlate');return {h:l&&l.querySelector('h3').textContent,ck:l?l.querySelectorAll('input[data-srk]').length:0,dis:l&&l.querySelector('[data-act=srreg]').disabled,rest:/Na próxima revisão \(1\)/.test(c.innerText)}},C);
 ok(L&&L.h==='Atrasadas (2)'&&L.ck===2&&L.dis&&L.rest,'aba Sessões: "Atrasadas (2)" com caixinhas e Registrar desativado; "Na próxima revisão (1)" com a outra '+JSON.stringify(L));
 await p.screenshot({path:`${OUT}/sessoes2-${w}-atrasadas.png`,fullPage:true});

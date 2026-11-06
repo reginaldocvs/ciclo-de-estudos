@@ -50,7 +50,7 @@ async function blocks(){for(let g=0;g<6;g++){if(await vis('bkback'))await W(300)
 async function lateReviews(){if(!SRV||rnd()>.35)return;const ids=await x.ev(()=>srSubs().filter(s=>!srDue(s.id)&&srLate(s.id).length).map(s=>s.id));if(!ids.length)return;
  await tabTo('rev');await x.ev(()=>{const b=document.querySelector('[data-act=rvt][data-id=sessoes]');b&&b.click()});await W(300);
  const id=ids[0],a=await x.ev(id=>({cnt:Object.fromEntries((({todo,fin})=>todo.concat(fin))(srSplit(id)).flatMap(t=>t.its.map(z=>[z.k,z.n]))),nw:srNew(id).length,late:srLate(id).flatMap(t=>t.its.map(z=>z.k))}),id);
- if(!(await x.ev(id=>!!document.querySelector(`.srlate [data-act=srreg][data-id="${id}"]`),id))){ok(false,'atrasadas: seção sem o botão Registrar');return}
+ if(!(await x.ev(id=>!!document.querySelector(`.srlate [data-act=srreg][data-id="${id}"]`),id))){ok(false,'atrasadas: seção sem o botão Registrar');return}/* fora da vez a lista vem fechada: abre */await x.ev(id=>{const c=[...document.querySelectorAll('.srsc')].find(e=>e.querySelector(`.srlate [data-act=srreg][data-id="${id}"]`));const t=c&&c.querySelector('.srlate .srtg');if(t&&t.getAttribute('aria-expanded')==='false')t.click()},id);await W(200);
  await once('sessoes-atrasadas');
  const nb=await x.ev(id=>[...document.querySelectorAll('.srlate input[data-srk]')].length,id);for(let i=0;i<nb;i++)if(rnd()<.5||i===0){await x.ev(i=>{const e=document.querySelectorAll('.srlate input[data-srk]')[i];e&&e.click()},i);await W(120)}
  const mk=await x.ev(id=>srMkT(id).flatMap(t=>t.its.map(z=>z.k)),id);if(mk.some(k=>!a.late.includes(k)))ok(false,'atrasadas: marcada fora da lista de atrasadas');
