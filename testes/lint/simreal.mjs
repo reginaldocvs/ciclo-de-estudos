@@ -73,7 +73,7 @@ async function study(){await tabTo('ciclo');await blocks();
 async function topicReviews(){for(let i=0;i<30;i++){const k=await x.ev(()=>{const d=trvDue();return d[0]?d[0].k:null});if(!k)return;
  await tabTo('rev');await x.ev(()=>{const b=document.querySelector('[data-act=rvt][data-id=topicos]');b&&b.click()});await W(250);
  await once('revisao-topicos');
- await x.act('trvok',k);await x.fill('#modal input[name=m]','0h'+ri(15,25));const c=await fillAc();st.acTop+=c;if(c&&!shotOnce.has('topico-registro')){shotOnce.add('topico-registro');await shot('topico-registro')}
+ /* a lista corta em 6 e agrupa por disciplina: abre tudo para achar o item */await x.ev(()=>{ui.pg={...(ui.pg||{}),trvdue:99};render()});await W(150);await x.act('trvok',k);await x.fill('#modal input[name=m]','0h'+ri(15,25));const c=await fillAc();st.acTop+=c;if(c&&!shotOnce.has('topico-registro')){shotOnce.add('topico-registro');await shot('topico-registro')}
  await x.submit('#modal form[data-f=trvok]');await W(250);st.topicos++;
  if(await x.ev(k=>trvDue().some(o=>o.k===k),k)){ok(false,'revisão de tópico registrada continua vencida: '+k);return}}}
 /* revisão por ciclos: marca as aulas de cada disciplina e registra na meta, 2 por dia */
