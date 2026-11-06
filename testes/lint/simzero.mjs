@@ -5,7 +5,8 @@
    e metade por "Registrar". Antes de estudar: revisões por tópico do dia, Para refazer (nova tentativa ou dispensar), atrasadas da revisão
    por sessões; no dia em que um grupo fica disponível, revisa o grupo; ciclo de revisão em 2 dias. No fim: Histórico (editar, excluir,
    desfazer, filtro), Estatísticas, Calendário, Planos e todas as abas. Confere regras a cada passo e a cada dia.
-   Uso: node lint/simzero.mjs <saída> [largura=390] */
+   REP=1: disciplinas repetidas no ciclo (Português 3 vezes, Direito Constitucional 2) e dois pontos de revisão, como num plano real.
+   Uso: [REP=1] node lint/simzero.mjs <saída> [largura=390] */
 import {open,mk,W} from './lib.mjs';import fs from 'fs';
 const [OUT,WD='390']=process.argv.slice(2);const w=+WD;fs.mkdirSync(OUT,{recursive:true});
 const log=[],ok=(c,m)=>{log.push((c?'OK    ':'FALHA ')+m);if(!c)console.log('FALHA '+m)},info=m=>{log.push('      '+m)};
@@ -18,7 +19,7 @@ const shotOnce=new Set(),once=async nm=>{if(shotOnce.has(nm))return;shotOnce.add
 const vis=a=>ev(a=>{const e=[...document.querySelectorAll(`[data-act=${a}]`)].filter(e=>e.offsetParent).pop();if(e)e.click();return !!e},a);
 const fillAc=async()=>{let c=0;for(let i=0;i<60;i++){const r=await ev((i,s)=>{const rows=[...document.querySelectorAll('#modal .acrow')].filter(e=>e.offsetParent);const row=rows[i];if(!row)return null;const qa=row.querySelector('input[data-qa],input[name^=qa]'),qt=row.querySelector('input[data-qt],input[name^=qt]');if(!qa||!qt)return true;let k=s;const rn=()=>{k=(k*16807)%2147483647;return k/2147483647};
   const set=(e,v)=>{e.focus();e.value=String(v);e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}))};const tq=+qt.value||5+Math.floor(rn()*6);set(qt,tq);set(qa,Math.round(tq*(.45+rn()*.55)));return true},i,ri(1,1e6));if(!r)break;c++;await W(40)}return c};
-const st={dias:0,estudo:0,foco:0,manual:0,dois:0,itens:0,questoes:0,blocos:0,topicos:0,grupos:0,ciclosRev:0,sessoes:0,sessPul:0,sessMk:0,atras:0,refazer:0,dispensa:0,dupla:0};
+const st={copia:0,dias:0,estudo:0,foco:0,manual:0,dois:0,itens:0,questoes:0,blocos:0,topicos:0,grupos:0,ciclosRev:0,sessoes:0,sessPul:0,sessMk:0,atras:0,refazer:0,dispensa:0,dupla:0};
 
 /* ===== 1. do zero: boas-vindas, plano, 8 disciplinas com 8 tópicos ===== */
 const PLAN=[['Português',['Crase','Regência','Concordância','Pontuação','Colocação pronominal','Interpretação','Ortografia','Semântica']],
@@ -38,6 +39,15 @@ await tabTo('ciclo');await shot('inicio-ciclo');
 /* ponto de revisão no meio do ciclo (depois da 4ª disciplina), pelo Editar ciclo */
 await x.act('edopen');await x.act('blkadd');await ev(()=>{S.blk[0].pos=4;save();render()});await x.act('edclose');
 ok(await ev(()=>blkL().length===1&&blkL()[0].pos===4),'ponto de revisão depois da 4ª disciplina');
+const REP=!!process.env.REP;
+if(REP){/* repetições pelo botão Duplicar do Editar ciclo; a ordem fica: P DC DA RL | P* Inf DPen DC* | P* Atu Ética */
+ await x.act('edopen');const id=n=>ev(n=>S.subjects.find(s=>s.name===n&&!s.of).id,n);const P0=await id('Português'),DC=await id('Direito Constitucional');
+ for(const z of [P0,P0,DC])await x.act('dup',z);
+ await ev(()=>{const by=n=>S.subjects.filter(s=>s.name===n),[p1,p2,p3]=by('Português'),[d1,d2]=by('Direito Constitucional'),o=n=>by(n)[0];
+  S.subjects=[p1,d1,o('Direito Administrativo'),o('Raciocínio Lógico'),p2,o('Informática'),o('Direito Penal'),d2,p3,o('Atualidades'),o('Ética no Serviço Público')];save();render()});
+ await x.act('blkadd');await ev(()=>{S.blk[1].pos=8;save();render()});await x.act('edclose');
+ ok(await ev(()=>actives().length===11&&actives().filter(s=>s.of).length===3&&blkL().length===2),'repetições: 11 posições (3 cópias) e 2 pontos de revisão')}
+const NPOS=await ev(()=>actives().length);
 /* revisões: grupos, tópico e sessões */
 await tabTo('rev');ok(await ev(()=>/desligadas/.test(document.getElementById('app').innerText)),'app novo: revisões desligadas');
 await x.act('rvadj');for(const k of ['g','t','s'])await ev(k=>{const e=document.querySelector(`[data-act=rvsys][data-id=${k}]`);if(e.getAttribute('aria-checked')!=='true')e.click()},k);await W(300);
@@ -98,14 +108,14 @@ async function cycleReview(perDay){let j=0;for(let i=0;i<30;i++){const id=await 
  await tabTo('rev','ciclos');if(await vis('rvend')){await W(300);st.ciclosRev++;await once('ciclo-revisao-fim');return true}return false}
 /* uma sessão: 1 tópico (10%: 2) com 2 a 4 aulas/questões, todas com acertos; metade pelo foco, metade por Registrar */
 async function study(){await tabTo('ciclo');await blocks();
- const s=await ev(()=>{if(S.type==='review'||S.rv)return null;const c=current();return c?{id:c.id,goal:c.goal,prog:prog(c.id),tops:c.topics.map(t=>t.name)}:null});if(!s)return false;
- await srvReview(s.id);await tabTo('ciclo');
+ const s=await ev(()=>{if(S.type==='review'||S.rv)return null;const c=current();if(!c)return null;const b=c.of?S.subjects.find(y=>y.id===c.of):c;return {id:c.id,base:b.id,cp:!!c.of,goal:c.goal,prog:prog(c.id),tops:b.topics.map(t=>t.name)}});if(!s)return false;
+ await ev(id=>{S.sel.subj=id;save();render()},s.id);await srvReview(s.base);if(s.cp)st.copia++;await tabTo('ciclo');
  const foco=rnd()<.5,n0=await ev(()=>S.sessions.length);
  if(foco){await ev(id=>{S.sel.subj=id;save();render()},s.id);await ev(()=>document.querySelector('.nwplay').click());await W(250);
   if(!(await ev(()=>S.sx===true&&S.timer.running))){ok(false,'Iniciar não abriu o foco');return false}await once('foco');
   await ev(m=>{S.timer.start=Date.now()-m*60000},Math.max(1,s.goal-s.prog));await x.act('fmreg');st.foco++}
  else{await x.act('rreg',s.id);st.manual++}
- const k=tpN[s.id]=(tpN[s.id]||0),two=rnd()<.1;tpN[s.id]+=two?2:1;const T=[s.tops[k%8]].concat(two?[s.tops[(k+1)%8]]:[]);if(two)st.dois++;
+ const k=tpN[s.base]=(tpN[s.base]||0),two=rnd()<.1;tpN[s.base]+=two?2:1;const T=[s.tops[k%8]].concat(two?[s.tops[(k+1)%8]]:[]);if(two)st.dois++;
  const G=T.map((t,j)=>{const nr=ri(2,4);return {t,rows:[...Array(j?ri(1,2):nr)].map(()=>{const q=rnd()<.4,tq=ri(5,20);aulaN++;return {q,name:q?'':'Aula '+aulaN,tq,ac:ri(Math.floor(tq*.45),tq)}})}});
  await ev(G=>{const gs=S.sel.groups;gs.length=0;G.forEach(g0=>{const g=newG();g.nt=g0.t;g.rows=g0.rows.map(r=>({id:uid(),kind:'aula',name:r.name,link:'',q:'',...(r.q?{qo:true}:{}),ac:String(r.ac),tq:String(r.tq)}));gs.push(g)});render()},G);
  st.itens+=G.reduce((a,g)=>a+g.rows.length,0);st.questoes+=G.reduce((a,g)=>a+g.rows.filter(r=>r.q).length,0);
@@ -147,7 +157,7 @@ while(round<=2&&d<130){d++;st.dias=d;
 const fim=await ev(()=>({set:S.set||1,cy:S.cycle,est:S.sessions.filter(s=>!s.review).length,rev:S.sessions.filter(s=>s.review).length,refazer:redoList().length,trv:trvList().length,trvFin:trvList().filter(o=>o.fix).length}));
 info('fim: '+JSON.stringify(fim));info('contagem: '+JSON.stringify(st));
 ok(cyDone[1]===6&&cyDone[2]===6,'6 ciclos em cada rodada ('+cyDone[1]+' e '+cyDone[2]+')');
-ok(st.estudo===96,'96 sessões de estudo (8 disciplinas × 6 ciclos × 2 rodadas): '+st.estudo);
+ok(st.estudo===NPOS*12,NPOS*12+' sessões de estudo ('+NPOS+' posições × 6 ciclos × 2 rodadas): '+st.estudo+(REP?' ('+st.copia+' em cópias)':''));
 ok(st.foco>20&&st.manual>20,'registros pelo foco ('+st.foco+') e por Registrar ('+st.manual+')');
 ok(st.grupos>=2,'revisões por grupos na rodada 1 (grupos de '+(await ev(()=>rvInt()))+' dias, revisão '+(await ev(()=>rvWait()))+' depois): '+st.grupos);ok(st.ciclosRev>=2,'ciclos de revisão na rodada 2: '+st.ciclosRev);
 ok(st.topicos>0,'revisões por tópico: '+st.topicos);ok(st.blocos>0,'revisões de bloco (por disciplina): '+st.blocos);
@@ -163,7 +173,8 @@ if(e2){await x.act('edit',e2);await x.act('delreg');ok(await ev(n=>S.sessions.le
 await tabTo('st');await shot('estatisticas',true);const pers=await ev(()=>[...document.querySelectorAll('#app [data-act=sper]')].map(b=>b.dataset.id));for(const pr of pers)await x.act('sper',pr);
 ok(!(await ev(()=>/\bNaN\b|undefined/.test(document.body.innerText))),'Estatísticas sem texto quebrado nos períodos '+pers.join(','));
 await tabTo('rev');await ev(()=>{const b=document.querySelector('[data-act=rvcalm]');b&&b.click()});await W(300);await shot('calendario');await ev(()=>{const c=document.querySelector('#modal [data-act=rvcalx]');c&&c.click()});
-for(const sub of ['hoje','ciclos','topicos','sessoes']){await tabTo('rev',sub);await shot('revisao-'+sub,true)}
+for(const sub of ['hoje','ciclos','topicos','sessoes']){await tabTo('rev',sub);await shot('revisao-'+sub,true);
+ if(sub==='sessoes'||sub==='topicos'){const dn=await ev(()=>{const c={};document.querySelectorAll('#app .srsc .bknl b.snt, #app .trvsh b.snt').forEach(e=>{const t=e.textContent.trim();c[t]=(c[t]||0)+1});return Object.entries(c).filter(([k,v])=>v>1).map(([k])=>k)});ok(!dn.length,'aba '+sub+': cada disciplina aparece uma vez '+JSON.stringify(dn))}}
 for(const t of ['ciclo','reg','st','bk']){await tabTo(t);ok(!(await ev(()=>document.documentElement.scrollWidth>innerWidth+1)),'aba '+t+' sem rolagem lateral')}
 await p.reload();await W(800);ok(await ev(n=>S.sessions.length===n,nS),'recarregar mantém os dados');
 ok(!errs.length,'sem erros na página '+JSON.stringify(errs.slice(0,3)));fs.writeFileSync(OUT+'/estado-final.json',await ev(()=>JSON.stringify(S)));
