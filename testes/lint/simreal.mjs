@@ -19,10 +19,11 @@ const st={dias:0,estudo:0,blocos:0,topicos:0,acTop:0,ciclosRev:0,grupos:0,acerto
 const SRV=!!process.env.SRV;
 /* revisão por sessões (SRV=1): na vez da disciplina, o cartão do Ciclo; registra (com acertos e tempo) ou, às vezes, pula.
    Confere: só aparece com N sessões novas, cada item listado ganha +1, nenhum passa de Y, e depois sai da vez */
-async function srvReview(id){if(!SRV)return;const a=await x.ev(id=>({due:srDue(id),nw:srNew(id).length,n:srN(),y:srY(),cnt:Object.fromEntries(srItems(id).flatMap(t=>t.its.map(z=>[z.k,z.n]))),todo:srTodo(id).flatMap(t=>t.its.map(z=>z.k)),card:!!document.querySelector('#app .srvc'),tags:[...document.querySelectorAll('#app .srvc .srn')].map(e=>e.textContent)}),id);
+async function srvReview(id){if(!SRV)return;/* repetição da disciplina no ciclo (cópia): a revisão por sessões é da original */id=await x.ev(id=>{const s=subjAny(id);return s&&s.of||id},id);const a=await x.ev(id=>({due:srDue(id),nw:srNew(id).length,n:srN(),y:srY(),cnt:Object.fromEntries(srItems(id).flatMap(t=>t.its.map(z=>[z.k,z.n]))),todo:srTodo(id).flatMap(t=>t.its.map(z=>z.k)),cov:srSplit(id).cov.reduce((a,t)=>a+t.its.length,0),card:!!document.querySelector('#app .srvc'),tags:[...document.querySelectorAll('#app .srvc .srn')].map(e=>e.textContent)}),id);
  if(a.due!==(a.nw>=a.n&&a.todo.length>0))ok(false,'sessões: disponível fora da regra '+JSON.stringify({due:a.due,nw:a.nw}));
  if(Object.values(a.cnt).some(v=>v>a.y))ok(false,'sessões: item com mais de '+a.y+' revisões');
- if(!a.due){if(a.card)ok(false,'sessões: cartão sem revisão disponível');return}
+ if(!a.due&&a.nw>=a.n&&a.cov)st.srCob=(st.srCob||0)+1; /* vez em que outra revisão (bloco, tópico, grupo) já cobriu a rodada */
+ if(!a.due){if(a.card)ok(false,'sessões: cartão sem revisão disponível '+JSON.stringify({id,nw:a.nw,todo:a.todo.length,cs:await x.ev(()=>{const c=document.querySelector('#app .srvc');return c&&c.innerText.slice(0,160)}),cur:await x.ev(()=>{const c=current();return c&&[c.id,c.of||'',S.sel.subj]})}));return}
  if(!a.card){ok(false,'sessões: revisão disponível sem o cartão no Ciclo');return}
  if(a.tags.some(t=>!/^\dª de \d$/.test(t)||+t[0]>a.y))ok(false,'sessões: etiqueta estranha '+a.tags.join());
  await once('sessoes-cartao');
@@ -119,7 +120,7 @@ for(let d=1;d<=+ND;d++){st.dias=d;
 const fim=await x.ev(()=>({cy:S.cycle,ses:S.sessions.filter(s=>!s.review).length,rev:S.sessions.filter(s=>s.review).length,trvAg:trvList().length,due:trvDue().length,late:trvDue().filter(o=>o.due<today()).length,cyLast:S.cyrv&&S.cyrv.last,rv:!!S.rv}));
 info('fim: '+JSON.stringify(fim));info('contagem: '+JSON.stringify(st));
 if(MODE==='ciclos'){const NN=+(process.env.CYN||5);ok(crDone,'fez o ciclo de revisão (ciclos '+(c00)+' a '+(c00+NN-1)+')');ok(fim.cyLast>=c00+NN-1,'última revisão por ciclos cobre até o ciclo '+fim.cyLast)}else ok(st.grupos>=1,'fez '+st.grupos+' revisão(ões) de grupo');
-if(SRV){ok(st.sessoes>0,'fez '+st.sessoes+' revisões por sessões ('+st.sessMk+' de '+st.sessLista+' itens marcados, '+(st.atras||0)+' de atrasadas com '+(st.atrasIt||0)+' itens, '+st.sessPul+' puladas, '+st.sessAc+' com acertos por aula); '+st.sessConc+' itens com ✓ na disciplina com mais');
+if(SRV){ok(st.sessoes>0||st.srCob>0,'fez '+st.sessoes+' revisões por sessões; '+(st.srCob||0)+' vezes a rodada já estava coberta por outra revisão ('+st.sessMk+' de '+st.sessLista+' itens marcados, '+(st.atras||0)+' de atrasadas com '+(st.atrasIt||0)+' itens, '+st.sessPul+' puladas, '+st.sessAc+' com acertos por aula); '+st.sessConc+' itens com ✓ na disciplina com mais');
  await tabTo('rev');await x.ev(()=>{const b=document.querySelector('[data-act=rvt][data-id=sessoes]');b&&b.click()});await W(300);await shot('sessoes-aba',true);
  ok(await x.ev(()=>!!document.querySelector('.srsc')),'aba Sessões com as disciplinas')}
 ok(st.topicos>0,'fez '+st.topicos+' revisões por tópico ('+st.acTop+' com acertos por aula)');ok(fim.late===0,'nenhuma revisão por tópico atrasada');

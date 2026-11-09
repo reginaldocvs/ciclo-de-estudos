@@ -1082,7 +1082,7 @@ body{text-wrap:pretty}
 .srlate{margin-top:14px;padding:12px 14px;border-radius:var(--r-m,16px);background:color-mix(in srgb,var(--warn) 7%,transparent);border:1px solid color-mix(in srgb,var(--warn) 30%,transparent)}.srlate .srh3{margin:0}.srlate .bks2{padding-left:0}.srmk .lnk{padding-left:0;padding-right:0}
 .srmk{display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px;margin-top:10px;font-size:.85rem}.sr1{display:flex;align-items:center;gap:8px;min-width:0}.sr1>.lwrap{flex:0 1 auto;min-width:0}.sr1.q>.lwrap{flex:1 1 auto}.sr1.q .lrow{width:100%}.srtn{display:flex;align-items:center;gap:8px}.srtn .tpcl{flex:0 1 auto;min-width:0}.sr1>.ritl,.srtn .ritl{margin:0}.srtn .tagrf{flex:none}
 .tag.srn{flex:none;white-space:nowrap;margin-top:1px}.srok{flex:none;display:inline-flex;color:var(--ok);margin-top:2px}.srok svg{width:14px;height:14px}
-.srsc .srh3{font-size:.95rem;margin:16px 0 0}.srfg{margin-top:12px}.srtg{font:inherit;color:inherit;display:inline-flex;align-items:center;gap:6px;background:none;border:0;padding:0;min-height:40px;cursor:pointer;text-align:left}.srtg .mut{font-weight:400}.srtg .mtog{margin-left:2px}
+.srsc .srh3{font-size:.95rem;margin:16px 0 0}.srfg{margin-top:12px}.srcvn{margin:4px 0 6px;font-size:.85rem}.srtg{font:inherit;color:inherit;display:inline-flex;align-items:center;gap:6px;background:none;border:0;padding:0;min-height:40px;cursor:pointer;text-align:left}.srtg .mut{font-weight:400}.srtg .mtog{margin-left:2px}
 .srlast{display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:.85rem}.srdue{color:var(--ac)} /* cartão do bloco nunca vira linha (o Agora vira em telas médias) */
 .acrow{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;margin:8px 0 2px}.acrow .rlb{margin:0;min-width:84px}
 .actp{padding:10px 0;border-top:1px solid var(--line)}.actp:first-of-type{border-top:0;padding-top:0}.actp .acrow{margin-top:4px}
@@ -1828,7 +1828,7 @@ const cyCard=()=>{if(!cyOn()||S.rv)return '';if(cyDue())return cyGate();const {x
 /* Itens (aulas, links, questões) estudados no tópico naquele dia, sem repetição */
 function trvItems(o){const out=[],b=o.s.of||o.s.id;S.sessions.forEach(x=>{if(x.review||x.rid||x.trv||x.topic!==o.tp.id||x.date!==o.sd||trvBase(x.subj)!==b)return;(x.items||[]).forEach(i=>{const it=itKey(i);if(it&&!out.some(z=>sameIt(z,it)))out.push(it)})});return out}
 /* its: as aulas revisadas (com acertos por aula, se houver); ag: a soma desses acertos, guardada na agenda do tópico */
-function trvMark(k,d,m,q,its,ag){trvInit();const r=S.trv.t[k]=S.trv.t[k]||{h:[]};r.h=(r.h||[]).concat(d).sort();const qq=q||ag;if(qq){r.q=r.q||{};r.q[d]={a:qq.ac,t:qq.tq}}
+function trvMark(k,d,m,q,its,ag){trvInit();const r=S.trv.t[k]=S.trv.t[k]||{h:[]};{const [b,t,sd]=k.split('|');if(!(r.h||[]).includes(d))srCredit(b,d,[{tid:t,its:(its&&its.length?its:trvItems({s:subjAny(b)||{id:b},tp:{id:t},sd}))}],'tp',k)}r.h=(r.h||[]).concat(d).sort();const qq=q||ag;if(qq){r.q=r.q||{};r.q[d]={a:qq.ac,t:qq.tq}}
  if(m>0||qq){const [b,t]=k.split('|');S.sessions.push({id:uid(),ses:uid(),subj:b,topic:t,min:m,cycle:S.cycle,set:S.set||1,review:true,trv:k,trvd:d,kind:'aula',items:its||[],date:d,...atOf(d),...(q||{})})}}
 function trvUnmark(k,d){const r=S.trv&&S.trv.t&&S.trv.t[k];if(!r||!r.h)return;const i=r.h.indexOf(d);if(i>=0)r.h.splice(i,1);if(r.q&&!r.h.includes(d))delete r.q[d]}
 /* Dia de estudo: só a data */
@@ -1985,7 +1985,7 @@ const editHtml=()=>`<div class="ov" data-act="edclose"></div><div class="dlg med
    A cada N sessões de estudo de uma disciplina, antes da próxima, revisa-se tudo o que foi estudado nela desde que a função foi ligada.
    Cada aula ou questão (ou o tópico, quando não há aulas) entra em até Y revisões; depois ganha ✓ (Concluídos) e sai das próximas listas.
    Pular cobre as sessões sem contar revisão. Convive com as outras revisões; ligada, o cartão "Revise antes de começar" dá lugar a ela.
-   S.srv={on,n,y,start}; S.srvPt=[{id,s,d,ses:[sessões cobertas],its:[itens revisados],skip}]; S.srMk={item:true} = marcados como revisados
+   S.srv={on,n,y,start}; S.srvPt=[{id,s,d,ses:[sessões cobertas],its:[itens revisados],skip}] (com cr:'bk'|'tp'|'rv', ref e sub: crédito de outra revisão, ver srCredit); S.srMk={item:true} = marcados como revisados
    (só eles contam +1 ao registrar; os desmarcados esperam a próxima vez).
    Atrasadas: itens de sessões já cobertas por uma revisão que não foram revisados desde a última revisão da vez (desmarcados ou pulados).
    Fora da vez, ficam na aba Sessões para pôr em dia (ponto com ses:[] e late:true, que não gasta as sessões novas); na vez, entram na lista com a etiqueta em destaque. A contagem e as sessões cobertas saem
@@ -1994,7 +1994,17 @@ const srOn=()=>!!(S.srv&&S.srv.on),srN=()=>{const n=+(S.srv&&S.srv.n);return n>=
 const srBase=x=>{const sb=subjAny(x.subj);return sb?(sb.of?S.subjects.find(y=>y.id===sb.of)||sb:sb):null};
 /* Sessões de estudo da disciplina (as frentes contam na disciplina principal) desde que a função foi ligada, em ordem */
 function srSes(sid){const st=S.srv&&S.srv.start;if(!st)return [];const m=new Map();S.sessions.forEach(x=>{if(x.review||x.rid||x.trv||x.tdel||!x.date||x.date<st)return;const b=srBase(x);if(!b||b.id!==sid)return;const k=x.ses||x.id;if(!m.has(k))m.set(k,{k,d:x.date,recs:[]});m.get(k).recs.push(x)});return [...m.values()]}
-const srPts=sid=>(S.srvPt||[]).filter(p=>p.s===sid);
+/* Crédito de outra revisão (bloco, grupos/ciclos, tópico): {cr,ref,sub} no S.srvPt, sem sessões cobertas; conta uma revisão para cada item revisado ali.
+   Vale enquanto a revisão de origem existir (desfeita ou apagada, o crédito some). */
+const crOk=p=>p.cr==='bk'?((S.blkRev||{})[p.ref]||[]).includes(p.sub):p.cr==='tp'?!!(S.trv&&S.trv.t&&S.trv.t[p.ref]&&(S.trv.t[p.ref].h||[]).includes(p.d)):p.cr==='rv'?S.sessions.some(x=>(x.ses||x.id)===p.ref):true;
+const srPts=sid=>(S.srvPt||[]).filter(p=>p.s===sid&&(!p.cr||crOk(p)));
+/* Itens da revisão por sessões que uma revisão de outro tipo cobriu: tops=[{tid, its:[aulas revisadas]}]; tópico sem aula marca o tópico */
+function srCredit(subj,d,tops,cr,ref){if(!srOn()||!(S.srv&&S.srv.start))return;const b=srBase({subj});if(!b)return;const A=srItems(b.id),ks=[];
+ const nz=i=>{if(!i)return null;const it='title' in i||'url' in i?{...i}:itKey(i);if(it&&i.qo)it.qo=true;return it};
+ (tops||[]).forEach(o=>{const T=A.find(x=>x.id===o.tid);if(!T)return;const L=(o.its||[]).map(nz).filter(Boolean);
+  T.its.forEach(z=>{if(z.n>=srY())return; /* item já concluído não ganha mais revisões */if(z.self?true:L.length?L.some(l=>sameIt(z.l,l)):true)ks.push(z.k)})});
+ S.srvPt=(S.srvPt||[]).filter(p=>!(p.cr===cr&&p.ref===ref&&p.d===d&&p.sub===subj)); /* a mesma revisão refeita não conta duas vezes */
+ if(ks.length){S.srvPt.push({id:uid(),s:b.id,d,ses:[],its:[...new Set(ks)],cr,ref,sub:subj})}}
 const srNew=sid=>{const v=new Set(srPts(sid).flatMap(p=>p.ses||[]));return srSes(sid).filter(o=>!v.has(o.k))};
 /* Itens da disciplina por tópico, com quantas revisões cada um já teve; tópico apagado fica de fora */
 function srItems(sid){const s=S.subjects.find(x=>x.id===sid);if(!s)return [];const cnt={},tops=[],seen=new Set(srPts(sid).flatMap(p=>p.ses||[]));
@@ -2006,7 +2016,8 @@ function srItems(sid){const s=S.subjects.find(x=>x.id===sid);if(!s)return [];con
   T.its=T.its.filter(z=>!z.self);L.forEach(it=>{const z=T.its.find(z=>sameIt(z.l,it));if(z){if(old)z.old=true}else T.its.push({l:it,k:sid+'|'+t.id+'|'+ik(it),old})})}));
  tops.forEach(T=>T.its.forEach(z=>{z.n=cnt[z.k]||0}));return tops}
 const srRvSince=sid=>{const P=srPts(sid);let i=P.length-1;while(i>=0&&!(P[i].ses||[]).length)i--;return i<0?null:new Set(P.slice(i).flatMap(p=>p.skip?[]:p.its||[]))};
-const srSplit=sid=>{const y=srY(),A=srItems(sid),rv=srRvSince(sid);if(rv)A.forEach(T=>T.its.forEach(z=>{z.late=!!z.old&&!rv.has(z.k)}));return {todo:A.map(T=>({...T,its:T.its.filter(z=>z.n<y)})).filter(T=>T.its.length),fin:A.map(T=>({...T,its:T.its.filter(z=>z.n>=y)})).filter(T=>T.its.length)}};
+const srCrSince=sid=>{const P=srPts(sid);let i=P.length-1;while(i>=0&&!(P[i].ses||[]).length)i--;return new Set(P.slice(i+1).filter(p=>p.cr).flatMap(p=>p.its||[]))};
+const srSplit=sid=>{const y=srY(),A=srItems(sid),rv=srRvSince(sid),cv=srCrSince(sid);if(rv)A.forEach(T=>T.its.forEach(z=>{z.late=!!z.old&&!rv.has(z.k)}));return {cov:A.map(T=>({...T,its:T.its.filter(z=>z.n<y&&cv.has(z.k))})).filter(T=>T.its.length),todo:A.map(T=>({...T,its:T.its.filter(z=>z.n<y&&!cv.has(z.k))})).filter(T=>T.its.length),fin:A.map(T=>({...T,its:T.its.filter(z=>z.n>=y)})).filter(T=>T.its.length)}};
 const srTodo=sid=>srSplit(sid).todo;
 const srLate=sid=>srTodo(sid).map(t=>({...t,its:t.its.filter(z=>z.late)})).filter(t=>t.its.length);
 /* Lista da revisão em curso: a da vez (com as atrasadas dentro) ou, fora da vez, só as atrasadas */
@@ -2037,13 +2048,15 @@ const srRow=s=>`<div class="trvr tdg"><div class="trvrh"><span class="tdic" aria
 /* Aba Sessões: por disciplina, quando vem a próxima revisão, o que está em revisão e o que já ganhou ✓.
    As listas ficam abertas só na disciplina da vez no Ciclo (ou quando há uma só); nas outras, título e contagem, e abrem ao tocar */
 function srView(){const N=srN(),Y=srY(),L=srSubs(),cw=(()=>{const c=actives().find(x=>x.id===selId())||current();return c?(c.of||c.id):null})(),nC=L.filter(s=>srTodo(s.id).length).length,rule=`<div class="rvrule mut">A cada ${N} ${N===1?'sessão':'sessões'} de uma disciplina · até ${Y} ${Y===1?'revisão':'revisões'} por item</div>`;
- const cards=L.map(s=>{const {todo,fin}=srSplit(s.id);if(!todo.length&&!fin.length&&!srPts(s.id).length)return ''; /* sem nada contado (ou só tópicos apagados): fica de fora */const nn=srNew(s.id).length,due=srDue(s.id),lp=srPts(s.id).slice(-1)[0],k=Math.max(1,N-nn),late=due?[]:srLate(s.id),rest=due?todo:todo.map(t=>({...t,its:t.its.filter(z=>!z.late)})).filter(t=>t.its.length);
-  const st=due?'<b class="srdue">Disponível</b> · revise antes da próxima sessão':todo.length?`Próxima revisão em ${k} ${k===1?'sessão':'sessões'}`:fin.length?'Tudo revisado':'Nada para revisar ainda';
+ const cards=L.map(s=>{const {todo,fin,cov}=srSplit(s.id);if(!todo.length&&!fin.length&&!cov.length&&!srPts(s.id).length)return ''; /* sem nada contado (ou só tópicos apagados): fica de fora */const nn=srNew(s.id).length,due=srDue(s.id),lp=srPts(s.id).filter(p=>!p.cr).slice(-1)[0],k=Math.max(1,N-nn),late=due?[]:srLate(s.id),rest=due?todo:todo.map(t=>({...t,its:t.its.filter(z=>!z.late)})).filter(t=>t.its.length);
+  const st=due?'<b class="srdue">Disponível</b> · revise antes da próxima sessão':todo.length?`Próxima revisão em ${k} ${k===1?'sessão':'sessões'}`:cov.length?'Em dia · revisado em outra revisão':fin.length?'Tudo revisado':'Nada para revisar ainda';
   const P=(due?srAll(rest):srCut('sr-'+s.id,rest)),PL=srAll(late),op=ui.open.has('srf:'+s.id),Q=srCut('srf-'+s.id,fin);
   const lo=(s.id===cw||nC===1)!==ui.open.has('srs:'+s.id),tg=(lb,n)=>`<button type="button" class="srtg" data-act="trvtog" data-id="srs:${s.id}" aria-expanded="${lo}"><span>${lb} <span class="mut">(${n})</span></span><span class="x mtog${lo?' on':''}" aria-hidden="true">${CHEV}</span></button>`;
   return `<div class="card srsc"><div class="srhd"><div class="bkn"><span class="bknl"><span class="dot" style="background:${col(s)}" aria-hidden="true"></span><b class="snt" title="${esc(nm(s))}">${esc(nm(s))}</b></span><span class="mut bks2">${st}</span></div>${due?srAct(s):''}</div>`+
    (late.length?`<div class="srlate"><div class="srhd"><div class="bkn"><h3 class="srh3">${tg('Atrasadas',srNi(late))}</h3><span class="mut bks2">Ficaram sem revisar na última revisão. Dá para pôr em dia agora.</span></div>${srAct(s)}</div>${lo?`${srMkBar(s)}<div class="rvlist srl">${srTops(s,PL.shown,false,false,true)}${PL.more}</div>`:''}</div>`:'')+
    (rest.length?`<h3 class="srh3">${tg(due?'Para revisar agora':'Na próxima revisão',srNi(rest))}</h3>${lo?`${due?srMkBar(s):''}<div class="rvlist srl">${srTops(s,P.shown,false,!due)}${P.more}</div>`:''}`:'')+
+   /* o que outra revisão já cobriu nesta rodada: só consulta, volta na próxima */
+   (cov.length?(()=>{const oc=ui.open.has('src:'+s.id),C=srCut('src-'+s.id,cov);return `<div class="trvg srfg"><button type="button" class="trvgh" data-act="trvtog" data-id="src:${s.id}" aria-expanded="${oc}"><span class="grow">Revisadas em outra revisão <span class="mut">(${srNi(cov)})</span></span><span class="x mtog${oc?' on':''}" aria-hidden="true">${CHEV}</span></button>${oc?`<div class="mut srcvn">No ponto de revisão, na revisão por tópico ou por grupos/ciclos. Já contam e voltam na próxima revisão.</div><div class="rvlist srl">${srTops(s,C.shown,false,true)}${C.more}</div>`:''}</div>`})():'')+
    (fin.length?`<div class="trvg srfg"><button type="button" class="trvgh" data-act="trvtog" data-id="srf:${s.id}" aria-expanded="${op}"><span class="grow">Concluídos ✓ <span class="mut">(${srNi(fin)})</span></span><span class="x mtog${op?' on':''}" aria-hidden="true">${CHEV}</span></button>${op?`<div class="rvlist srl">${srTops(s,Q.shown,true)}${Q.more}</div>`:''}</div>`:'')+
    (lp?`<div class="mut srlast"><span>Última revisão: ${sdm(lp.d)}${lp.late?' (atrasadas)':''}${lp.skip?' (pulada)':(()=>{const R=S.sessions.filter(x=>x.rid==='sr-'+lp.id),m=R.reduce((a,x)=>a+(+x.min||0),0),q=R.reduce((a,x)=>{const z=sesQ(x);return z?{a:a.a+z.a,t:a.t+z.t}:a},{a:0,t:0});return (m>=1?' · '+fmt(Math.round(m)):'')+(q.t?' · '+q.a+'/'+q.t+' acertos ('+Math.round(q.a/q.t*100)+'%)':'')})()}</span><button type="button" class="lnk lsm" data-act="srundo" data-id="${lp.id}">Desfazer revisão</button></div>`:'')+`</div>`}).join('');
  return rule+(cards||'<div class="card"><div class="empty">Nenhuma sessão de estudo desde que a revisão por sessões foi ligada. Ela conta a partir da próxima.</div></div>')}
@@ -2495,6 +2508,7 @@ function addSession(m){if(ui.rd)delete ui.rd[drKey()];
  const rv=S.type==='review',ro=!rv&&S.reopen&&S.reopen[sid],ses=ro&&ro.cycle===S.cycle&&ro.set===(S.set||1)?ro.ses:uid(),pend=rv?rvPend(s):null,chk=rv?pend.flatMap(o=>o.rows.map(r=>r.k)):null,recs=rv?(pend.length?pend.map(o=>{const its=o.rows.filter(r=>!r.l.self);const st=S.sel.rvq||{},qq=st[o.t.id]||{},L=acList(o.t.id,its.map(r=>r.l));return {topic:o.t.id,kind:its[0]?its[0].l.kind:'aula',items:its.map(r=>{const it={kind:'aula',name:r.l.title||'',link:r.l.url||'',...(r.l.q?{q:r.l.q}:{})};if(!L.includes(r.l))return it;const v=st[o.t.id+'#'+ik(r.l)],q=acQ(v&&v.ac,acTq(v,o.t.id,r.l));return q?{...it,ac:q.ac,tq:q.tq}:it}),...(L.length?{}:qv(qq.ac,qq.tq)||{})}}):[{topic:null,kind:'aula',items:[]}]):buildRecs(s,rv);
  {const p0=prog(sid);S.progress[sid]=Math.max(p0+m,s.goal);if(!rv&&S.progress[sid]>p0+m){S.bump=S.bump||{};S.bump[sid]=(S.bump[sid]||0)+S.progress[sid]-p0-m}}if(ro){delete S.reopen[sid]}
  recs.forEach(r=>{const o={id:uid(),ses,subj:rv&&s.of?s.of:sid,topic:r.topic,min:m/recs.length,cycle:S.cycle,set:S.set||1,review:rv,kind:r.kind,items:r.items,date:sesDate(),...atOf(sesDate()),...(r.tq?{ac:r.ac,tq:r.tq}:{})};if(rv&&S.rv){o.rid=S.rv.id;o.chk=chk}if(rv&&s.of)o.blk=sid;S.sessions.push(o)});
+ if(rv&&S.rv)srCredit(sid,sesDate(),recs.filter(r=>r.topic).map(r=>({tid:r.topic,its:r.items})),'rv',ses);
  if(!rv&&!S.sessions.some(x=>x.ses===ses&&sesHasIt(x)))setTimeout(()=>toast('Sessão registrada sem tópico e aula: ela não entra nas revisões.'),0);
  S.sel.groups=null;S.draft=[];S.sel.split={};S.sel.nt='';S.sel.lk='';S.sel.topic='';S.sel.md='';S.sel.rvq={};
  const c=current(),cs=S.subjects.find(x=>x.id===S.sel.subj);
@@ -2991,7 +3005,7 @@ document.addEventListener('submit',e=>{
  if(k==='pdadd'&&ui.pdd){const D=ui.pdd,have=new Set(D.topics.map(x=>x.name.trim().toLowerCase()));D.nw=D.nw||[];parseTopics(f.get('t')).forEach(n=>{if(!have.has(n.toLowerCase())){have.add(n.toLowerCase());const id=uid();D.nw.push(id);D.topics.push({id,name:n})}});ui.pdadd=null;ui.pdmsg=null}
  if(k==='bkreg'){const b=bkSel(),o=b&&blkBy(b).find(v=>v.s.id===ui.bkreg);let fin=false,ses0=null;if(o){const ok0=new Set((S.blkRev||{})[blkKey(b)]||[]);fin=!blkIsDone(b)&&blkBy(b).every(v=>ok0.has(v.s.id)||v.s.id===o.s.id);ses0=fin?uniq(blkSes(b).map(x=>x.ses||x.id)):null;ask(fin?'blkend:':'bkreg:',null);const key=blkKey(b),mm=tmParse(String(f.get('m')||'').trim())||0;let d=String(f.get('d')||'')||today();if(d>today())d=today();
   const T=o.tops.filter(t=>t.id),Q=T.map(t=>{const its=t.its||[],L=acList(t.id,its);if(!L.length)return {t,q:qv(f.get('qa-'+t.id),f.get('qt-'+t.id)),its:its.map(l=>acItem(l))};
-   const I=its.map(l=>{const j=L.indexOf(l);return acItem(l,j<0?null:acQ(f.get('qa-'+t.id+'-'+j),f.get('qt-'+t.id+'-'+j)))});return {t,q:null,its:I,hq:I.some(i=>i.tq)}}); /* acertos por aula, quando a aula já teve questões */S.blkRev=S.blkRev||{};const L=S.blkRev[key]=S.blkRev[key]||[];if(!L.includes(o.s.id))L.push(o.s.id);if(S.rvp)delete S.rvp[rvfK('bk',o.s.id,key)];
+   const I=its.map(l=>{const j=L.indexOf(l);return acItem(l,j<0?null:acQ(f.get('qa-'+t.id+'-'+j),f.get('qt-'+t.id+'-'+j)))});return {t,q:null,its:I,hq:I.some(i=>i.tq)}}); /* acertos por aula, quando a aula já teve questões */S.blkRev=S.blkRev||{};const L=S.blkRev[key]=S.blkRev[key]||[];if(!L.includes(o.s.id)){L.push(o.s.id);srCredit(o.s.id,d,T.map(t=>({tid:t.id,its:t.its||[]})),'bk',key)}if(S.rvp)delete S.rvp[rvfK('bk',o.s.id,key)];
   if(mm>0||Q.some(z=>z.q||z.hq)){const ses=uid(),R=Q.length?Q:[{t:{id:null},q:null,its:[]}];R.forEach(z=>S.sessions.push({id:uid(),ses,rid:bkRid(b),bkr:key,subj:o.s.id,topic:z.t.id,min:mm/R.length,cycle:S.cycle,set:S.set||1,review:true,kind:'aula',items:z.its||[],date:d,...atOf(d),...(z.q||{})}))}}
   if(o&&fin){S.blkDone=S.blkDone||{};S.blkDone[blkKey(b)]={d:today(),ses:ses0};ui.bkv=b.id;const c=current();S.sel.subj=c?c.id:null} /* última disciplina revisada: o bloco conclui sozinho */
   ui.bkreg=null;save();render();if(ui.undoNext){showUndo(ui.undoNext);ui.undoNext=null}return}
