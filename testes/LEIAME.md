@@ -29,5 +29,6 @@ Cada linha sai `OK` ou `FALHA` com o motivo. Prints e arquivos de saída vão pa
 
 - `node lint/explorador.mjs dados/rico.json 300 1,2 saida/explorador`: ações aleatórias com regras de coerência a cada passo.
 - `node lint/simreal.mjs <dados> saida/sim ciclos|grupos [dias] [largura]`: uso realista por semanas.
+  `SRV=1` liga a revisão por sessões; `PLANOS=2` cria um 2º plano (o outro sistema de revisão) e alterna os planos a cada dia, conferindo que um não mexe no outro.
 - `node lint/simfoco.mjs <dados> saida/foco ciclos|grupos [dias] [largura]`: o mesmo, tudo pelo modo foco.
 - `node lint/deadcode.mjs ../index.html`, `deadcss.mjs`, `deadact.mjs`: código, classes e ações sem uso.
