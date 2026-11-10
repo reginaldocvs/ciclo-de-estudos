@@ -2015,7 +2015,8 @@ function srItems(sid){const s=S.subjects.find(x=>x.id===sid);if(!s)return [];con
   const old=seen.has(o.k);if(!L.length){if(!T.its.length)T.its.push({self:true,k:sid+'|'+t.id+'|self',old});else if(T.its[0].self&&old)T.its[0].old=true;return}
   T.its=T.its.filter(z=>!z.self);L.forEach(it=>{const z=T.its.find(z=>sameIt(z.l,it));if(z){if(old)z.old=true}else T.its.push({l:it,k:sid+'|'+t.id+'|'+ik(it),old})})}));
  tops.forEach(T=>T.its.forEach(z=>{z.n=cnt[z.k]||0}));return tops}
-const srRvSince=sid=>{const P=srPts(sid);let i=P.length-1;while(i>=0&&!(P[i].ses||[]).length)i--;return i<0?null:new Set(P.slice(i).flatMap(p=>p.skip?[]:p.its||[]))};
+/* Revisado na última revisão (e depois). O que outra revisão cobriu na rodada anterior também vale: não fica atrasado */
+const srRvSince=sid=>{const P=srPts(sid);let i=P.length-1;while(i>=0&&!(P[i].ses||[]).length)i--;if(i<0)return null;let j=i-1;while(j>=0&&!(P[j].ses||[]).length)j--;return new Set([...P.slice(j+1,i).filter(p=>p.cr),...P.slice(i)].flatMap(p=>p.skip?[]:p.its||[]))};
 const srCrSince=sid=>{const P=srPts(sid);let i=P.length-1;while(i>=0&&!(P[i].ses||[]).length)i--;return new Set(P.slice(i+1).filter(p=>p.cr).flatMap(p=>p.its||[]))};
 const srSplit=sid=>{const y=srY(),A=srItems(sid),rv=srRvSince(sid),cv=srCrSince(sid);if(rv)A.forEach(T=>T.its.forEach(z=>{z.late=!!z.old&&!rv.has(z.k)}));return {cov:A.map(T=>({...T,its:T.its.filter(z=>z.n<y&&cv.has(z.k))})).filter(T=>T.its.length),todo:A.map(T=>({...T,its:T.its.filter(z=>z.n<y&&!cv.has(z.k))})).filter(T=>T.its.length),fin:A.map(T=>({...T,its:T.its.filter(z=>z.n>=y)})).filter(T=>T.its.length)}};
 const srTodo=sid=>srSplit(sid).todo;

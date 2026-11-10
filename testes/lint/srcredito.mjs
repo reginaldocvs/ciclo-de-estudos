@@ -38,6 +38,10 @@ if(bk){await ev(()=>document.querySelector('nav [data-tab=ciclo]').click());awai
  await ev(sid=>{srCurT(sid).forEach(t=>t.its.forEach(z=>{S.srMk=S.srMk||{};S.srMk[z.k]=true}));ui.open.add('srs:'+sid);render()},sid);await ev(()=>document.querySelector('nav [data-tab=rev]').click());await W(250);await ev(()=>{const e=document.querySelector('[data-act=rvt][data-id=sessoes]');e&&e.click()});await W(250);await x.act('srreg',sid);await W(200);await x.fill('#modal input[name=m]','0h10');await x.submit('#modal form[data-f=srreg]');await W(300);
  const lp=await ev(()=>{const e=[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='Desfazer revisão');return !!e});
  ok(await ev(sid=>{const P=srPts(sid).filter(p=>!p.cr);return P.length===1},sid),'o ponto real da revisão por sessões não se confunde com os créditos');
+ /* próxima rodada: as aulas cobertas pelo bloco voltam com a contagem, sem a etiqueta de atrasada */
+ await ev(sid=>{const s=S.subjects.find(x=>x.id===sid),t=s.topics.find(t=>t.name==='Crase');['k5','k6'].forEach(k=>S.sessions.push({id:k,ses:k,subj:sid,topic:t.id,min:30,cycle:S.cycle,set:S.set||1,review:false,kind:'aula',date:today(),items:[{kind:'aula',name:'Aula '+k,link:''}]}));save();render()},sid);
+ const lt=await ev(sid=>({due:srDue(sid),late:srNi(srLate(sid)),old:srTodo(sid).flatMap(t=>t.its).filter(z=>z.n>=1).length}),sid);
+ ok(lt.due&&lt.old>=4&&lt.late===0,'próxima rodada: as aulas revisadas no bloco voltam com a contagem e não ficam atrasadas '+JSON.stringify(lt));
  // desfazer o bloco (Desfazer do app) tira o crédito
  await ev(()=>{S.blkRev={};save();render()});
  let s5=await st();ok(s5.cr>=2&&!/2/.test(s5.n.replace(/,/g,'')),'bloco apagado: o crédito dele some '+JSON.stringify(s5));
