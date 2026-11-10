@@ -46,6 +46,8 @@ await x.submit('form[data-f=srreg]');await W(300);
 let s1=await st();ok(!s1.due&&s1.nw===0&&s1.todo==='Crase:1 Regência verbal:1 Concordância:1'&&s1.pts===1,'registrar: cada item conta 1 e a disciplina sai da vez '+JSON.stringify(s1));
 ok(await ev(()=>{const R=S.sessions.filter(x=>String(x.rid).startsWith('sr-'));return R.length===3&&Math.round(R.reduce((a,x)=>a+x.min,0))===20&&R.every(x=>x.review)}),'registro de 20 min dividido entre os 3 tópicos, como revisão');
 ok(await ev(()=>/Próxima revisão em 3 sessões/.test(document.querySelector('.srsc').innerText)&&/Última revisão: \d\d\/\d\d · 20min · \d+\/\d+ acertos \(\d+%\)/.test(document.querySelector('.srsc').innerText)),'aba Sessões: "Próxima revisão em 3 sessões" e a última com tempo e acertos '+JSON.stringify(await ev(()=>document.querySelector('.srlast').innerText)));
+/* fora da vez: o Ciclo volta a mostrar o "Revise antes de começar" (o que foi estudado na última sessão) */
+await goTab('ciclo');ok(await ev(()=>!document.querySelector('.srvc')&&!!document.querySelector('.rvcard')&&/Revise antes de começar/.test(document.querySelector('.rvcard').innerText)),'fora da vez da revisão por sessões: o Ciclo mostra o "Revise antes de começar"');
 // 6. mais 3 sessões: lista acumula (antigos "2ª de 2", novos "1ª de 2")
 await study(3);await goTab('ciclo');
 c=await ev(()=>[...document.querySelectorAll('.srvc .srn')].map(e=>e.textContent).sort().join());
