@@ -61,6 +61,7 @@ async function study(){await tabTo('ciclo');await blocks();
 /* revisões por tópico que vencem hoje, pelo foco */
 async function topicReviews(){for(let i=0;i<30;i++){const k=await x.ev(()=>{const d=trvDue();return d[0]?d[0].k:null});if(!k)return;
  await tabTo('rev');await x.ev(()=>{const b=document.querySelector('[data-act=rvt][data-id=topicos]');b&&b.click()});await W(250);await once('revisao-topicos');
+ /* a lista corta em 6 e agrupa por disciplina: abre tudo para achar o item */await x.ev(()=>{ui.pg={...(ui.pg||{}),trvdue:99};render()});await W(150);
  await x.ev(k=>[...document.querySelectorAll('#app [data-act=rvfgo]')].find(e=>e.dataset.id===k).click(),k);await W(300);await vis('rvfrs');await W(300);
  const m=await runRvf('tópico',ri(0,1)?0:ri(2,10));await onceM('foco-topico-meta');
  const n0=await nSes();await x.act('rvfreg');await W(300);const c=await fillAc();st.acTop+=c;await onceM('foco-topico-registro');await x.submit('#modal form[data-f=trvok]');await W(300);chkMin('tópico',await regMinNew(n0),m);st.topicos++;
