@@ -23,7 +23,9 @@ const T0=Date.now()-3*3600e3,T1=Date.now()-600e3;
 // 1. celular desatualizado, conta com versão nova, rede com 1,5 s de atraso
 {const {p,errs,ev}=await page({local:OLD,cloud:{ts:T1,j:JSON.stringify(NEW)},sync:{ts:T0,dirty:false,lts:T0},lag:1500});
  await W(500);console.log('    estado:',await ev(()=>JSON.stringify({st:SY.status,err:SY.err,ready:SY.ready,fb:!!window.firebase,cloud:Object.keys(window.__cloud||{}),body:[...document.body.children].map(e=>e.id+':'+e.inert)})));const g=await ev(()=>({on:!!document.getElementById('sygate'),txt:document.querySelector('#sygate h2')?.textContent,inert:!!document.getElementById('app').closest('[inert]')}));
- console.log('    g',JSON.stringify(g));ok(g.on&&/Sincronizando/.test(g.txt)&&g.inert,'ao abrir: "Sincronizando com a sua conta…" cobre o app');await p.screenshot({path:OUT+'/gate-abrir.png'});
+ console.log('    g',JSON.stringify(g));ok(g.on&&/Sincronizando/.test(g.txt)&&g.inert,'ao abrir: "Sincronizando com a sua conta…" cobre o app');
+ const op=()=>ev(()=>{const e=document.getElementById('sygate');return e?+getComputedStyle(e).opacity:-1});
+ ok(await op()===0,'no 1º segundo a camada bloqueia, mas não aparece (conferência rápida não pisca)');await W(800);ok(await op()===1,'passou de 1 s sem resposta: a camada aparece');await p.screenshot({path:OUT+'/gate-abrir.png'});
  const n0=await ev(()=>S.sessions.length);await p.mouse.click(195,300);await p.mouse.click(195,500);await W(200);
  ok(await ev(n=>S.sessions.length===n&&!S.sx,n0),'tocar no app durante a conferência não faz nada');
  for(let i=0;i<40&&await ev(()=>!!document.getElementById('sygate'));i++)await W(200);const r=await ev(()=>({gate:!!document.getElementById('sygate'),desk:S.sessions.some(s=>s.id==='desk1'),meta:window.__cloud['users/u1/ciclo/meta'].dev,inert:!!document.getElementById('app').closest('[inert]')}));
@@ -33,6 +35,12 @@ const T0=Date.now()-3*3600e3,T1=Date.now()-600e3;
  await ev(()=>{window.__vis='hidden';document.dispatchEvent(new Event('visibilitychange'));GT.hid=Date.now()-120000;window.__vis='visible';document.dispatchEvent(new Event('visibilitychange'))});await W(300);
  ok(await ev(()=>!!document.getElementById('sygate')),'ao voltar depois de 2 min: confere de novo antes de liberar');
  for(let i=0;i<40&&await ev(()=>!!document.getElementById('sygate'));i++)await W(200);ok(await ev(()=>!document.getElementById('sygate')&&S.sessions.some(s=>s.id==='desk2')),'recebe a versão nova do computador e libera');
+ // volta depois de 2 min com a conta respondendo rápido (0,3 s): confere e bloqueia, mas a camada nunca aparece
+ await ev(()=>{window.__lag=300});const n1=await ev(()=>S.sessions.length);
+ await ev(()=>{window.__vis='hidden';document.dispatchEvent(new Event('visibilitychange'));GT.hid=Date.now()-120000;window.__vis='visible';document.dispatchEvent(new Event('visibilitychange'))});await W(60);
+ const blk=await ev(()=>!!document.getElementById('sygate')&&!!document.getElementById('app').closest('[inert]'));await p.mouse.click(195,500);let mx=0;
+ for(let i=0;i<30&&await ev(()=>!!document.getElementById('sygate'));i++){mx=Math.max(mx,await op());await W(50)}
+ ok(blk&&mx===0&&await ev(n=>!document.getElementById('sygate')&&S.sessions.length===n&&!S.sx,n1),'volta com a conta rápida: confere e bloqueia o toque, sem a camada aparecer');
  // volta rápida (menos de 1 min) não cobre
  await ev(()=>{window.__vis='hidden';document.dispatchEvent(new Event('visibilitychange'));window.__vis='visible';document.dispatchEvent(new Event('visibilitychange'))});await W(200);ok(await ev(()=>!document.getElementById('sygate')),'voltar logo em seguida não mostra a camada');
  ok(!errs.length,'sem erros '+JSON.stringify(errs));await p.close()}
