@@ -149,7 +149,7 @@ while(round<=2&&d<130){d++;st.dias=d;
     await tabTo('rev');await x.act('rvadj');await ev(()=>{const e=document.querySelector('[data-act=rvsys][data-id=c]');if(e.getAttribute('aria-checked')!=='true')e.click()});await W(300);
     await x.act('cycfg');await x.fill('#modal input[name=cn]','2');await x.submit('#modal form[data-f=cycfg]');await ev(()=>{const c=document.querySelector('#modal [data-act=rvadjx]');c&&c.click()});await W(250);
     ok(await ev(()=>cyOn()&&cyN()===2&&!rgOn()&&tvOn()&&srOn()),'rodada 2: revisão por ciclos (a cada 2) no lugar dos grupos; tópico e sessões seguem');
-    await ev(()=>document.querySelector('nav [data-nav=pl]').click());await W(300);const pid=await ev(()=>S.plan);await x.act('plset',pid);await W(300);await ev(()=>{const c=document.querySelector('#modal [data-act=plclose]');c&&c.click()});await W(250);
+    await ev(()=>(()=>{document.querySelector('nav [data-tab=ciclo]').click();document.querySelector('#mtt .plsel').click()})());await W(300);const pid=await ev(()=>S.plan);await x.act('plset',pid);await W(300);await ev(()=>{const c=document.querySelector('#modal [data-act=plclose]');c&&c.click()});await W(250);
     ok(await ev(()=>(S.set||1)===2&&S.cycle===1&&actives().every(s=>!gDone(s))),'Nova rodada: rodada 2 no ciclo 1');await shot('rodada-2');round=2;break}
    round=3;break}
   k--}

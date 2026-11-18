@@ -17,7 +17,7 @@ for(const [w,h] of [[768,1024],[1024,768],[390,844]]){
   await ev(()=>document.querySelector('[data-act=edclose]').click());await W(400);
   await ev(d=>{localStorage.setItem('ciclo-estudos-v2',d)},RICO);await p.reload();await W(700);
   await ev(()=>{const s=S.subjects.find(s=>!s.off);s.topics=s.topics||[];['Princípios','Direitos fundamentais','Organização do Estado','Poder Legislativo'].forEach(nm=>{if(!s.topics.some(t=>t.name===nm))s.topics.push({id:uid(),name:nm,done:false,links:[]})});save();render()});
-  await ev(()=>document.querySelector('nav [data-act=plopen]').click());await W(500);await ev(()=>document.querySelector('#modal [data-act=pled]').click());await W(500);
+  await ev(()=>(()=>{document.querySelector('nav [data-tab=ciclo]').click();document.querySelector('#mtt .plsel').click()})());await W(500);await ev(()=>document.querySelector('#modal [data-act=pled]').click());await W(500);
   await ev(()=>{const s=S.subjects.find(s=>!s.off);document.querySelector(`[data-act=pdedit][data-id="${s.id}"]`).click()});await W(500);
   const q=await ev(()=>{const r=document.querySelector('.pdrow');const m=r.querySelector('.mvb');const inp=r.querySelector('.pdtn').getBoundingClientRect().width;r.scrollIntoView({block:'center'});return {d:getComputedStyle(m).display,over:r.scrollWidth>r.clientWidth+1,inp:Math.round(inp)}});console.log('    planos',JSON.stringify(q));
   ok(q.d!=='none'&&!q.over&&q.inp>=150,w+': setinhas nos tópicos, campo do tópico com '+q.inp+'px');await W(300);await p.screenshot({path:`${O}/tablet-${w}-planos.png`});

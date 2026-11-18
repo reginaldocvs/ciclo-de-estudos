@@ -114,7 +114,7 @@ await run('5 revisão por tópico',async()=>{
 });
 
 // ===== Rodada 2 =====
-await run('6 nova rodada',async()=>{const s0=await x.ev(()=>S.set||1);await x.ev(()=>document.querySelector('nav [data-nav=pl]').click());await W(300);
+await run('6 nova rodada',async()=>{const s0=await x.ev(()=>S.set||1);await x.ev(()=>(()=>{document.querySelector('nav [data-tab=ciclo]').click();document.querySelector('#mtt .plsel').click()})());await W(300);
  const pid=await x.ev(()=>S.plan);await x.act('plset',pid);await W(300);
  ok(await x.ev(s=>(S.set||1)===s+1&&S.cycle===1&&actives().every(s=>!gDone(s)),s0),'rodada 2 começou no ciclo 1');
  await x.ev(()=>{const b=document.querySelector('#modal [data-act=plclose]');b&&b.click()});await W(200)});
@@ -138,13 +138,13 @@ await run('11 estatísticas',async()=>{await tab('st');await shot('11-estatistic
  const pers=await x.ev(()=>[...document.querySelectorAll('#app [data-act=sper]')].map(b=>b.dataset.id));for(const pr of pers){await x.act('sper',pr)}
  ok(true,'períodos percorridos: '+pers.join(','))});
 // ===== Planos: criar, voltar, excluir =====
-await run('12 planos',async()=>{await x.ev(()=>document.querySelector('nav [data-nav=pl]').click());await W(300);
+await run('12 planos',async()=>{await x.ev(()=>(()=>{document.querySelector('nav [data-tab=ciclo]').click();document.querySelector('#mtt .plsel').click()})());await W(300);
  await x.fill('#modal input[name=n]','Plano B');await x.submit('#modal form[data-f=plnew]');
  const pb=await x.ev(()=>S.plans.find(p=>p.name==='Plano B'));ok(!!pb,'criou Plano B');
  if(pb){const cur=await x.ev(()=>S.plans.find(p=>p.id===S.plan).name);ok(true,'plano atual depois de criar: '+cur);
   if(cur!=='Meu plano'){await x.ev(()=>{const b=document.querySelector('#modal [data-act=plback]');b&&b.click()});await W(300);const pa=await x.ev(()=>S.plans.find(p=>p.name==='Meu plano').id);await x.act('plsw',pa).catch(e=>ok(false,'trocar de plano: '+e.message))}
   ok(await x.ev(()=>S.plans.find(p=>p.id===S.plan).name==='Meu plano'&&S.sessions.length>10),'Meu plano continua com os dados');
-  await x.ev(()=>{if(!document.querySelector('#modal [data-act=plclose]'))document.querySelector('nav [data-nav=pl]').click()});await W(300);
+  await x.ev(()=>{if(!document.querySelector('#modal [data-act=plclose]'))(()=>{document.querySelector('nav [data-tab=ciclo]').click();document.querySelector('#mtt .plsel').click()})()});await W(300);
   await x.act('pldel',pb.id).catch(e=>ok(false,e.message));const c=await x.ev(()=>{const b=[...document.querySelectorAll('#modal button')].find(b=>b.offsetParent&&/^Excluir/.test(b.textContent.trim()));if(b){b.click();return b.textContent.trim()}return null});await W(300);
   ok(await x.ev(()=>!S.plans.some(p=>p.name==='Plano B')),'excluiu Plano B ('+c+')')}
  await x.ev(()=>{const b=document.querySelector('#modal [data-act=plclose]');b&&b.click()});await W(200)});
