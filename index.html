@@ -434,6 +434,8 @@ input::placeholder,textarea::placeholder{color:var(--mut);opacity:1}
 .fms .snt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fmst{font-weight:600;color:color-mix(in srgb,var(--sc) 55%,var(--ink))}
 .fmst.off{color:var(--mut)}
+.fmtb{display:block;margin:0 auto;padding:0 8px;border:0;border-radius:20px;background:none;color:inherit;font:inherit;cursor:pointer;touch-action:manipulation}.fmtb:focus-visible{outline:2px solid currentColor;outline-offset:4px}
+.fmtl{min-height:1.2em;margin-top:2px;font-size:.85rem;text-align:center}
 .fmt{font-size:clamp(3.4rem,17vw,7.5rem);font-weight:800;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .fmg{width:min(100%,420px);display:flex;flex-direction:column;gap:6px;font-variant-numeric:tabular-nums}
 .fmb{height:8px;border-radius:999px;background:var(--track);overflow:hidden}
@@ -1309,7 +1311,15 @@ const revList=(s,ids)=>tl(s,ids).map(t=>{const its=revItems(s,t),rows=its,base=(
  return `<div class="rv rvtp${done?' rvdone':''}"><div class="rvn rvtn rvtnf"><span class="tpcl" title="${esc(t.name)}">${esc(t.name)}</span>${ds.length?` <span class="rvcy" title="Estudado em ${ds.map(d5).join(', ')}">${dl}</span>`:''}</div><div class="rvits">${rows.map(l=>`<label class="chk${S.checked[kf(l)]?' on':''}${lk.has(kf(l))?' lk':''}"${lk.has(kf(l))?' title="Já registrado em uma sessão desta revisão"':''}><input type="checkbox" data-chk="${esc(kf(l))}" ${S.checked[kf(l)]?'checked':''} ${lk.has(kf(l))?'disabled':''}>${l.self?'<span>Revisar tópico</span>':itemLine(l,t.id)}</label>`).join('')}</div></div>`}).join('');
 const el=()=>S.timer.acc+(S.timer.running?Date.now()-S.timer.start:0);
 const clock=(ms=el())=>{const t=Math.floor(ms/1000);return [Math.floor(t/3600),Math.floor(t%3600/60),t%60].map(n=>String(n).padStart(2,'0')).join(':')};
-setInterval(()=>{if(capGoal()){save();render();return}const e=$('tm');if(e)e.textContent=clock();const b=$('regbtn');if(b&&b.isConnected!==false&&S.sx){const mn=regMin(),ok=canReg(mn),mt=metRem(mn);b.disabled=!ok;const xp=$('xpbtn');if(xp&&xp.dataset){xp.dataset.act=mt?'xpause':'xcont';xp.textContent=mt?'Pausar':'Continuar'}const hn=$('reghint');if(hn){hn.hidden=mt;if(!mt)hn.innerHTML=regHint(mn)}}},500);
+/* Relógio do foco: tempo corrido ou, tocando nele, o que falta para a meta (passou dela: "+" o tempo além). A escolha fica guardada (S.clkDown). */
+const clkTxt=(ms,gm)=>{if(!S.clkDown)return clock(ms);const r=gm-ms;return r>=0?clock(r):'+'+clock(-r)};
+const clkLbl=(ms,gm)=>S.clkDown?(gm-ms>=0?'para a meta':'além da meta'):'';
+const clkBtn=(id,ms,gm)=>`<button type="button" class="fmtb" data-act="clkdown" title="${S.clkDown?'Mostrar o tempo corrido':'Mostrar o tempo que falta para a meta'}"><span class="fmt" id="${id}" role="timer" aria-live="off">${clkTxt(ms,gm)}</span></button><div class="mut fmtl" id="${id}l">${clkLbl(ms,gm)}</div>`;
+const clkSet=(id,ms,gm)=>{const t=$(id);if(t)t.textContent=clkTxt(ms,gm);const l=$(id+'l');if(l)l.textContent=clkLbl(ms,gm)};
+/* Aviso antes da meta (Configurações): S.warnM minutos; um aviso por sessão ou revisão, só se ela começou com mais tempo que isso pela frente */
+const warnM=()=>{const v=+S.warnM;return v>=1&&v<=180?Math.round(v):0};
+function warnTick(rem,o,name,goal){const w=warnM();if(!w||!o)return;if(rem>w*60000){o.wa=true;return}if(!o.wa||o.wf||rem<=0)return;o.wf=true;o.wa=false;if(S.snd!==false)beep();const t=`Falta${w===1?'':'m'} ${fmt(w)} para a meta`;toast(`${t} de ${name} (${fmt(goal)}).`);notify(t,`${name}: meta de ${fmt(goal)}`);save()}
+setInterval(()=>{{const s=curS();if(s&&S.timer.running&&S.sx===true)warnTick((s.goal-prog(s.id))*60000-el(),S.timer,nm(s),s.goal)}if(capGoal()){save();render();return}const e=$('tm');if(e)e.textContent=clock();const b=$('regbtn');if(b&&b.isConnected!==false&&S.sx){const mn=regMin(),ok=canReg(mn),mt=metRem(mn);b.disabled=!ok;const xp=$('xpbtn');if(xp&&xp.dataset){xp.dataset.act=mt?'xpause':'xcont';xp.textContent=mt?'Pausar':'Continuar'}const hn=$('reghint');if(hn){hn.hidden=mt;if(!mt)hn.innerHTML=regHint(mn)}}},500);
 
 const hms=t=>{t=Math.max(0,Math.floor(t));return [Math.floor(t/3600),Math.floor(t%3600/60),t%60].map(n=>String(n).padStart(2,'0')).join(':')};
 const selId=()=>{const A=actives();return (A.find(x=>x.id===S.sel.subj)||current()||A[0]||{}).id};
@@ -1457,7 +1467,7 @@ function rvfStart(kind,id,bk){if(S.sx)return;rvfPark();const k=rvfK(kind,id,bk),
  S.rvf={kind,id,bk:bk||null,run:false,start:0,acc:ms,d0:z&&z.d0||today(),goal,hit:ms>=goal*60000}}
 function rvfPark(){const f=S.rvf;if(!f)return 0;const ms=Math.round(rvfMs());if(ms>0){S.rvp=S.rvp||{};S.rvp[rvfK(f.kind,f.id,f.bk)]={ms,d0:f.d0,goal:f.goal}}S.rvf=null;return ms}
 /* Meta trocada no foco: a barra se ajusta na hora; se já passou da nova meta, o aviso vem no próximo tique */
-function rvfGoal(m){const f=S.rvf;if(!f||!(m>=1))return;f.goal=m;f.hit=false;rvfBar()}
+function rvfGoal(m){const f=S.rvf;if(!f||!(m>=1))return;f.goal=m;f.hit=false;f.wa=f.wf=false;rvfBar()}
 const rvfGl=()=>goalTxt(rvfMs()/60000,S.rvf.goal);
 function rvfBar(){const f=S.rvf;if(!f)return;goalBarSet('rvfb',rvfMs()/60000,f.goal);const g=$('rvfgl');if(g)g.textContent=rvfGl()}
 /* O que a camada mostra: cabeçalho, disciplina, tópico e as aulas; some sozinha se o tópico ou o bloco não estiverem mais na vez */
@@ -1471,14 +1481,14 @@ function rvfHtml(){const f=S.rvf,T=rvfT();if(!T){S.rvf=null;return ''}const c=co
  <div class="fms"><span class="dot" style="background:${c}"></span><span class="snt" title="${esc(nm(T.s))}">${esc(nm(T.s))}</span></div>
  ${T.tp?`<div class="rvftp tpcl" title="${esc(T.tp)}">${esc(T.tp)}</div>`:''}
  <div class="fmst${run?'':' off'}"${run?` style="--sc:${c}"`:''}>${run?'Revisando':ms>0?'Pausado':'Pronto para iniciar'}</div>
- <div class="fmt" id="rvft" role="timer" aria-live="off">${clock(ms)}</div>
+ ${clkBtn('rvft',ms,f.goal*60000)}
  ${run||ms>0?`<div class="fmg">${goalBarHtml('rvfb',ms/60000,f.goal,c)}<div class="mut" id="rvfgl">${rvfGl()}</div></div>`:''}
  ${run?'':`<div class="rvfmeta"><span class="lb" aria-hidden="true">Meta desta revisão</span>${tmField('rvfg',tmFmt(f.goal),'data-rvfg aria-label="Meta desta revisão"')}</div>`}
  <div class="fma"><button class="btn fmp${run?' run':''}" data-act="${run?'rvfpz':'rvfrs'}" aria-label="${lb}">${run?PAUSE:PLAY}<span>${lb}</span></button><button class="btn g" data-act="rvfreg">Registrar</button></div>
  <div class="fmk"><span class="mut fmkb">Espaço ${ms>0||run?'pausa ou retoma':'inicia'} · Esc sai sem registrar</span>${ms>0||run?'<button class="lnk lsm" data-act="rvfrz">Reiniciar cronômetro</button>':''}</div>
  <div class="rvfw"><h2 class="rvfh">O que revisar</h2>${T.body||'<div class="mut">Sem aula registrada.</div>'}</div></div></div>`}
 function rvfOff(){const ms=rvfPark();save();render();if(ms>0)toast(`Revisão pausada com ${pzF(ms)}.`)}
-setInterval(()=>{const f=S.rvf;if(!f)return;const t=$('rvft');if(t)t.textContent=clock(rvfMs());rvfBar();
+setInterval(()=>{const f=S.rvf;if(!f)return;clkSet('rvft',rvfMs(),f.goal*60000);rvfBar();if(f.run){const T=rvfT();warnTick(f.goal*60000-rvfMs(),f,T?nm(T.s):'revisão',f.goal)}
  if(!f.hit&&rvfMs()>=f.goal*60000){f.hit=true;save();toast(`Meta de ${fmt(f.goal)} atingida. O cronômetro continua.`);const T=rvfT();notify('Meta da revisão atingida',(T?nm(T.s)+': ':'')+fmt(f.goal)+'. O cronômetro continua.')}},500);
 const fmRegHtml=(s,body)=>{const c=col(s);
  return `<div class="dlg reg fmd fmr" role="dialog" aria-modal="true" aria-label="Registrar estudo"><div class="fmtop"><button class="x" data-act="fmoff" title="Sair e pausar (Esc)" aria-label="Sair; o tempo fica guardado em pausa">${CLOSEI}</button></div><div class="fmc fmrc">
@@ -1494,12 +1504,12 @@ const fmHtml=()=>{const s=curS(),c=col(s),run=S.timer.running,rv=S.type==='revie
  ${rv?`<div class="mut">${esc('Revisão'+(S.rv.lbl?' · '+S.rv.lbl:''))}</div>`:''}
  <div class="fms"><span class="dot" style="background:${c}"></span><span class="snt" title="${esc(s.name)}">${esc(s.name)}</span></div>
  <div class="fmst${run?'':' off'}"${run?` style="--sc:${c}"`:''}>${run?(S.type==='review'?'Revisando':'Estudando'):'Pausado'}</div>
- <div class="fmt" id="fmt" role="timer" aria-live="off">${clock()}</div>
+ ${clkBtn('fmt',el(),(s.goal-prog(s.id))*60000)}
  <div class="fmg">${goalBarHtml('fmb',liveMin(s),s.goal,c)}<div class="mut" id="fmgl">${fmGoal(s)}</div></div>
  <div class="fma"><button class="btn fmp${run?' run':''}" data-act="${run?'tpause':'tstart'}" aria-label="${lb}">${run?PAUSE:PLAY}<span>${lb}</span></button><button class="btn g" data-act="fmreg">Registrar</button></div>
  <div class="fmk"><span class="mut fmkb">Espaço pausa ou retoma · Esc sai sem registrar</span><button class="lnk lsm" data-act="treset">Reiniciar cronômetro</button></div>
  ${rv?`<div class="rvfw"><h2 class="rvfh">O que revisar</h2>${(()=>{const L=revList(s,winTopics(s.id));return L?`<div class="rvlist">${L}</div>`:'<div class="mut">Sem aula registrada.</div>'})()}</div>`:''}</div></div>`};
-setInterval(()=>{if(!FM.on)return;const s=curS();if(!s)return;const t=$('fmt');if(t)t.textContent=clock();goalBarSet('fmb',liveMin(s),s.goal);const g=$('fmgl');if(g)g.textContent=fmGoal(s)},500);
+setInterval(()=>{if(!FM.on)return;const s=curS();if(!s)return;clkSet('fmt',el(),(s.goal-prog(s.id))*60000);goalBarSet('fmb',liveMin(s),s.goal);const g=$('fmgl');if(g)g.textContent=fmGoal(s)},500);
 
 const rodArc=r=>(S.rod||{})[r]||{};
 const rodMax=r=>{const a=rodArc(r);return S.sessions.reduce((m,x)=>(x.set||1)===r&&(x.cycle||1)>m?x.cycle:m,a.cycle||1)};
@@ -2133,8 +2143,12 @@ function chrome(){const mt=$('mtt'),ms=$('msub');if(!mt||!ms)return;let t=TTL[ta
  if(sh!==null){if(ms.dataset.h!==sh){ms.innerHTML=sh;ms.dataset.h=sh}}else{delete ms.dataset.h;if(ms.textContent!==s)ms.textContent=s}
  subFlow();
  const h=[...document.querySelectorAll('#app h2')].find(e=>e.textContent.trim()===TTL[tab]);document.querySelectorAll('#app .mdup').forEach(e=>{if(e!==h)e.classList.remove('mdup')});if(h)h.classList.add('mdup')}
+const clkCard=()=>{const w=warnM(),dn=(()=>{try{return 'Notification' in window&&Notification.permission==='denied'}catch(e){return false}})();
+ return `<div class="card"><h2>Cronômetro do foco</h2><p class="mut" style="margin:4px 0 0">Toque no relógio do foco para alternar entre o tempo corrido e o tempo que falta para a meta.</p>`+
+  `<div class="rvrow"><div class="rvlb"><b>Avisar antes da meta</b><span class="mut">Som e notificação no foco do estudo e da revisão</span></div><button type="button" class="swt" role="switch" aria-checked="${!!w}" data-act="warntog" aria-label="Avisar antes da meta"><span class="swk"></span></button></div>`+
+  (w?`<div class="rvrow rvql"><div class="rvlb"><b>Quando faltar</b></div><div class="stp"><button type="button" class="x" data-act="wnstep" data-id="-5" aria-label="Diminuir 5 minutos">−</button><input data-wnv type="number" inputmode="numeric" min="1" max="180" step="5" value="${w}" aria-label="Avisar quando faltar (minutos)"><span class="mut">min</span><button type="button" class="x" data-act="wnstep" data-id="5" aria-label="Aumentar 5 minutos">+</button></div></div>`+(dn?'<p class="mut" style="margin:8px 0 0">As notificações estão bloqueadas neste navegador: o aviso aparece só dentro do app.</p>':''):'')+`</div>`};
 function viewConfig(){const t=S.theme||'auto',o=[['auto','Automático'],['light','Claro'],['dark','Escuro']];
- return `<div class="card hasinfo">${infoBtn('tema','Aparência')}<h2 style="margin-bottom:12px">Aparência</h2><div class="sper" role="group" aria-label="Tema">${o.map(([v,l])=>`<button type="button" class="seg${t===v?' on':''}" data-act="theme" data-id="${v}" aria-pressed="${t===v}">${l}</button>`).join('')}</div></div><div class="card"><h2>Seus dados</h2>${syCard()}</div><div class="card"><h2>Backup</h2><p class="mut" style="margin:4px 0 0">Salve um arquivo com todos os seus dados para guardar onde quiser. Para voltar a ele, use Restaurar backup: o arquivo substitui os dados atuais.</p><p class="mut bkinfo${bkDue()?' due':''}">${bkInfo()}</p><div class="fl" style="margin-top:12px"><button class="btn g s" data-act="bkout">Salvar backup</button><button class="btn g s" data-act="bkin">Restaurar backup</button></div></div>${vhCard()}`}
+ return `<div class="card hasinfo">${infoBtn('tema','Aparência')}<h2 style="margin-bottom:12px">Aparência</h2><div class="sper" role="group" aria-label="Tema">${o.map(([v,l])=>`<button type="button" class="seg${t===v?' on':''}" data-act="theme" data-id="${v}" aria-pressed="${t===v}">${l}</button>`).join('')}</div></div>${clkCard()}<div class="card"><h2>Seus dados</h2>${syCard()}</div><div class="card"><h2>Backup</h2><p class="mut" style="margin:4px 0 0">Salve um arquivo com todos os seus dados para guardar onde quiser. Para voltar a ele, use Restaurar backup: o arquivo substitui os dados atuais.</p><p class="mut bkinfo${bkDue()?' due':''}">${bkInfo()}</p><div class="fl" style="margin-top:12px"><button class="btn g s" data-act="bkout">Salvar backup</button><button class="btn g s" data-act="bkin">Restaurar backup</button></div></div>${vhCard()}`}
 
 /* ===== Vários ciclos de estudo (um por concurso) ===== */
 const PEN='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>';
@@ -2690,6 +2704,9 @@ document.addEventListener('click',e=>{if(S.snd!==false)acInit();
  if(a==='redolink')return; /* link das questões abre normalmente */
  ui.msg=null;if(a!=='dd')ui.nmnote=null;ui.note=null;
  if(a==='theme'){S.theme=p==='light'||p==='dark'?p:'auto';save();render();return}
+ if(a==='clkdown'){S.clkDown=!S.clkDown;if(!S.clkDown)delete S.clkDown;save();render();return}
+ if(a==='warntog'){if(warnM())delete S.warnM;else{S.warnM=20;try{if('Notification' in window&&Notification.permission==='default')Notification.requestPermission()}catch(e){}}save();render();return}
+ if(a==='wnstep'){S.warnM=Math.min(180,Math.max(1,(warnM()||20)+(+p)));save();render();return}
  if(a==='rview')ui.rview=p;
  if(a==='rvclose')ui.rview=null;
   if(a==='edit'){ui.edBack=ui.rview||null;ui.rview=null;const old=S.sessions.filter(x=>(x.ses||x.id)===p);
@@ -2906,6 +2923,7 @@ document.addEventListener('change',e=>{if(e.target.classList&&e.target.classList
  /* mudou a data do registro: o horário gravado era do dia original (volta se a data voltar); o digitado à mão fica, salvo se a data virar hoje */
  if(S.edit&&e.target.dataset&&'ed' in e.target.dataset){const E=S.edit;if(E.date===E.d0&&!E.atm)E.at=E.at0||'';else if(!(E.date<today())){if(E.date!==E.d0)E.at=''}else if(!E.atm)E.at='';save();render();return}
  const d=e.target.dataset,v=e.target.value;
+ if('wnv' in d){const n=Math.round(+v);if(n>=1&&n<=180){S.warnM=n;save();render()}else{toast('Use um valor de 1 a 180 minutos.');e.target.value=warnM()}return}
  if('qlv' in d){const n=Math.round(+v);if(n>=30&&n<=95){if(n===70)delete S.qlim;else S.qlim=n;save();render()}else{toast('Use um valor de 30% a 95%.');e.target.value=qLim()}return}
  if('tm' in d){const mn=tmParse(v);
   if(d.bgoal){const b=(S.blk||[]).find(x=>x.id===d.bgoal);if(b&&mn>=1){b.goal=mn;save()}e.target.value=tmFmt(b?bkGoal(b):mn);return}
