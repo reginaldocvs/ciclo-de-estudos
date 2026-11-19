@@ -11,7 +11,8 @@ const [F,WD]=process.argv.slice(2);const w=+(WD||390);let bad=0;const ok=(c,m)=>
 const S0=JSON.parse(fs.readFileSync(F,'utf8'));S0.timer={running:false,start:0,acc:0};S0.sx=false;delete S0.rq;S0.srv={n:2,y:3,on:true,start:'2026-01-01'};
 S0.subjects.push({id:'rqx',name:'Teste RQ',goal:60,topics:[{id:'tq1',name:'Tópico Q',done:false,links:[]}]},{id:'rqx2',name:'Teste RQ',goal:60,topics:[],of:'rqx'});
 const {b,p,errs}=await open({data:{'ciclo-estudos-v2':JSON.stringify(S0),'ciclo-welcome-skip':'1'},w,h:900});const x=mk(p);const ev=(f,...a)=>x.ev(f,...a);
-const study=(sid,n,rv)=>ev(([sid,n,rv])=>{S.type=rv?'review':'study';S.sel.subj=sid;S.sel.groups=[{id:'g'+n,nt:'Tópico Q',rows:[{id:'r'+n,kind:'aula',name:'Aula '+n,link:''}]}];addSession(30);S.type='study';save();render()},[sid,n,!!rv]);
+/* registra uma sessão de estudo; se vier o aviso "… para revisar com questões · Revisar", toca em Revisar (abre a janela) */
+const study=async(sid,n,rv)=>{await ev(([sid,n,rv])=>{S.type=rv?'review':'study';S.sel.subj=sid;S.sel.groups=[{id:'g'+n,nt:'Tópico Q',rows:[{id:'r'+n,kind:'aula',name:'Aula '+n,link:''}]}];addSession(30);S.type='study';save();render()},[sid,n,!!rv]);await W(80);await ev(()=>{const b=document.querySelector('#undo [data-act=rqreg]');if(b)b.click()})};
 const due=()=>ev(()=>rqDue('rqx').map(z=>z.m+':'+(z.i+1)).join(' '));
 /* 1. ligar: desliga a por sessões; sem atrasadas antigas */
 await ev(()=>document.querySelector('nav [data-tab=rev]').click());await W(300);await x.act('rvadj');await W(300);
@@ -64,7 +65,7 @@ await p.screenshot({path:'saida/rqrev-ajuste-'+w+'.png'});
 await x.act('rqdel');await x.act('rqdef');ok(await ev(()=>ui.rqiv.join()==='1,4,8'),'tirar a última e Voltar ao padrão');
 await x.act('rqst','2:1');await x.act('rqsave');await W(200);ok(await ev(()=>rqIv().join()==='1,4,9'&&rqDue('rqx').length===0&&ui.rvadj),'Salvar: 1 · 4 · 9, sem atrasadas, volta aos Ajustes');
 /* 9. aba Questões */
-await x.act('rvadjx');await ev(()=>{rqMark(rqDue('rqx'),'skip');save();render()});await study('rqx',15);await W(200);await x.act('rqregx');
+await ev(()=>{rqMark(rqDue('rqx'),'skip');save();render()});await study('rqx',15);await W(200);await x.act('rqregx');
 await ev(()=>{S.sel.subj='rqx';save();render()});await ev(()=>document.querySelector('nav [data-tab=rev]').click());await W(200);
 ok(await ev(()=>{const T=[...document.querySelectorAll('[data-act=rvt]')].map(b=>b.textContent);return T.includes('Questões')&&!T.includes('Sessões')}),'aba Questões aparece (e não a Sessões)');
 await x.act('rvt','questoes');await W(300);
@@ -94,7 +95,7 @@ ok(await ev(()=>{const R=S.sessions.filter(x=>String(x.rid||'').startsWith('rq-'
 await ev(()=>document.querySelector('nav [data-tab=rev]').click());await W(200);await x.act('rvt','questoes');await W(300);
 await ev(()=>[...document.querySelectorAll('.rqsc')].find(c=>/Teste RQ/.test(c.textContent)).querySelector('[data-act=rqadv]').click());await W(300);
 let av=await ev(()=>{const f=document.querySelector('[data-f=rqreg]');return f?{n:f.querySelectorAll('.rqb').length,ck:f.querySelectorAll('.rqck:checked').length,adv:f.querySelectorAll('.rqh .fu').length,first:f.querySelector('.rqh b').textContent,btn:[...f.querySelectorAll('.trvact button')].map(b=>b.textContent).join('|')}:null});
-ok(av&&av.n===9&&av.ck===9&&av.adv===9&&av.first==='Sessão 16'&&av.btn==='Cancelar|Registrar revisão','Adiantar: as 9 sessões em revisão (16 a 8), todas marcadas e "adiantada", com Cancelar e Registrar '+JSON.stringify(av));
+ok(av&&av.n===9&&av.ck===9&&av.adv===9&&av.first==='Sessão 16'&&av.btn==='Cancelar|Registrar','Adiantar: as 9 sessões em revisão (16 a 8), todas marcadas e "adiantada", com Cancelar e Registrar '+JSON.stringify(av));
 await p.screenshot({path:'saida/rqrev-adiantar-'+w+'.png'});
 await ev(()=>{const f=document.querySelector('[data-f=rqreg]');f.querySelector('[name=ck-0]').checked=false;f.querySelector('[name="qa-1-0-0"]').value='9';f.querySelector('[name="qt-1-0-0"]').value='10';f.requestSubmit()});await W(300);
 av=await ev(()=>{const I=rqInfo('rqx'),st=m=>I.rows.find(r=>r.m===m).vz.map(v=>v.st).join(',');return {s16:st(16),s15:st(15),s8:st(8),open:!!document.querySelector('[data-f=rqreg]'),last:recTag(S.sessions.filter(x=>String(x.rid||'').startsWith('rq-')).pop()).t}});
@@ -119,6 +120,26 @@ await x.act('rqzok','*');await W(200);ok(await ev(()=>rqSubs().every(s=>rqSes(s.
 await x.act('rqcfgx');
 await ev(()=>document.querySelector('nav [data-tab=rev]').click());await W(200);
 await x.act('rvadj');await W(200);
+/* 13. aviso depois de registrar (sem abrir a janela) e revisão durante a sessão: Agora e foco */
+await ev(()=>{hideUndo();for(const n of ['A1','A2']){S.sel.subj='rqx';S.sel.groups=[{id:'g'+n,nt:'Tópico Q',rows:[{id:'r'+n,kind:'aula',name:'Aula '+n,link:''}]}];addSession(30)}save();render()});await W(120);
+let av2=await ev(()=>({jan:!!document.querySelector('[data-f=rqreg]'),toast:(document.getElementById('undo')||{}).textContent||''}));
+ok(!av2.jan&&/sess(ão|ões) para revisar com questões · Teste RQ/.test(av2.toast)&&/Revisar$/.test(av2.toast),'depois de registrar: sem janela, só o aviso com Revisar '+JSON.stringify(av2));
+await ev(()=>{rqMark(rqDue('rqx'),'skip');S.progress.rqx=0;S.sel.subj='rqx';save();render()});
+await ev(()=>document.querySelector('nav [data-tab=ciclo]').click());await W(250);await ev(()=>{S.sel.subj='rqx';render()});await W(150);
+const nS=await ev(()=>rqSes('rqx').length);
+const ag=await ev(()=>{const e=[...document.querySelectorAll('#app [data-act=rqnow]')].find(e=>e.offsetParent);return e?e.textContent:null});
+ok(ag&&/^Revisar com questões \(\d+\)$/.test(ag),'cartão Agora: "Revisar com questões (N)" com as revisões da sessão em andamento '+JSON.stringify(ag));
+await ev(()=>document.querySelector('.nwplay').click());await W(300);await ev(()=>document.querySelector('.fmd [data-act=tstart]').click());await W(300);
+await ev(()=>document.querySelector('.fmd [data-act=rqnow]').click());await W(300);
+let fz=await ev(n=>{const d=document.querySelector('.dlg.rqfz'),D=rqDue('rqx',true);return d?{run:S.timer.running,top:document.elementFromPoint(innerWidth/2,d.getBoundingClientRect().top+40)?.closest('.rqfz')===d,sub:d.querySelector('.trvok .mut').textContent,tempo:!!d.querySelector('[name=m]'),due:D.map(z=>z.m).join(','),esp:rqIv().map(g=>n+1-g).filter(m=>m>=1).join(',')}:null},nS);
+ok(fz&&fz.run&&fz.top&&!fz.tempo&&new RegExp('durante a sessão '+(nS+1)+'$').test(fz.sub)&&fz.due===fz.esp,'foco: a janela abre por cima, o relógio continua, sem campo de tempo, com as revisões da sessão '+(nS+1)+' '+JSON.stringify(fz));
+await p.keyboard.press('Space');await W(200);ok(await ev(()=>S.timer.running),'com a janela aberta, Espaço não pausa o relógio');
+await ev(()=>{const f=document.querySelector('[data-f=rqreg]');f.querySelector('[name="qa-0-0-0"]').value='4';f.querySelector('[name="qt-0-0-0"]').value='5';f.requestSubmit()});await W(300);
+ok(await ev(()=>!document.querySelector('[data-f=rqreg]')&&S.sx===true&&S.timer.running&&rqDue('rqx',true).length===0),'registrar no foco: volta ao foco, relógio contando, nada pendente para esta sessão');
+ok(await ev(()=>{const R=S.sessions.filter(x=>String(x.rid||'').startsWith('rq-')).pop();return R&&R.min===0&&R.items[0].ac===4}),'a revisão feita no foco não leva tempo próprio (o tempo é da sessão de estudo)');
+await ev(()=>{S.timer.acc=el();S.timer.running=false;S.sel.groups=[{id:'gb',nt:'Tópico Q',rows:[{id:'rb',kind:'aula',name:'Aula B',link:''}]}];addSession(30);S.timer={running:false,start:0,acc:0};S.sx=false;save();render()});await W(150);
+ok(await ev(()=>!/para revisar com questões/.test((document.getElementById('undo')||{}).textContent||'')&&rqDue('rqx').length===0),'ao registrar a sessão, nada sobra: sem aviso');
+await ev(()=>document.querySelector('nav [data-tab=rev]').click());await W(200);await x.act('rvadj');await W(200);
 await ev(()=>document.querySelector('[data-act=rvsys][data-id=s]').click());await W(200);ok(await ev(()=>srOn()&&!rqOn()),'ligar a por sessões desliga a por questões');
 ok(!errs.length,'sem erros de script '+errs.slice(0,2).join(' | '));
 await b.close();process.exit(bad?1:0);

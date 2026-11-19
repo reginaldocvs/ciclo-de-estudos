@@ -64,10 +64,11 @@ async function lateReviews(){if(!SRV||rnd()>.35)return;const ids=await x.ev(()=>
 const RQ=!!process.env.RQ;
 /* revisão por questões (RQ=1): a janela logo depois do estudo; registra com acertos (60%), pula (20%) ou deixa para depois (20%); confere a regra a cada sessão */
 async function rqAfter(id){if(!RQ)return;const b=await x.ev(id=>{const s=subjAny(id);return s&&s.of||id},id);
- const a=await x.ev(b=>{const L=rqSes(b),iv=rqIv();return {n:L.length,iv,D:rqDue(b).map(z=>({m:z.m,ks:z.ks})),open:!!document.querySelector('[data-f=rqreg]'),k:L.length?L[L.length-1].k:null}},b);
+ const a=await x.ev(b=>{const L=rqSes(b),iv=rqIv();return {n:L.length,iv,D:rqDue(b).map(z=>({m:z.m,ks:z.ks})),open:!!document.querySelector('#undo [data-act=rqreg]'),k:L.length?L[L.length-1].k:null}},b);
  const bad=a.D.filter(z=>!z.ks.every(k=>z.m+a.iv[k]<=a.n));if(bad.length)ok(false,'rq: revisão antes da hora '+JSON.stringify(bad));
- if(a.D.length&&!a.open)ok(false,'rq: havia revisão e a janela não abriu');if(!a.D.length&&a.open)ok(false,'rq: janela aberta sem revisão');
- if(!a.open)return;st.rqJan++;st.rqMax=Math.max(st.rqMax,a.D.length);await once('rq-janela');
+ if(a.D.length&&!a.open)ok(false,'rq: havia revisão e não veio o aviso com Revisar');if(!a.D.length&&a.open)ok(false,'rq: aviso sem revisão');
+ if(await x.ev(()=>!!document.querySelector('[data-f=rqreg]')))ok(false,'rq: a janela abriu sozinha depois de registrar');
+ if(!a.open)return;await x.ev(()=>document.querySelector('#undo [data-act=rqreg]').click());await W(250);st.rqJan++;st.rqMax=Math.max(st.rqMax,a.D.length);await once('rq-janela');
  await rqAct(b,'janela')}
 async function rqAct(b,why){const r=rnd();
  if(r<.6){const c=await x.ev(()=>{const f=document.querySelector('[data-f=rqreg]');let c=0;f.querySelectorAll('input[name^=qa-]').forEach(i=>{if(Math.random()<.7){const t=f.querySelector('[name="'+i.name.replace('qa-','qt-')+'"]');const tq=+t.value||10;t.value=tq;i.value=Math.ceil(tq*.6);c++}});return c});
@@ -79,11 +80,19 @@ async function rqToday(){if(!RQ||rnd()>.4)return;const ids=await x.ev(()=>rqSubs
  await tabTo('rev');await x.ev(()=>{const b=document.querySelector('[data-act=rvt][data-id=hoje]');b&&b.click()});await W(250);await x.ev(()=>{ui.pg={...(ui.pg||{}),hoje:99};render()});await W(150);
  const id=ids[0];if(!await x.ev(id=>{const e=document.querySelector(`.rvtoday [data-act=rqreg][data-id="${id}"]`);if(e){e.click();return true}return false},id)){ok(false,'rq: pendente sem "Revisar" no Para hoje');return}
  await W(300);await once('rq-para-hoje');st.rqHoje++;await rqAct(id,'para hoje')}
+/* durante a sessão (RQ=1): às vezes revisa antes de registrar, pelo botão do cartão Agora; o que vem com a sessão fica feito */
+async function rqDuring(id){if(!RQ||rnd()>.35)return;const has=await x.ev(()=>{const e=[...document.querySelectorAll('#app [data-act=rqnow]')].find(e=>e.offsetParent);if(e){e.click();return true}return false});if(!has)return;await W(250);
+ const b=await x.ev(id=>{const s=subjAny(id);return s&&s.of||id},id),z=await x.ev(()=>{const d=document.querySelector('[data-f=rqreg]');return d?{sub:d.closest('.dlg').querySelector('.trvok .mut').textContent,tempo:!!d.querySelector('[name=m]')}:null});
+ if(!z||!/durante a sessão/.test(z.sub)||z.tempo){ok(false,'rq: janela do Agora sem "durante a sessão" ou com tempo '+JSON.stringify(z));return}
+ await once('rq-agora');st.rqDur=(st.rqDur||0)+1;const r=rnd();
+ if(r<.75){await x.ev(()=>{const f=document.querySelector('[data-f=rqreg]');f.querySelectorAll('input[name^=qa-]').forEach(i=>{const t=f.querySelector('[name="'+i.name.replace('qa-','qt-')+'"]');t.value=+t.value||10;i.value=Math.ceil(+t.value*.7)})});await x.submit('#modal form[data-f=rqreg]');await W(250);st.rqReg++;
+  if(await x.ev(b=>rqDue(b,true).length,b))ok(false,'rq: registrar no Agora deixou pendente para esta sessão')}
+ else await x.act('rqregx')}
 /* uma sessão de estudo: 1 tópico (novo a cada 2 sessões da disciplina) com 2 a 3 aulas/questões */
 const tpN={};
 async function study(){await tabTo('ciclo');await blocks();
  const id=await x.ev(()=>{if(S.type==='review'||S.rv)return null;const s=actives().find(s=>!gDone(s));return s?s.id:null});if(!id)return false;
- await srvReview(id);
+ await srvReview(id);await rqDuring(id);
  await x.act('rreg',id);const k=tpN[id]=(tpN[id]||0)+1,nr=ri(2,3),qrow=rnd()<.5,acs=[...Array(nr)].map(()=>{const tq=ri(5,10);return {tq,ac:ri(Math.ceil(tq/2),tq)}});
  await x.ev((k,nr,qrow,acs)=>{const s=curS(),g=S.sel.groups[0],t=Math.ceil(k/2);g.nt=s.name.split(' ')[0]+' · Assunto '+t;g.rows=[];
   for(let i=0;i<nr;i++){const last=i===nr-1&&qrow;g.rows.push({id:uid(),kind:'aula',name:last?'':'Aula '+((k-1)*3+i+1),link:'',q:'',...(last?{qo:true}:{}),...(i>0||last?{ac:String(acs[i].ac),tq:String(acs[i].tq)}:{})})}render()},k,nr,qrow,acs);
@@ -189,7 +198,7 @@ if(SRV){ok(st.sessoes>0||st.srCob>0,'fez '+st.sessoes+' revisões por sessões; 
  ok(await x.ev(()=>!!document.querySelector('.srsc')),'aba Sessões com as disciplinas')}
 if(RQ){const c=await x.ev(()=>{const B=rqSubs(),cnt=b=>new Set(S.sessions.filter(x=>!x.review&&!x.rid&&!x.trv&&!x.tdel&&x.date&&srBase(x)&&srBase(x).id===b).map(x=>x.ses||x.id)).size;return {difs:B.filter(s=>rqSes(s.id).length!==cnt(s.id)).map(s=>s.name),reg:S.sessions.filter(x=>kindOf(x)==='q').length,pend:B.reduce((a,s)=>a+rqDue(s.id).length,0),adv:B.find(s=>rqInfo(s.id).rows.some(r=>r.vz.some(v=>v.st==='fu')))?.id||null}});
  ok(!c.difs.length,'rq: a numeração de cada disciplina bate com as sessões de estudo dela '+JSON.stringify(c.difs));
- ok(st.rqJan>0&&st.rqReg>0&&c.reg>0,'rq: '+st.rqJan+' janelas depois do estudo (até '+st.rqMax+' sessões numa), '+st.rqReg+' registradas ('+st.rqAc+' aulas com acertos), '+st.rqPul+' puladas, '+st.rqDep+' para depois, '+st.rqHoje+' pelo Para hoje; '+c.reg+' registros "rev. questões"; '+c.pend+' pendentes no fim');
+ ok(st.rqJan>0&&st.rqReg>0&&c.reg>0,'rq: '+st.rqJan+' janelas depois do estudo (até '+st.rqMax+' sessões numa), '+st.rqReg+' registradas ('+st.rqAc+' aulas com acertos), '+st.rqPul+' puladas, '+st.rqDep+' para depois, '+st.rqHoje+' pelo Para hoje, '+(st.rqDur||0)+' durante a sessão (Agora); '+c.reg+' registros "rev. questões"; '+c.pend+' pendentes no fim');
  await tabTo('rev');await x.ev(()=>{const b=document.querySelector('[data-act=rvt][data-id=questoes]');b&&b.click()});await W(300);await shot('questoes-aba',true);
  ok(await x.ev(()=>!!document.querySelector('.rqsc')),'aba Questões com as disciplinas');
  if(c.adv){await x.ev(id=>{ui.open.add('rqs:'+id);render()},c.adv);await W(200);await x.ev(id=>{const e=document.querySelector(`[data-act=rqadv][data-id="${id}"]`);e&&e.click()},c.adv);await W(300);
