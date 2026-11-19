@@ -5,7 +5,7 @@ const b=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/A
 await p.evaluateOnNewDocument(()=>{window.__notes=[];window.__asks=0;let perm='default';window.Notification=class{constructor(t,o){window.__notes.push(t+' | '+(o&&o.body))}static get permission(){return perm}static requestPermission(){window.__asks++;perm='granted';return Promise.resolve(perm)}}});
 await p.goto('http://localhost:8765/');await p.evaluate(d=>{localStorage.clear();localStorage.setItem('ciclo-estudos-v2',d);localStorage.setItem('ciclo-welcome-skip','1')},DATA);await p.reload();await W(700);
 const ev=(f,...a)=>p.evaluate(f,...a);
-await ev(()=>document.querySelector('.nwplay').click());await W(400);
+await ev(()=>(document.querySelector('.nwplay').click(),(()=>{const b=document.querySelector('.fmd [data-act=tstart]');if(S.sx===true&&!S.timer.running&&!el()&&b)b.click()})()));await W(400);
 ok(await ev(()=>S.sx===true&&S.timer.running),'Iniciar abre o modo foco');ok(await ev(()=>!document.querySelector('.fmpip,[data-act=pipon]')),'sem o botão "Destacar cronômetro"');
 ok(await ev(()=>window.__asks===1),'permissão de notificação pedida uma vez ao iniciar');
 await ev(()=>{const s=curS();S.timer.start=Date.now()-(s.goal-prog(s.id))*60000-1000});await W(1200);

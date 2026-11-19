@@ -6,7 +6,7 @@ const d=JSON.parse(fs.readFileSync(SHOT+'/data-rv3.json','utf8'));const S0=JSON.
 const A=await b.newPage();const ea=[];A.on('pageerror',e=>ea.push(e.message));await A.setViewport({width:1280,height:760,deviceScaleFactor:1.25});await A.goto('http://localhost:8765/');await A.evaluate(d=>{localStorage.clear();for(const k in d)localStorage.setItem(k,d[k])},d);await A.goto('http://localhost:8765/');await W(500);
 ok(await A.evaluate(()=>!document.getElementById('tabblock')&&!window.__ro),'Uma aba só: livre');
 // A em foco com cronômetro rodando
-await A.evaluate(()=>document.querySelector('.nwplay').click());await W(300);await A.evaluate(()=>{S.timer.start=Date.now()-12*60000;save()});
+await A.evaluate(()=>(document.querySelector('.nwplay').click(),(()=>{const b=document.querySelector('.fmd [data-act=tstart]');if(S.sx===true&&!S.timer.running&&!el()&&b)b.click()})()));await W(300);await A.evaluate(()=>{S.timer.start=Date.now()-12*60000;save()});
 const B=await b.newPage();const eb=[];B.on('pageerror',e=>eb.push(e.message));await B.setViewport({width:390,height:760,deviceScaleFactor:1.25});await B.goto('http://localhost:8765/');await W(600);
 ok(await A.evaluate(()=>!!document.getElementById('tabblock')&&window.__ro&&[...document.body.children].every(e=>e.id==='tabblock'||e.tagName==='SCRIPT'||e.inert)),'Abrir outra aba bloqueia a anterior (tudo inerte menos o aviso)');
 ok(await B.evaluate(()=>!document.getElementById('tabblock')),'A nova fica livre');

@@ -10,7 +10,7 @@ const ev=(f,...a)=>p.evaluate(f,...a),Wt=ms=>new Promise(r=>setTimeout(r,ms));
 // disciplina não concluída
 const id=await ev(()=>actives().find(s=>prog(s.id)<s.goal).id);
 await ev(id=>document.querySelector(`.srow [data-act=rplay][data-id="${id}"]`).click(),id);await Wt(400);
-ok(await ev(()=>S.sx===true&&S.timer.running),W+': Iniciar abre o foco com o cronômetro');
+ok(await ev(()=>S.sx===true&&!S.timer.running&&document.querySelector('.fmst').textContent==='Pronto para iniciar'),W+': Iniciar abre o foco parado, pronto para iniciar');await ev(()=>document.querySelector('.fmd [data-act=tstart]').click());await Wt(200);ok(await ev(()=>S.timer.running),W+': Iniciar no foco começa a contar');
 await ev(()=>{S.timer.acc=25*60000+12000;S.timer.start=Date.now();render()});await Wt(200);
 await ev(()=>document.querySelector('[data-act=fmoff]').click());await Wt(400);
 ok(await ev(id=>!S.sx&&!S.timer.running&&el()===0&&pzMs(id)>=25*60000,id),W+': Sair do foco guarda o tempo como pausado');

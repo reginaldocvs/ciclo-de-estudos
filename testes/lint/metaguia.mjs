@@ -5,7 +5,7 @@ const b=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/A
 await p.evaluateOnNewDocument(()=>{window.__notes=[];window.Notification=class{constructor(t,o){window.__notes.push(t+' | '+(o&&o.body))}static get permission(){return 'granted'}static requestPermission(){return Promise.resolve('granted')}}});
 await p.goto('http://localhost:8765/');await p.evaluate(d=>{localStorage.clear();localStorage.setItem('ciclo-estudos-v2',d);localStorage.setItem('ciclo-welcome-skip','1')},DATA);await p.reload();await W(700);
 const ev=(f,...a)=>p.evaluate(f,...a);
-await ev(()=>document.querySelector('.nwplay').click());await W(400);
+await ev(()=>(document.querySelector('.nwplay').click(),(()=>{const b=document.querySelector('.fmd [data-act=tstart]');if(S.sx===true&&!S.timer.running&&!el()&&b)b.click()})()));await W(400);
 const sid=await ev(()=>S.sel.subj),goal=await ev(()=>curS().goal-prog(curS().id));
 ok(await ev(()=>S.sx===true&&S.timer.running&&FM.on),'Iniciar abre o modo foco');ok(await ev(()=>document.querySelector('#fmb i.gx').getBoundingClientRect().width===0),'antes da meta: sem trecho claro na barra');
 // chega na meta
@@ -30,7 +30,7 @@ await ev(()=>{const f=document.querySelector('#modal form[data-f=man]');f.reques
 const reg=await ev(id=>({p:prog(id),last:S.sessions.filter(x=>x.subj===id).slice(-1)[0]?.min}),sid);console.log('    ',JSON.stringify(reg));
 ok(reg.last>=goal+12,'sessão registrada com o tempo a mais ('+reg.last+' min)');
 // reabrir com o cronômetro passando da meta: guarda o tempo todo em pausa
-const s2=await ev(()=>{const id=inCycle().find(x=>!gDone(x)&&!pzMs(x.id)).id;document.querySelector(`[data-act=rplay][data-id="${id}"]`).click();return id});await W(400);
+const s2=await ev(()=>{const id=inCycle().find(x=>!gDone(x)&&!pzMs(x.id)).id;document.querySelector(`[data-act=rplay][data-id="${id}"]`).click();const b=document.querySelector('.fmd [data-act=tstart]');if(!S.timer.running&&b)b.click();return id});await W(400);
 const g2=await ev(id=>{const s=S.subjects.find(x=>x.id===id);S.timer.start=Date.now()-(s.goal-prog(id)+20)*60000;save();return s.goal-prog(id)},s2);
 await p.reload();await W(800);const pz=await ev(id=>pzMs(id)/60000,s2);ok(pz>=g2+19.9,'reabrir guarda o tempo todo em pausa ('+Math.round(pz)+' min, meta '+g2+')');
 // retomar esse tempo: não avisa de novo e segue contando

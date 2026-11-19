@@ -111,7 +111,7 @@ async function study(){await tabTo('ciclo');await blocks();
  const s=await ev(()=>{if(S.type==='review'||S.rv)return null;const c=current();if(!c)return null;const b=c.of?S.subjects.find(y=>y.id===c.of):c;return {id:c.id,base:b.id,cp:!!c.of,goal:c.goal,prog:prog(c.id),tops:b.topics.map(t=>t.name)}});if(!s)return false;
  await ev(id=>{S.sel.subj=id;save();render()},s.id);await srvReview(s.base);if(s.cp)st.copia++;await tabTo('ciclo');
  const foco=rnd()<.5,n0=await ev(()=>S.sessions.length);
- if(foco){await ev(id=>{S.sel.subj=id;save();render()},s.id);await ev(()=>document.querySelector('.nwplay').click());await W(250);
+ if(foco){await ev(id=>{S.sel.subj=id;save();render()},s.id);await ev(()=>(document.querySelector('.nwplay').click(),(()=>{const b=document.querySelector('.fmd [data-act=tstart]');if(S.sx===true&&!S.timer.running&&!el()&&b)b.click()})()));await W(250);
   if(!(await ev(()=>S.sx===true&&S.timer.running))){ok(false,'Iniciar não abriu o foco');return false}await once('foco');
   await ev(m=>{S.timer.start=Date.now()-m*60000},Math.max(1,s.goal-s.prog));await x.act('fmreg');st.foco++}
  else{await x.act('rreg',s.id);st.manual++}

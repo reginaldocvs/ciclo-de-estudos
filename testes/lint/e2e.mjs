@@ -32,12 +32,12 @@ let aula=1;
 async function studyNext({pauseTest=false}={}){
  await tab('ciclo');
  const s=await x.ev(()=>{const c=current();return c?{id:c.id,name:c.name,goal:c.goal,tops:c.topics.map(t=>t.name)}:null});if(!s)throw new Error('sem disciplina da vez');
- await x.ev(()=>document.querySelector('.nwplay').click());await W(250);
+ await x.ev(()=>(document.querySelector('.nwplay').click(),(()=>{const b=document.querySelector('.fmd [data-act=tstart]');if(S.sx===true&&!S.timer.running&&!el()&&b)b.click()})()));await W(250);
  if(!(await x.ev(()=>S.sx===true&&S.timer.running)))throw new Error('Iniciar não abriu o foco');
  await x.ev(m=>{S.timer.start=Date.now()-m*60000},Math.min(s.goal,50));
  if(pauseTest){await x.act('fmoff');ok(await x.ev(id=>pzMs(id)>0&&!S.sx,s.id),'sair do foco guarda a pausa ('+s.name+')');
   ok(await x.ev(()=>document.querySelector('.nwplay span').textContent==='Retomar'),'Agora mostra Retomar');
-  await x.ev(()=>document.querySelector('.nwplay').click());await W(250);ok(await x.ev(()=>S.sx===true&&el()>=40*60000),'Retomar continua o tempo')}
+  await x.ev(()=>(document.querySelector('.nwplay').click(),(()=>{const b=document.querySelector('.fmd [data-act=tstart]');if(S.sx===true&&!S.timer.running&&!el()&&b)b.click()})()));await W(250);ok(await x.ev(()=>S.sx===true&&el()>=40*60000),'Retomar continua o tempo')}
  await x.act('fmreg');
  const tp=s.tops[(aula-1)%s.tops.length];
  await x.fill('#modal input[id^="n-"]',tp);if(await p.evaluate(()=>!document.querySelector('#modal input[id^="r-"]')))await x.act('addrow');await x.fill('#modal input[id^="r-"]','Aula '+aula);aula++;
