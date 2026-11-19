@@ -139,6 +139,17 @@ ok(await ev(()=>!document.querySelector('[data-f=rqreg]')&&S.sx===true&&S.timer.
 ok(await ev(()=>{const R=S.sessions.filter(x=>String(x.rid||'').startsWith('rq-')).pop();return R&&R.min===0&&R.items[0].ac===4}),'a revisão feita no foco não leva tempo próprio (o tempo é da sessão de estudo)');
 await ev(()=>{S.timer.acc=el();S.timer.running=false;S.sel.groups=[{id:'gb',nt:'Tópico Q',rows:[{id:'rb',kind:'aula',name:'Aula B',link:''}]}];addSession(30);S.timer={running:false,start:0,acc:0};S.sx=false;save();render()});await W(150);
 ok(await ev(()=>!/para revisar com questões/.test((document.getElementById('undo')||{}).textContent||'')&&rqDue('rqx').length===0),'ao registrar a sessão, nada sobra: sem aviso');
+/* 14. outras revisões contam: só no que já chegou e só com acertos; apagar devolve */
+await ev(()=>{rqMark(rqDue('rqx'),'skip');S.timer={running:false,start:0,acc:0};S.sx=false;for(const n of ['C1','C2']){S.sel.subj='rqx';S.sel.groups=[{id:'g'+n,nt:'Tópico Q',rows:[{id:'r'+n,kind:'aula',name:'Aula '+n,link:''}]}];addSession(30)}save();render()});await W(150);
+let cr=await ev(()=>{const D=rqDue('rqx');return D.map(z=>z.m+':'+z.o.recs[0].items[0].name).join(' ')});const last=await ev(()=>rqSes('rqx').length);
+ok(/Aula C1/.test(cr),'antes: a sessão da Aula C1 está para revisar '+cr);
+const mkRv=(nm,tq)=>ev(([nm,tq])=>{S.sessions.push({id:'rv'+nm+tq,ses:'rv'+nm+tq,subj:'rqx',topic:'tq1',min:10,cycle:S.cycle,set:S.set||1,review:true,trv:'rqx|tq1|x',kind:'aula',items:[{kind:'aula',name:nm,link:'',...(tq?{ac:3,tq}:{})}],date:today()});save();render()},[nm,tq]);
+await mkRv('Aula C1',0);ok(await ev(()=>rqDue('rqx').some(z=>z.o.recs[0].items[0].name==='Aula C1')),'revisão por tópico sem acertos na Aula C1: continua para revisar');
+await mkRv('Aula C1',5);ok(await ev(()=>!rqDue('rqx').some(z=>z.o.recs[0].items[0].name==='Aula C1')),'com acertos (3/5): a vez que já chegou conta como feita');
+ok(await ev(()=>{const r=rqInfo('rqx').rows.find(r=>r.o.recs[0].items[0].name==='Aula C1');return r&&r.vz[0].st==='cr'&&r.vz[0].c==='t'&&r.vz.slice(1).every(v=>v.st==='fu')}),'só a vez que já chegou: as próximas continuam no lugar (marca "1ª ✓ tópico")');
+await ev(()=>document.querySelector('nav [data-tab=rev]').click());await W(200);await x.act('rvt','questoes');await W(200);await ev(()=>{const k='rqs:rqx';const c=[...document.querySelectorAll('.rqsc')].find(c=>/Teste RQ/.test(c.textContent));if(c&&!c.querySelector('.rqsr')){ui.open.has(k)?ui.open.delete(k):ui.open.add(k);render()}});await W(200);
+ok(await ev(()=>[...document.querySelectorAll('.rqk')].some(k=>/^1ª ✓ tópico$/.test(k.textContent)&&/feita na revisão por tópico/.test(k.title))),'aba Questões: "1ª ✓ tópico", com "feita na revisão por tópico" ao passar o mouse');
+await ev(()=>{S.sessions=S.sessions.filter(x=>x.id!=='rvAula C15');save();render()});ok(await ev(()=>rqDue('rqx').some(z=>z.o.recs[0].items[0].name==='Aula C1')),'apagar essa revisão: a vez volta a ficar para revisar');
 await ev(()=>document.querySelector('nav [data-tab=rev]').click());await W(200);await x.act('rvadj');await W(200);
 await ev(()=>document.querySelector('[data-act=rvsys][data-id=s]').click());await W(200);ok(await ev(()=>srOn()&&!rqOn()),'ligar a por sessões desliga a por questões');
 ok(!errs.length,'sem erros de script '+errs.slice(0,2).join(' | '));
