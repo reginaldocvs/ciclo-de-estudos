@@ -3,7 +3,7 @@
    ciclos: revisão por ciclos a cada 5 (5 ciclos de estudo + ciclo de revisão);  grupos: revisão por grupos (grupo disponível = feito no dia).
    PLANOS=2: cria um 2º plano (4 disciplinas, ponto de revisão, o outro sistema: grupos ↔ ciclos a cada 2) e alterna os planos a cada dia pela tela Planos;
    confere que cada plano volta igual ao que foi deixado, que nada de um aparece no outro, cronômetro e Desfazer na troca.
-   Uso: [SRV=1] [PLANOS=2] node lint/simreal.mjs <dados.json> <saída> <ciclos|grupos> [dias=24] [largura=390] */
+   Uso: [SRV=1|RQ=1] [PLANOS=2] node lint/simreal.mjs <dados.json> <saída> <ciclos|grupos> [dias=24] [largura=390] */
 import {open,mk,W} from './lib.mjs';import fs from 'fs';
 const [F,OUT,MODE0='ciclos',ND='24',WD='390']=process.argv.slice(2);const w=+WD;let MODE=MODE0;const P2=process.env.PLANOS==='2';
 const log=[],ok=(c,m)=>{log.push((c?'OK    ':'FALHA ')+m);if(!c)console.log('FALHA '+m)},info=m=>log.push('      '+m);
@@ -17,7 +17,7 @@ const vis=a=>x.ev(a=>{const e=[...document.querySelectorAll(`[data-act=${a}]`)].
 /* acertos: preenche os pares qa/qt do formulário aberto (o total vem sugerido quando já houve tentativa) */
 const fillAc=async()=>{let c=0;for(let i=0;i<40;i++){const r=await x.ev((i,s)=>{const rows=[...document.querySelectorAll('#modal .acrow')].filter(e=>e.offsetParent);const row=rows[i];if(!row)return null;const qa=row.querySelector('input[data-qa]'),qt=row.querySelector('input[data-qt]');let k=s;const rn=()=>{k=(k*16807)%2147483647;return k/2147483647};
   const set=(e,v)=>{e.focus();e.value=String(v);e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}))};const tq=+qt.value||5+Math.floor(rn()*6);set(qt,tq);set(qa,Math.round(tq*(.5+rn()*.5)));return true},i,ri(1,1e6));if(!r)break;c++;await W(60)}return c};
-const st={dias:0,estudo:0,blocos:0,topicos:0,acTop:0,ciclosRev:0,grupos:0,acertos:0,sessoes:0,sessPul:0,sessAc:0,sessConc:0};
+const st={rqJan:0,rqMax:0,rqReg:0,rqPul:0,rqDep:0,rqAc:0,rqHoje:0,rqAdv:0,dias:0,estudo:0,blocos:0,topicos:0,acTop:0,ciclosRev:0,grupos:0,acertos:0,sessoes:0,sessPul:0,sessAc:0,sessConc:0};
 const SRV=!!process.env.SRV;
 /* revisão por sessões (SRV=1): na vez da disciplina, o cartão do Ciclo; registra (com acertos e tempo) ou, às vezes, pula.
    Confere: só aparece com N sessões novas, cada item listado ganha +1, nenhum passa de Y, e depois sai da vez */
@@ -61,6 +61,24 @@ async function lateReviews(){if(!SRV||rnd()>.35)return;const ids=await x.ev(()=>
  const z=await x.ev(id=>({cnt:Object.fromEntries((({todo,fin})=>todo.concat(fin))(srSplit(id)).flatMap(t=>t.its.map(z=>[z.k,z.n]))),nw:srNew(id).length,due:srDue(id),late:srLate(id).flatMap(t=>t.its.map(z=>z.k))}),id);
  const M=new Set(mk),bad=Object.keys(a.cnt).filter(k=>z.cnt[k]!==a.cnt[k]+(M.has(k)?1:0));if(bad.length)ok(false,'atrasadas: contagem errada '+bad.slice(0,3).join());
  if(z.nw!==a.nw||z.due)ok(false,'atrasadas: pôr em dia mexeu nas sessões novas ou deixou disponível');if(z.late.some(k=>M.has(k)))ok(false,'atrasadas: marcada continua atrasada')}
+const RQ=!!process.env.RQ;
+/* revisão por questões (RQ=1): a janela logo depois do estudo; registra com acertos (60%), pula (20%) ou deixa para depois (20%); confere a regra a cada sessão */
+async function rqAfter(id){if(!RQ)return;const b=await x.ev(id=>{const s=subjAny(id);return s&&s.of||id},id);
+ const a=await x.ev(b=>{const L=rqSes(b),iv=rqIv();return {n:L.length,iv,D:rqDue(b).map(z=>({m:z.m,ks:z.ks})),open:!!document.querySelector('[data-f=rqreg]'),k:L.length?L[L.length-1].k:null}},b);
+ const bad=a.D.filter(z=>!z.ks.every(k=>z.m+a.iv[k]<=a.n));if(bad.length)ok(false,'rq: revisão antes da hora '+JSON.stringify(bad));
+ if(a.D.length&&!a.open)ok(false,'rq: havia revisão e a janela não abriu');if(!a.D.length&&a.open)ok(false,'rq: janela aberta sem revisão');
+ if(!a.open)return;st.rqJan++;st.rqMax=Math.max(st.rqMax,a.D.length);await once('rq-janela');
+ await rqAct(b,'janela')}
+async function rqAct(b,why){const r=rnd();
+ if(r<.6){const c=await x.ev(()=>{const f=document.querySelector('[data-f=rqreg]');let c=0;f.querySelectorAll('input[name^=qa-]').forEach(i=>{if(Math.random()<.7){const t=f.querySelector('[name="'+i.name.replace('qa-','qt-')+'"]');const tq=+t.value||10;t.value=tq;i.value=Math.ceil(tq*.6);c++}});return c});
+  await x.submit('#modal form[data-f=rqreg]');await W(250);st.rqReg++;st.rqAc+=c;const z=await x.ev(b=>({d:rqDue(b).length,open:!!document.querySelector('[data-f=rqreg]')}),b);if(z.d||z.open)ok(false,'rq ('+why+'): registrar deixou pendente '+JSON.stringify(z))}
+ else if(r<.8){await x.act('rqskip');st.rqPul++;if(await x.ev(b=>rqDue(b).length,b))ok(false,'rq ('+why+'): pular deixou pendente')}
+ else{await x.act('rqregx');st.rqDep++;if(!await x.ev(b=>rqDue(b).length,b))ok(false,'rq ('+why+'): depois não deixou pendente')}}
+/* pendentes (RQ=1): às vezes, pelo Para hoje */
+async function rqToday(){if(!RQ||rnd()>.4)return;const ids=await x.ev(()=>rqSubs().filter(s=>rqDue(s.id).length).map(s=>s.id));if(!ids.length)return;
+ await tabTo('rev');await x.ev(()=>{const b=document.querySelector('[data-act=rvt][data-id=hoje]');b&&b.click()});await W(250);await x.ev(()=>{ui.pg={...(ui.pg||{}),hoje:99};render()});await W(150);
+ const id=ids[0];if(!await x.ev(id=>{const e=document.querySelector(`.rvtoday [data-act=rqreg][data-id="${id}"]`);if(e){e.click();return true}return false},id)){ok(false,'rq: pendente sem "Revisar" no Para hoje');return}
+ await W(300);await once('rq-para-hoje');st.rqHoje++;await rqAct(id,'para hoje')}
 /* uma sessão de estudo: 1 tópico (novo a cada 2 sessões da disciplina) com 2 a 3 aulas/questões */
 const tpN={};
 async function study(){await tabTo('ciclo');await blocks();
@@ -71,7 +89,7 @@ async function study(){await tabTo('ciclo');await blocks();
   for(let i=0;i<nr;i++){const last=i===nr-1&&qrow;g.rows.push({id:uid(),kind:'aula',name:last?'':'Aula '+((k-1)*3+i+1),link:'',q:'',...(last?{qo:true}:{}),...(i>0||last?{ac:String(acs[i].ac),tq:String(acs[i].tq)}:{})})}render()},k,nr,qrow,acs);
  const m=await x.ev(id=>fmt(Math.max(1,S.subjects.find(s=>s.id===id).goal-prog(id))),id);await x.fill('#modal input[name=m]',m);
  if(!shotOnce.has('registro-estudo')){shotOnce.add('registro-estudo');await shot('registro-estudo')}
- await x.submit('#modal form[data-f=man]');await W(250);st.estudo++;await blocks();return true}
+ await x.submit('#modal form[data-f=man]');await W(250);st.estudo++;await rqAfter(id);await blocks();return true}
 /* revisões por tópico que vencem hoje */
 async function topicReviews(){for(let i=0;i<30;i++){const k=await x.ev(()=>{const d=trvDue();return d[0]?d[0].k:null});if(!k)return;
  await tabTo('rev');await x.ev(()=>{const b=document.querySelector('[data-act=rvt][data-id=topicos]');b&&b.click()});await W(250);
@@ -106,6 +124,7 @@ info('início: ciclo '+info0.cy+', '+info0.n+' sessões no ciclo ('+info0.nomes.
 async function setupRev(MODE,cyn){await tabTo('rev');await x.act('rvadj');
 await x.ev(m=>{const sw=k=>document.querySelector(`[data-act=rvsys][data-id=${k}]`),on=k=>sw(k).getAttribute('aria-checked')==='true';if(m==='ciclos'&&!on('c'))sw('c').click();if(m==='grupos'&&!on('g'))sw('g').click()},MODE);await W(300);
 await x.ev(()=>{const sw=document.querySelector('[data-act=rvsys][data-id=t]');if(sw.getAttribute('aria-checked')!=='true')sw.click()});await W(300);
+if(RQ){await x.ev(()=>{const sw=document.querySelector('[data-act=rvsys][data-id=q]');if(sw.getAttribute('aria-checked')!=='true')sw.click()});await W(300);ok(await x.ev(()=>rqOn()&&!srOn()&&rqIv().join()==='1,4,8'),'revisão por questões ligada (1 · 4 · 8) e a por sessões desligada')}
 if(SRV){await x.ev(()=>{const sw=document.querySelector('[data-act=rvsys][data-id=s]');if(sw.getAttribute('aria-checked')!=='true')sw.click()});await W(300);ok(await x.ev(()=>srOn()&&srN()===2&&srY()===3),'revisão por sessões ligada (a cada 2 sessões, até 3 revisões)')}
 if(MODE==='ciclos'){await x.ev(n=>{if(S.cyrv&&cyN()!==n){S.cyrv.n=n;save();render()}},cyn);ok(await x.ev(n=>cyOn()&&cyN()===n&&!rgOn()&&tvOn(),cyn),'por ciclos (a cada '+(await x.ev(()=>cyN()))+') e por tópico ligadas')}
 else ok(await x.ev(()=>rgOn()&&!cyOn()&&tvOn()),'por grupos ('+(await x.ev(()=>rvInt()+' dias, revisar '+rvWait()+' depois'))+') e por tópico ligadas');
@@ -114,7 +133,7 @@ await setupRev(MODE,+(process.env.CYN||5));
 const c00=info0.cy;let crDone=false;
 /* ===== 2 planos ===== */
 const pm={},last={};let PA=null,PB=null;st.trocas=0;
-const fp=()=>x.ev(()=>JSON.stringify({ses:S.sessions.map(s=>s.id).sort(),pt:(S.srvPt||[]).map(p=>p.id).sort(),trv:Object.entries((S.trv&&S.trv.t)||{}).map(([k,v])=>k+':'+(v.h||[]).join()).sort(),bd:Object.keys(S.blkDone||{}).sort(),br:S.blkRev||{},cy:S.cycle,set:S.set||1,srv:S.srv||null,cyrv:S.cyrv?{on:!!S.cyrv.on,n:S.cyrv.n||null,last:S.cyrv.last||0}:null,rg:!!S.rvgOff,tv:!!(S.trv&&S.trv.off),rvd:Object.keys(S.reviewed||{}).sort(),rv:S.rv?S.rv.id:null,type:S.type,prog:S.progress||{},blk:(S.blk||[]).map(b=>b.id+'@'+b.pos),lay:S.subjects.filter(s=>!s.off).map(s=>s.id+':'+s.goal),mk:Object.keys(S.srMk||{}).sort(),rvp:Object.keys(S.rvp||{}).sort(),alt:S.alt&&S.alt.progress||null,tm:S.timer?Math.round((+S.timer.acc||0)/60000):0}));
+const fp=()=>x.ev(()=>JSON.stringify({rq:S.rq||null,ses:S.sessions.map(s=>s.id).sort(),pt:(S.srvPt||[]).map(p=>p.id).sort(),trv:Object.entries((S.trv&&S.trv.t)||{}).map(([k,v])=>k+':'+(v.h||[]).join()).sort(),bd:Object.keys(S.blkDone||{}).sort(),br:S.blkRev||{},cy:S.cycle,set:S.set||1,srv:S.srv||null,cyrv:S.cyrv?{on:!!S.cyrv.on,n:S.cyrv.n||null,last:S.cyrv.last||0}:null,rg:!!S.rvgOff,tv:!!(S.trv&&S.trv.off),rvd:Object.keys(S.reviewed||{}).sort(),rv:S.rv?S.rv.id:null,type:S.type,prog:S.progress||{},blk:(S.blk||[]).map(b=>b.id+'@'+b.pos),lay:S.subjects.filter(s=>!s.off).map(s=>s.id+':'+s.goal),mk:Object.keys(S.srMk||{}).sort(),rvp:Object.keys(S.rvp||{}).sort(),alt:S.alt&&S.alt.progress||null,tm:S.timer?Math.round((+S.timer.acc||0)/60000):0}));
 const iso=()=>x.ev(()=>{const base=s=>s.of?S.subjects.find(y=>y.id===s.of)||s:s,pl=s=>{const e=S.editais.find(e=>e.id===base(s).ed);return e&&e.plan},mine=new Set(S.subjects.filter(s=>pl(s)===S.plan).map(s=>s.id));
  return {sessoes:S.sessions.filter(x=>!mine.has(x.subj)).length,ciclo:inCycle().filter(s=>!mine.has(s.id)).length,abaSessoes:srSubs().filter(s=>!mine.has(s.id)).length,topicos:trvList().filter(o=>!mine.has(o.s.id)).length,
   tela:[...document.querySelectorAll('#app .snt')].map(e=>e.getAttribute('title')).filter(t=>t&&S.subjects.some(s=>s.name===t&&pl(s)!==S.plan)&&!S.subjects.some(s=>s.name===t&&pl(s)===S.plan)).length}});
@@ -146,7 +165,7 @@ for(let d=1;d<=+ND;d++){st.dias=d;
   await plSwitch(to,'dia '+d);
   if(tmDay===d){/* sair do foco guarda o tempo em S.paused ("Estudo em pausa") */const t=await x.ev(c=>{const d=S.planData[c.pl]||{},ms=o=>Object.values(o||{}).reduce((a,v)=>a+(+(v&&v.ms!=null?v.ms:v)||0),0);return {run:S.timer.running,cur:ms(S.paused)+(+S.timer.acc||0),old:ms(d.paused),oldRun:!!(d.timer&&d.timer.running)}},tmChk);ok(!t.run&&!t.cur&&!t.oldRun&&t.old>=6.5*60000,'cronômetro na troca: o plano que saiu guarda ~7 min em pausa, o que entrou não tem tempo nenhum '+JSON.stringify(t))}
   if(tmDay&&d===tmDay+1){await tabTo('ciclo');const t=await x.ev(s=>({run:S.timer.running,ms:pzMs(s),txt:document.querySelector('#app .now .mut')&&document.querySelector('#app .now .mut').textContent}),tmChk.s);ok(!t.run&&t.ms>=6.5*60000,'ao voltar, o tempo do plano está lá, em pausa '+JSON.stringify({min:Math.round(t.ms/60000),tela:t.txt}))}}
- await topicReviews();await lateReviews();
+ await topicReviews();await lateReviews();await rqToday();
  if(MODE==='grupos'&&await groupReview()){await check(d);await x.days(1);continue}
  if(MODE==='ciclos'&&await x.ev(()=>!!(S.rv&&S.rv.cy))){if(await cycleReview(2))crDone=true;await check(d);await x.days(1);continue}
  for(let s=0;s<2;s++){const did=await study();if(!did){await tabTo('ciclo');const nx=await x.ev(()=>{const b=document.querySelector('[data-act=next]');return b&&b.offsetParent?b.textContent:null});
@@ -168,6 +187,14 @@ if(P2){ok(crDone,'plano por ciclos fez o ciclo de revisão');ok(st.grupos>=1,'pl
 if(SRV){ok(st.sessoes>0||st.srCob>0,'fez '+st.sessoes+' revisões por sessões; '+(st.srCob||0)+' vezes a rodada já estava coberta por outra revisão ('+st.sessMk+' de '+st.sessLista+' itens marcados, '+(st.atras||0)+' de atrasadas com '+(st.atrasIt||0)+' itens, '+st.sessPul+' puladas, '+st.sessAc+' com acertos por aula); '+st.sessConc+' itens com ✓ na disciplina com mais');
  await tabTo('rev');await x.ev(()=>{const b=document.querySelector('[data-act=rvt][data-id=sessoes]');b&&b.click()});await W(300);await shot('sessoes-aba',true);
  ok(await x.ev(()=>!!document.querySelector('.srsc')),'aba Sessões com as disciplinas')}
+if(RQ){const c=await x.ev(()=>{const B=rqSubs(),cnt=b=>new Set(S.sessions.filter(x=>!x.review&&!x.rid&&!x.trv&&!x.tdel&&x.date&&srBase(x)&&srBase(x).id===b).map(x=>x.ses||x.id)).size;return {difs:B.filter(s=>rqSes(s.id).length!==cnt(s.id)).map(s=>s.name),reg:S.sessions.filter(x=>kindOf(x)==='q').length,pend:B.reduce((a,s)=>a+rqDue(s.id).length,0),adv:B.find(s=>rqInfo(s.id).rows.some(r=>r.vz.some(v=>v.st==='fu')))?.id||null}});
+ ok(!c.difs.length,'rq: a numeração de cada disciplina bate com as sessões de estudo dela '+JSON.stringify(c.difs));
+ ok(st.rqJan>0&&st.rqReg>0&&c.reg>0,'rq: '+st.rqJan+' janelas depois do estudo (até '+st.rqMax+' sessões numa), '+st.rqReg+' registradas ('+st.rqAc+' aulas com acertos), '+st.rqPul+' puladas, '+st.rqDep+' para depois, '+st.rqHoje+' pelo Para hoje; '+c.reg+' registros "rev. questões"; '+c.pend+' pendentes no fim');
+ await tabTo('rev');await x.ev(()=>{const b=document.querySelector('[data-act=rvt][data-id=questoes]');b&&b.click()});await W(300);await shot('questoes-aba',true);
+ ok(await x.ev(()=>!!document.querySelector('.rqsc')),'aba Questões com as disciplinas');
+ if(c.adv){await x.ev(id=>{ui.open.add('rqs:'+id);render()},c.adv);await W(200);await x.ev(id=>{const e=document.querySelector(`[data-act=rqadv][data-id="${id}"]`);e&&e.click()},c.adv);await W(300);
+  const n0=await x.ev(id=>rqInfo(id).rows.filter(r=>r.vz.some(v=>v.st==='fu')).length,c.adv);await shot('questoes-adiantar');await x.submit('#modal form[data-f=rqreg]');await W(300);
+  const z=await x.ev(id=>({pend:rqDue(id).length,open:!!document.querySelector('[data-f=rqreg]')}),c.adv);ok(!z.pend&&!z.open,'rq: Adiantar registrou tudo ('+n0+' sessões com revisões futuras) '+JSON.stringify(z))}}
 ok(st.topicos>0,'fez '+st.topicos+' revisões por tópico ('+st.acTop+' com acertos por aula)');ok(fim.late===0,'nenhuma revisão por tópico atrasada');
 await tabTo('reg');await once('historico');await x.ev(()=>{const b=[...document.querySelectorAll('#app button')].find(b=>b.offsetParent&&b.textContent.trim()==='Ciclos');b&&b.click()});await W(300);await shot('historico-ciclos');
 await tabTo('st');await once('estatisticas');await shot('estatisticas-pagina',true);
