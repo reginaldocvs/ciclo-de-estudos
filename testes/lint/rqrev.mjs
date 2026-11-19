@@ -73,6 +73,9 @@ ok(tb&&/^15 sessões · 2 sessões para revisar$/.test(tb.hd)&&tb.rv,'cartão: 1
 ok(tb&&tb.nx==='Ao terminar a sessão 16, você revisa a 15, a 12 e a 7.','próxima sessão: o que vem ao terminar a 16 '+JSON.stringify(tb&&tb.nx));
 ok(tb&&tb.s15==='1ª · sessão 16|2ª · sessão 19|3ª · sessão 24'&&tb.s14==='1ª agora|2ª · sessão 18|3ª · sessão 23','marcas por vez: em que sessão vem e agora '+JSON.stringify(tb&&[tb.s15,tb.s14]));
 await p.screenshot({path:'saida/rqrev-aba-'+w+'.png',fullPage:true});
+await ev(()=>{S.subjects.find(s=>s.id==='rqx').topics[0].name='1 - Direitos e garantias fundamentais: direitos e deveres individuais e coletivos; direito à vida, à liberdade, à igualdade, à segurança e à propriedade; direitos sociais; nacionalidade';render()});await W(200);
+ok(await ev(()=>{const c=[...document.querySelectorAll('.rqsc')].find(c=>/Teste RQ/.test(c.textContent)),r=c.querySelector('.rqsr'),T=[...r.querySelectorAll('.rqk')].map(e=>Math.round(e.getBoundingClientRect().top));return new Set(T).size===1}),'tópico de nome longo: as marcas continuam numa linha só');
+await ev(()=>{S.subjects.find(s=>s.id==='rqx').topics[0].name='Tópico Q';render()});
 /* 10. nova rodada: a numeração continua, as pendentes ficam e o registro leva "R2 ·" */
 await ev(()=>document.querySelector('nav [data-tab=ciclo]').click());await W(200);await ev(()=>document.querySelector('#mtt .plsel').click());await W(300);
 const pid=await ev(()=>S.plan),nP=await ev(()=>rqDue('rqx').length);await x.act('plset',pid);await W(400);await ev(()=>{const c=document.querySelector('#modal [data-act=plclose]');c&&c.click()});await W(200);
