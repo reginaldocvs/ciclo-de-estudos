@@ -62,6 +62,18 @@ r=await ev(id=>{const q=qLoad(id).qs[0];return {gf:q.gf,ok:ui.qz.res[q.id].ok,la
 ok(r.gf==='C'&&r.ok&&r.last&&/gabarito corrigido por você/.test(r.txt),'Gabarito parece errado → Certo: a resposta passa a contar como certa '+JSON.stringify(r));
 await p.keyboard.press('Escape');await W(200);ok(await ev(()=>!ui.qz&&!!document.querySelector('.qzcad')),'Esc sai do resolver e volta ao caderno');
 r=await ev(()=>({w:(document.querySelector('[data-act=qwrong]')||{}).textContent||'',ok:document.querySelectorAll('.qzcad .qzst.ok').length,no:document.querySelectorAll('.qzcad .qzst.no').length}));ok(r.w==='Só as erradas (1)'&&r.ok===3&&r.no===1,'caderno: ✓ e ✗ da última vez e "Só as erradas (1)" '+JSON.stringify(r));
+/* 4b. navegação: Pular (antes de responder), Voltar, setas, bandeira só depois de responder, sem resposta no resultado */
+await x.act('qall',cid);await W(200);
+r=await ev(()=>({nx:document.querySelector('.qzd [data-act=qnext]').textContent,pv:!!document.querySelector('.qzd [data-act=qprev]'),fl:!!document.querySelector('.qzd .qzflag')}));ok(r.nx==='Pular'&&!r.pv&&!r.fl,'1ª questão sem responder: "Pular", sem "Voltar" e sem a bandeira (não entrega o gabarito) '+JSON.stringify(r));
+await p.keyboard.press('ArrowRight');await W(200);ok(await ev(()=>ui.qz.i===1&&!!document.querySelector('.qzd [data-act=qprev]')),'→ pula para a 2ª; aparece "Voltar"');
+await p.keyboard.press('c');await W(200);ok(await ev(()=>!!document.querySelector('.qzd .qzflag')&&document.querySelector('.qzd [data-act=qnext]').textContent==='Próxima'),'depois de responder: bandeira no alto e "Próxima"');
+await p.screenshot({path:'saida/questoes-navegar-'+w+'.png'});
+await p.keyboard.press('ArrowLeft');await W(200);ok(await ev(()=>ui.qz.i===0&&!document.querySelector('.qzd .qzfb')),'← volta para a 1ª, que continua sem resposta');
+await p.keyboard.press('ArrowRight');await W(200);ok(await ev(()=>ui.qz.i===1&&/acertou|Gabarito/.test(document.querySelector('.qzd .qzfb').textContent)),'→ de novo: a 2ª aparece como você deixou, com a resposta');
+for(let i=0;i<3;i++){await ev(()=>document.querySelector('.qzd [data-act=qnext]').click());await W(150)}
+r=await ev(()=>({t:document.querySelector('.qzres').textContent,rest:(document.querySelector('[data-act=qrest]')||{}).textContent||''}));ok(/^1 de 1/.test(r.t)&&/3 sem resposta/.test(r.t)&&r.rest==='Resolver as que faltaram (3)','resultado: só a respondida conta; "3 sem resposta" e "Resolver as que faltaram (3)" '+JSON.stringify(r));
+await x.act('qrest');ok(await ev(()=>ui.qz.ids.length===3&&ui.qz.i===0&&!ui.qz.done),'"Resolver as que faltaram": só as 3');
+await x.act('qzx');
 /* 5. lista por disciplina */
 await x.act('qback');r=await ev(()=>{const c=document.querySelector('.qzs');return {tag:c.querySelector('.qzh .tag').textContent,row:c.querySelector('.qzr .tag').textContent,sm:c.querySelector('.qzsm').textContent}});ok(r.tag==='75%'&&r.row==='3/4'&&/1 caderno · 4 questões/.test(r.sm),'lista: 75% na disciplina, 3/4 no caderno '+JSON.stringify(r));
 await p.screenshot({path:'saida/questoes-lista-'+w+'.png'});

@@ -34,7 +34,9 @@ r=await ev(id=>{const R=S.sessions.filter(x=>x.qcad===id);return {n:R.length,ac:
 ok(r.n===1&&r.ac===12&&r.tq===15&&r.k==='q'&&r.pd===15&&r.due===0,'Registrar: "rev. questões" com 12/15 e a parte 1 fica feita '+JSON.stringify(r));
 /* tela do caderno: as revisões */
 await ev(id=>{document.querySelector('nav [data-tab=qz]')&&[...document.querySelectorAll('nav [data-tab=qz]')].find(e=>e.getClientRects().length).click();ui.qcad=id;render()},cid);await W(300);
-r=await ev(()=>[...document.querySelectorAll('.qzrr')].map(e=>e.querySelector('.qzrrn').textContent));ok(r.length===3&&/^1ª revisão15 questões · feita · 12\/15$/.test(r[0])&&/^2ª revisão15 questões · na sessão 5$/.test(r[1])&&/na sessão 9$/.test(r[2]),'caderno: 1ª feita 12/15, 2ª na sessão 5, 3ª na sessão 9 '+JSON.stringify(r));
+r=await ev(()=>[...document.querySelectorAll('.qzrr')].map(e=>e.querySelector('.qzrrn').textContent+'|'+e.querySelector('.rqk').textContent+'|'+!!e.querySelector('[data-act=qpart]')));ok(r.length===3&&r[0]==='1ª revisão15 questões|12/15 ✓|true'&&r[1]==='2ª revisão15 questões|sessão 5|true'&&r[2]==='3ª revisão15 questões|sessão 9|true','caderno: 1ª feita 12/15 ✓, 2ª e 3ª nas sessões 5 e 9, treino no ícone '+JSON.stringify(r));
+ok(await ev(()=>!document.querySelector('[data-act=qvolta]')&&/45 questões divididas em 3 partes, intercalada por tópico; as erradas voltam/.test(document.querySelector('.qzrvh').textContent)),'os ajustes ficam atrás da engrenagem; a frase resume a divisão');
+await x.act('qdv',cid);ok(await ev(()=>!!document.querySelector('.qzdvp [data-act=qvolta]')&&!!document.querySelector('.qzdvp [data-act=qdist]')),'engrenagem: mostra Dividir e As erradas voltam');
 await p.screenshot({path:'saida/qzrev-caderno-'+w+'.png',fullPage:true});
 /* erradas voltam; partes feitas não mudam */
 r=await ev(id=>qPartIds(id,1),cid);ok(r.back===3&&r.ids.length===18,'2ª revisão: 15 da parte + 3 erradas de antes');
