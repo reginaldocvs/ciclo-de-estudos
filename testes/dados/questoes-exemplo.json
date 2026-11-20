@@ -1,0 +1,64 @@
+[
+  {
+    "numero": 1,
+    "disciplina": "Disciplina A",
+    "topico": "Rol dos direitos",
+    "tipo": "CE",
+    "texto_base": null,
+    "comando": "A respeito dos direitos e garantias fundamentais, julgue o item a seguir.",
+    "enunciado": "O rol dos direitos fundamentais estabelecido na Constituição Federal é taxativo, inviabilizando o reconhecimento de novos direitos não previstos expressamente no texto constitucional.",
+    "alternativas": null,
+    "gabarito": "E",
+    "comentario": {
+      "por_que_certa": null,
+      "onde_esta_o_erro": "“é taxativo, inviabilizando o reconhecimento de novos direitos”: restrição indevida do rol.",
+      "o_correto_e": "O rol dos direitos fundamentais é **exemplificativo**, permitindo o reconhecimento de novos direitos.",
+      "alternativas_erradas": null
+    }
+  },
+  {
+    "numero": 2,
+    "disciplina": "Disciplina A",
+    "topico": "Titularidade",
+    "tipo": "CE",
+    "texto_base": null,
+    "comando": "Acerca da titularidade dos direitos fundamentais, julgue o item a seguir.",
+    "enunciado": "A fruição dos direitos fundamentais estende-se a brasileiros natos, naturalizados, estrangeiros e apátridas.",
+    "alternativas": null,
+    "gabarito": "C",
+    "comentario": {
+      "por_que_certa": "Os direitos fundamentais alcançam brasileiros natos, naturalizados, estrangeiros e apátridas.",
+      "onde_esta_o_erro": null,
+      "o_correto_e": null,
+      "alternativas_erradas": null
+    }
+  },
+  {
+    "numero": 3,
+    "disciplina": "Disciplina A",
+    "topico": "Aplicabilidade imediata",
+    "tipo": "ME",
+    "texto_base": "Texto de apoio curto, só para conferir como o texto-base aparece.",
+    "comando": "Assinale a opção correta acerca da aplicabilidade das normas definidoras de direitos fundamentais.",
+    "enunciado": "Segundo a Constituição Federal, as normas definidoras dos direitos e garantias fundamentais",
+    "alternativas": {
+      "A": "dependem sempre de lei regulamentadora para produzir efeitos.",
+      "B": "têm aplicação imediata.",
+      "C": "aplicam-se apenas aos brasileiros natos.",
+      "D": "só produzem efeitos após decisão do STF.",
+      "E": "têm eficácia exclusivamente programática."
+    },
+    "gabarito": "B",
+    "comentario": {
+      "por_que_certa": "A Constituição determina que essas normas têm aplicação imediata.",
+      "onde_esta_o_erro": null,
+      "o_correto_e": null,
+      "alternativas_erradas": {
+        "A": "Não dependem sempre de lei: a regra é a aplicação imediata.",
+        "C": "Não se restringem aos natos.",
+        "D": "Não dependem de decisão do STF.",
+        "E": "Não são exclusivamente programáticas."
+      }
+    }
+  }
+]
