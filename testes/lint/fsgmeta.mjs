@@ -15,7 +15,7 @@ let o=await ev(()=>{const g=document.querySelector('.fmd .fmgr .fmgear');return 
 ok(await ev(()=>!document.querySelector('.fmd .fmrz')&&!/Reiniciar cronômetro/.test(document.querySelector('.fmd').innerText)),'sessão nova: sem reiniciar (nada para zerar)');
 ok(!o.run&&o.st==='Pronto para iniciar'&&o.gear==='false'&&!o.inl&&o.sw,'Iniciar abre o foco parado, com a engrenagem ao lado da meta '+JSON.stringify(o));
 await x.act('fmotog');await W(300);let d=await ev(()=>{const d=document.querySelector('.dlg.fmcfg');return d?{h:d.querySelector('h2').textContent,lb:[...d.querySelectorAll('.fmopt .lb')].map(e=>e.textContent).join(),seg:[...d.querySelectorAll('[data-act=clkset]')].map(b=>b.textContent+':'+b.getAttribute('aria-pressed')).join(),top:document.elementFromPoint(innerWidth/2,d.getBoundingClientRect().top+30)?.closest('.fmcfg')===d}:null});
-ok(d&&d.h==='Cronômetro'&&d.lb==='Tipo,Meta,Avisar antes'&&d.seg==='Progressivo:true,Regressivo:false'&&d.top,'engrenagem: abre a janela Cronômetro por cima do foco '+JSON.stringify(d));
+ok(d&&d.h==='Cronômetro'&&d.lb==='Tipo,Meta,Avisar antes,Avisar depois'&&d.seg==='Progressivo:true,Regressivo:false'&&d.top,'engrenagem: abre a janela Cronômetro por cima do foco '+JSON.stringify(d));
 await x.act('clkset','down');ok(await ev(()=>S.clkDown===true&&document.querySelector('.fmcfg [data-id=down]').getAttribute('aria-pressed')==='true'),'Regressivo: fica marcado e guardado');
 await x.act('clkset','up');ok(await ev(()=>!S.clkDown),'Progressivo: volta ao tempo corrido');
 await p.keyboard.press('Escape');await W(300);ok(await ev(()=>!ui.fmo&&!document.querySelector('.fmcfg')&&!!document.querySelector('.fmd')),'Esc fecha só a janela; o foco continua');

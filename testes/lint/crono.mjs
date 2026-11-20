@@ -25,7 +25,7 @@ ok(o&&o.st==='Pronto para iniciar'&&!o.reg&&o.gear&&!o.rz&&o.gl==='00:00:00 de 0
 /* 3. opções */
 await x.act('crotog');await W(300);
 o=await ev(()=>{const d=document.querySelector('.crcfg');return d?{lb:[...d.querySelectorAll('.fmopt .lb')].map(e=>e.textContent).join(),seg:[...d.querySelectorAll('[data-act=crk]')].map(b=>b.textContent+':'+b.getAttribute('aria-pressed')).join(),sw:d.querySelector('[data-act=crwtog]').getAttribute('aria-checked'),fit:d.scrollWidth<=d.clientWidth+1}:null});
-ok(o&&o.lb==='Tipo,Meta,Avisar antes'&&o.seg==='Progressivo:true,Regressivo:false,Pomodoro:false'&&o.sw==='false'&&o.fit,'engrenagem: Tipo, Meta e Avisar antes (desligado) '+JSON.stringify(o));
+ok(o&&o.lb==='Tipo,Meta,Avisar antes,Avisar depois'&&o.seg==='Progressivo:true,Regressivo:false,Pomodoro:false'&&o.sw==='false'&&o.fit,'engrenagem: Tipo, Meta e Avisar antes (desligado) '+JSON.stringify(o));
 await p.screenshot({path:'saida/crono-opcoes-'+w+'.png'});
 await setT('g','0h10');await W(200);ok(await ev(()=>S.cr.g===10&&/de 00:10:00$/.test(document.getElementById('crgl').textContent)),'Meta 0h10: o "de …" muda na hora');
 await x.act('crwtog');ok(await ev(()=>S.cr.w===5),'Avisar antes: liga em 5 min');
