@@ -47,5 +47,27 @@ r=await ev(id=>qPartsOf(id).map(L=>L.length),cid);ok(r.join()==='15,17,16','3 qu
 /* treinar uma parte pelo caderno não registra */
 await x.act('qpart',cid+':1');ok(await ev(()=>ui.qz&&!ui.qz.rq&&ui.qz.ids.length===17),'Resolver uma parte pelo caderno: treino, sem ligar à revisão');await p.keyboard.press('Escape');await W(200);
 ok(await ev(id=>Object.keys(qcM(id).pd).join()==='0',cid),'treinar não marca a parte como feita');
+/* zerar as respostas: a etiqueta da parte feita fica com o acerto do registro; na lista, "N/M certas" vira "novo"; Desfazer volta */
+await ev(()=>{ui.qcad=null;render()});r=await ev(()=>document.querySelector('.qzrb .tag').textContent);ok(/^\d+\/\d+ certas$/.test(r),'lista: etiqueta "N/M certas" '+JSON.stringify(r));
+await ev(id=>{ui.qcad=id;render()},cid);await x.act('qed',cid);await x.act('qzero',cid);
+r=await ev(id=>({a:qSum(id).a,c:document.querySelector('.qzrr .rqk').textContent,u:!!document.querySelector('#undo .undob')}),cid);ok(r.a===0&&r.c==='12/15 ✓'&&r.u,'Zerar respostas: 0 respondidas, a 1ª revisão continua 12/15 ✓, com Desfazer '+JSON.stringify(r));
+await ev(()=>document.querySelector('#undo .undob').click());await W(200);ok(await ev(id=>qSum(id).a>0,cid),'Desfazer devolve as respostas');await x.act('qedx');
+/* Editar: com uma revisão feita com o caderno, a sessão fica fixa (sem seletor) e salvar não a muda */
+await study(3);await W(150);await ev(id=>{ui.qcad=id;render()},cid);await x.act('qed',cid);
+r=await ev(()=>{const d=document.querySelector('[data-f=qed]');return {sel:!!d.querySelector('[name=qes]'),t:d.textContent}});ok(!r.sel&&/Ligado à Sessão 1/.test(r.t)&&/1ª revisão já foi feita com este caderno, por isso a sessão não muda/.test(r.t),'parte feita: sessão fixa, com a explicação '+JSON.stringify(r.t.slice(0,160)));
+await p.screenshot({path:'saida/qzrev-editar-'+w+'.png'});
+await ev(()=>document.querySelector('[data-f=qed]').requestSubmit());await W(200);ok(await ev(id=>!!qcM(id).ses&&!!(qcM(id).pd||{})[0],cid),'Salvar com a trava: continua ligado, com a parte feita');
+/* caderno sem revisão feita: troca e desliga livremente; sessão com caderno aparece indisponível */
+const c2=await ev(()=>{const k=rqSesAll('qx')[2].k,id=uid(),P=qParse(JSON.stringify([{numero:1,tipo:'CE',enunciado:'Uma',gabarito:'C'}]));qcL().push({id,subj:'qx',ses:k,nome:'Caderno 2',n:0,ce:0,me:0,d:today()});qSave(id,{qs:P.qs});save();ui.qcad=id;render();return id});
+await x.act('qed',c2);r=await ev(()=>[...document.querySelectorAll('[name=qes] option')].map(o=>o.textContent.slice(0,9)+(o.disabled?'!':'')).join('|'));ok(/Sessão 1.*!/.test(r)&&/Sessão 2 [^!|]*\|/.test(r+'|'),'seletor: a Sessão 1 (com caderno) indisponível '+JSON.stringify(r));
+const k2=await ev(()=>rqSesAll('qx')[1].k);await ev(k=>{const s=document.querySelector('[name=qes]');s.value=k;s.dispatchEvent(new Event('change',{bubbles:true}))},k2);await W(150);
+await ev(()=>document.querySelector('[data-f=qed]').requestSubmit());await W(200);ok(await ev(([id,k])=>qcM(id).ses===k&&!!document.querySelector('#undo .undob'),[c2,k2]),'sem revisão feita: troca de sessão, com Desfazer');
+await x.act('qed',c2);await ev(()=>{const s=document.querySelector('[name=qes]');s.value='';s.dispatchEvent(new Event('change',{bubbles:true}))});await W(150);await ev(()=>document.querySelector('[data-f=qed]').requestSubmit());await W(200);
+ok(await ev(id=>!qcM(id).ses&&!document.querySelector('.qzrv'),c2),'desligar: sem sessão e sem Revisões no caderno');
+await ev(id=>{ui.qcad=id;render()},cid);
+/* apagar no Histórico o registro da revisão com o caderno: a parte volta a pendente */
+r=await ev(id=>{const R=S.sessions.find(x=>x.qcad===id);return R&&R.qpart},cid);ok(r===0,'o registro guarda a parte (qpart 0)');
+await ev(id=>{const R=S.sessions.find(x=>x.qcad===id);window.confirm=()=>true;ui.edBack=null;const d=document.createElement('button');d.dataset.act='delreg';d.dataset.id=R.ses||R.id;document.body.appendChild(d);d.click();d.remove()},cid);await W(300);
+r=await ev(id=>({regs:S.sessions.filter(x=>x.qcad===id).length,pd:qcM(id).pd||null}),cid);ok(r.regs===0&&!r.pd,'registro apagado: a parte deixa de ser feita '+JSON.stringify(r));
 ok(!errs.length,'sem erros de script '+errs.slice(0,2).join(' | '));
 await b.close();process.exit(bad?1:0);
