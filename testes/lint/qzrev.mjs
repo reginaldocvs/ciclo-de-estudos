@@ -27,7 +27,7 @@ r=await ev(()=>({rq:!!ui.qz.rq,n:ui.qz.ids.length,top:document.elementFromPoint(
 for(let i=0;i<15;i++){await ev(i=>{const o=qLoad(ui.qz.cad),q=o.qs.find(x=>x.id===ui.qz.ids[ui.qz.i]),g=qGab(q),k=i<3?(g==='C'?'E':'C'):g;qAns(k)},i);await ev(()=>document.querySelector('.qzd [data-act=qnext]').click())}
 r=await ev(()=>({res:document.querySelector('.qzres').textContent,btn:[...document.querySelectorAll('.qzd .btn')].map(b=>b.textContent).join('|')}));ok(/^12 de 15/.test(r.res)&&/Voltar à revisão/.test(r.btn),'fim: 12 de 15 e "Voltar à revisão" '+JSON.stringify(r));
 await ev(()=>{[...document.querySelectorAll('.qzd .btn')].find(b=>/Voltar à revisão/.test(b.textContent)).click()});await W(300);
-r=await ev(()=>({ok:!ui.qz,c:(document.querySelector('[data-f=rqreg] .rqcad')||{}).textContent||''}));ok(r.ok&&r.c.includes('12/15')&&/80%/.test(r.c)&&/Refazer/.test(r.c),'de volta à janela: "12 de 15 · 80%" no caderno '+JSON.stringify(r));
+r=await ev(()=>({ok:!ui.qz,c:(document.querySelector('[data-f=rqreg] .rqcad')||{}).textContent||''}));r.f=await ev(()=>{const f=document.querySelector('[data-f=rqreg]');return f.querySelector('[name="qa-0-0"]').value+'/'+f.querySelector('[name="qt-0-0"]').value});ok(r.ok&&/resolvido/.test(r.c)&&/Refazer/.test(r.c)&&r.f==='12/15','de volta à janela: caderno resolvido e os acertos do tópico preenchidos (12 de 15) '+JSON.stringify(r));
 await p.screenshot({path:'saida/qzrev-resultado-'+w+'.png'});
 await ev(()=>document.querySelector('[data-f=rqreg]').requestSubmit());await W(300);
 r=await ev(id=>{const R=S.sessions.filter(x=>x.qcad===id);return {n:R.length,ac:R[0]&&R[0].ac,tq:R[0]&&R[0].tq,k:R[0]&&kindOf(R[0]),pd:(qcM(id).pd||{})[0]?.length,due:rqDue('qx').length}},cid);

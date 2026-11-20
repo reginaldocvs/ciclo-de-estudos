@@ -28,9 +28,9 @@ let d=await ev(()=>{const f=document.querySelector('[data-f=rqreg]');return f?{h
 ok(d&&d.top==='Revise com questões'&&d.h.join('|')==='Sessão 5 1ª revisão|Sessão 2 2ª revisão','sessão 6: janela logo depois, com a 5 (1ª) e a 2 (2ª) '+JSON.stringify(d));
 await p.screenshot({path:'saida/rqrev-janela-'+w+'.png'});
 /* registrar com acertos na sessão 5 */
-await ev(()=>{const f=document.querySelector('[data-f=rqreg]');f.querySelector('[name="qa-0-0-0"]').value='7';f.querySelector('[name="qt-0-0-0"]').value='10';f.requestSubmit()});await W(300);
-let r=await ev(()=>{const R=S.sessions.filter(x=>String(x.rid||'').startsWith('rq-'));return {n:R.length,k:R.map(kindOf).join(),it:R[0]&&R[0].items[0],tag:R[0]&&recTag(R[0]).t,open:!!document.querySelector('[data-f=rqreg]'),due:rqDue('rqx').length}});
-ok(r.n===1&&r.k==='q'&&r.it&&r.it.ac===7&&r.it.tq===10&&/rev\. questões/.test(r.tag)&&!r.open&&r.due===0,'Registrar: vira registro "rev. questões" com 7/10 e a fila fica em dia '+JSON.stringify(r));
+await ev(()=>{const f=document.querySelector('[data-f=rqreg]');f.querySelector('[name="qa-0-0"]').value='7';f.querySelector('[name="qt-0-0"]').value='10';f.requestSubmit()});await W(300);
+let r=await ev(()=>{const R=S.sessions.filter(x=>String(x.rid||'').startsWith('rq-'));return {n:R.length,k:R.map(kindOf).join(),it:R[0]&&{ac:R[0].ac,tq:R[0].tq,link:!!R[0].items[0]},tag:R[0]&&recTag(R[0]).t,open:!!document.querySelector('[data-f=rqreg]'),due:rqDue('rqx').length}});
+ok(r.n===1&&r.k==='q'&&r.it&&r.it.ac===7&&r.it.tq===10&&r.it.link&&/rev\. questões/.test(r.tag)&&!r.open&&r.due===0,'Registrar: vira registro "rev. questões" com 7/10 no tópico (a aula fica no registro) e a fila fica em dia '+JSON.stringify(r));
 /* 3. sessão 7: 6 (1ª) e 3 (2ª) → Depois: pendente e em Para hoje */
 await study('rqx',7);await W(300);ok(await due()==='6:1 3:2','sessão 7: revisa a 6 e a 3');
 await x.act('rqregx');await W(200);ok(await ev(()=>!ui.rqreg&&rqDue('rqx').length===2),'Depois: fecha e fica pendente');
@@ -89,7 +89,7 @@ let ch=await ev(()=>{const c=[...document.querySelectorAll('.rqsc')].find(c=>/Te
 ok(ch.s15&&ch.s15.startsWith('1ª agora|')&&ch.s14&&ch.s14.startsWith('1ª atrasada!|')&&!/pendente/.test(JSON.stringify(ch)),'aba: "1ª agora" (cor normal) para o que chegou e "1ª atrasada" (cor de atraso) para o que ficou '+JSON.stringify(ch));
 await p.screenshot({path:'saida/rqrev-agora-'+w+'.png',fullPage:true});
 await ev(()=>[...document.querySelectorAll('.rqsc')].find(c=>/Teste RQ/.test(c.textContent)).querySelector('[data-act=rqreg]').click());await W(300);
-await ev(()=>{const f=document.querySelector('[data-f=rqreg]');f.querySelector('[name="qa-0-0-0"]').value='5';f.querySelector('[name="qt-0-0-0"]').value='8';f.requestSubmit()});await W(300);
+await ev(()=>{const f=document.querySelector('[data-f=rqreg]');f.querySelector('[name="qa-0-0"]').value='5';f.querySelector('[name="qt-0-0"]').value='8';f.requestSubmit()});await W(300);
 ok(await ev(()=>{const R=S.sessions.filter(x=>String(x.rid||'').startsWith('rq-')).pop();return !!R&&R.set===2&&/^R2 · rev\. questões$/.test(recTag(R).t)&&rqDue('rqx').length===0}),'registro na rodada 2: etiqueta "R2 · rev. questões" e fila em dia');
 /* 11. adiantar revisões (véspera de prova): todas as sessões em revisão, com caixinha; a adiantada conta como a próxima vez */
 await ev(()=>document.querySelector('nav [data-tab=rev]').click());await W(200);await x.act('rvt','questoes');await W(300);
@@ -97,7 +97,7 @@ await ev(()=>[...document.querySelectorAll('.rqsc')].find(c=>/Teste RQ/.test(c.t
 let av=await ev(()=>{const f=document.querySelector('[data-f=rqreg]');return f?{n:f.querySelectorAll('.rqb').length,ck:f.querySelectorAll('.rqck:checked').length,adv:f.querySelectorAll('.rqh .fu').length,first:f.querySelector('.rqh b').textContent,btn:[...f.querySelectorAll('.trvact button')].map(b=>b.textContent).join('|')}:null});
 ok(av&&av.n===9&&av.ck===9&&av.adv===9&&av.first==='Sessão 16'&&av.btn==='Cancelar|Registrar','Adiantar: as 9 sessões em revisão (16 a 8), todas marcadas e "adiantada", com Cancelar e Registrar '+JSON.stringify(av));
 await p.screenshot({path:'saida/rqrev-adiantar-'+w+'.png'});
-await ev(()=>{const f=document.querySelector('[data-f=rqreg]');f.querySelector('[name=ck-0]').checked=false;f.querySelector('[name="qa-1-0-0"]').value='9';f.querySelector('[name="qt-1-0-0"]').value='10';f.requestSubmit()});await W(300);
+await ev(()=>{const f=document.querySelector('[data-f=rqreg]');f.querySelector('[name=ck-0]').checked=false;f.querySelector('[name="qa-1-0"]').value='9';f.querySelector('[name="qt-1-0"]').value='10';f.requestSubmit()});await W(300);
 av=await ev(()=>{const I=rqInfo('rqx'),st=m=>I.rows.find(r=>r.m===m).vz.map(v=>v.st).join(',');return {s16:st(16),s15:st(15),s8:st(8),open:!!document.querySelector('[data-f=rqreg]'),last:recTag(S.sessions.filter(x=>String(x.rid||'').startsWith('rq-')).pop()).t}});
 ok(av.s16==='fu,fu,fu'&&av.s15==='ok,ok,fu'&&av.s8==='sk,sk,ok'&&!av.open&&/rev\. questões/.test(av.last),'Registrar: cada marcada conta a próxima vez (15: 2ª ✓, 3ª continua; 8: a 3ª fecha a fila dela); a desmarcada (16) fica como estava '+JSON.stringify(av));
 /* 12. recomeçar a contagem: por disciplina (aba) e de todas (ajuste); o Histórico não muda */
@@ -134,9 +134,9 @@ await ev(()=>document.querySelector('.fmd [data-act=rqnow]').click());await W(30
 let fz=await ev(n=>{const d=document.querySelector('.dlg.rqfz'),D=rqDue('rqx',true);return d?{run:S.timer.running,top:document.elementFromPoint(innerWidth/2,d.getBoundingClientRect().top+40)?.closest('.rqfz')===d,sub:d.querySelector('.trvok .mut').textContent,tempo:!!d.querySelector('[name=m]'),due:D.map(z=>z.m).join(','),esp:rqIv().map(g=>n+1-g).filter(m=>m>=1).join(',')}:null},nS);
 ok(fz&&fz.run&&fz.top&&!fz.tempo&&new RegExp('durante a sessão '+(nS+1)+'$').test(fz.sub)&&fz.due===fz.esp,'foco: a janela abre por cima, o relógio continua, sem campo de tempo, com as revisões da sessão '+(nS+1)+' '+JSON.stringify(fz));
 await p.keyboard.press('Space');await W(200);ok(await ev(()=>S.timer.running),'com a janela aberta, Espaço não pausa o relógio');
-await ev(()=>{const f=document.querySelector('[data-f=rqreg]');f.querySelector('[name="qa-0-0-0"]').value='4';f.querySelector('[name="qt-0-0-0"]').value='5';f.requestSubmit()});await W(300);
+await ev(()=>{const f=document.querySelector('[data-f=rqreg]');f.querySelector('[name="qa-0-0"]').value='4';f.querySelector('[name="qt-0-0"]').value='5';f.requestSubmit()});await W(300);
 ok(await ev(()=>!document.querySelector('[data-f=rqreg]')&&S.sx===true&&S.timer.running&&rqDue('rqx',true).length===0),'registrar no foco: volta ao foco, relógio contando, nada pendente para esta sessão');
-ok(await ev(()=>{const R=S.sessions.filter(x=>String(x.rid||'').startsWith('rq-')).pop();return R&&R.min===0&&R.items[0].ac===4}),'a revisão feita no foco não leva tempo próprio (o tempo é da sessão de estudo)');
+ok(await ev(()=>{const R=S.sessions.filter(x=>String(x.rid||'').startsWith('rq-')).pop();return R&&R.min===0&&R.ac===4}),'a revisão feita no foco não leva tempo próprio (o tempo é da sessão de estudo)');
 await ev(()=>{S.timer.acc=el();S.timer.running=false;S.sel.groups=[{id:'gb',nt:'Tópico Q',rows:[{id:'rb',kind:'aula',name:'Aula B',link:''}]}];addSession(30);S.timer={running:false,start:0,acc:0};S.sx=false;save();render()});await W(150);
 ok(await ev(()=>!/para revisar com questões/.test((document.getElementById('undo')||{}).textContent||'')&&rqDue('rqx').length===0),'ao registrar a sessão, nada sobra: sem aviso');
 /* 14. outras revisões contam: só no que já chegou e só com acertos; apagar devolve */
