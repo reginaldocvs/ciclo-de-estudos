@@ -23,13 +23,13 @@ ok(await x.ev(()=>S.sel.groups[0].rows[0].link==='PDF p. 12'&&S.sel.groups[0].ro
 await x.act('canceledit');await x.ev(()=>{document.querySelector('nav [data-tab=ciclo]').click()});await W(200);
 // 2. selo, antes, livro: cria tentativas de questões num tópico de Português
 const tid=await x.ev(s=>{const sb=S.subjects.find(y=>y.id===s);return sb.topics.find(t=>t.name==='Crase').id},s);
-await x.ev(([s,tid])=>{const mkS=(d,a,t)=>({id:uid(),ses:uid(),subj:s,topic:tid,min:30,cycle:S.cycle-1,set:S.set||1,review:false,kind:'aula',items:[{kind:'aula',name:'Questões',link:'',qo:true,ac:a,tq:t}],date:d});S.sessions.push(mkS('2026-10-20',14,20),mkS('2026-10-22',11,20));save();render()},[s,tid]);
+await x.ev(([s,tid])=>{const mkS=(d,a,t)=>({id:uid(),ses:uid(),subj:s,topic:tid,min:30,cycle:S.cycle-1,set:S.set||1,review:false,kind:'aula',items:[{kind:'aula',name:'Questões',link:'',qo:true,ac:a,tq:t}],date:d});window.__d2=addD(today(),-8);S.sessions.push(mkS(addD(today(),-10),14,20),mkS(window.__d2,11,20));save();render()},[s,tid]);
 await x.ev(()=>document.querySelector('nav [data-tab=rev]').click());await W(300);await x.ev(()=>{ui.rvt='topicos';render()});await W(200);
 const tags=await x.ev(()=>[...document.querySelectorAll('#app .tagrf')].map(e=>e.textContent));
 ok(tags.some(t=>/reforçar · \d+%/.test(t)),'selo reforçar aparece: '+JSON.stringify(tags.slice(0,3)));
 ok(await x.ev(()=>{const e=document.querySelector('#app .tagrf');const c=getComputedStyle(e);return c.backgroundColor==='rgba(0, 0, 0, 0)'||c.backgroundColor==='transparent'}),'selo sem cor de fundo');
 // abre um tópico Crase com o item Questões
-await x.ev(tid=>{const o=trvList().find(o=>o.tp.id===tid&&o.k.endsWith('2026-10-22'));if(o)ui.open.add('tdi:'+o.k);ui.pg={trvdue:99,hoje:99};render()},tid);await W(200);
+await x.ev(tid=>{const o=trvList().find(o=>o.tp.id===tid&&o.k.endsWith(window.__d2));if(o)ui.open.add('tdi:'+o.k);ui.pg={trvdue:99,hoje:99};render()},tid);await W(200);
 const prev=await x.ev(()=>[...document.querySelectorAll('#app .qprev')].map(e=>e.textContent));
 ok(prev.some(t=>/antes 70% →/.test(t)),'acerto anterior: '+JSON.stringify(prev));
 await x.ev(()=>{const e=document.querySelector('#app .qprev')||document.querySelector('#app .tagrf');e.scrollIntoView({block:'center'})});await W(200);await shot('1-topicos');

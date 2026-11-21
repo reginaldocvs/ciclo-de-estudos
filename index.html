@@ -1435,6 +1435,8 @@ function syncSel(){const A=actives();if(!A.length)return;
 }
 const studyActive=()=>S.timer.running||el()>0||(S.sx&&(hasG()||tmParse(S.sel.mt)>0));
 const prefill=ms=>{const t=tmFmt(Math.floor(ms/60000));S.sel.mt=t;S.sel.mtAuto=t;S.sel.mtMs=ms};
+/* Registrar sem tempo no cronômetro: o campo já vem com o que falta para a meta (meta cumprida: 0h00) */
+const regGoalMs=()=>{const x=S.subjects.find(y=>y.id===S.sel.subj);return x?Math.max(0,(+x.goal||0)-prog(x.id))*60000:0};
 function regMin(){const f=(S.sel.mt||'').trim();if(S.sx&&f&&f!==S.sel.mtAuto)return tmParse(f)||0;if(S.sx&&f&&f===S.sel.mtAuto&&!S.timer.running)return (S.sel.mtMs!=null?S.sel.mtMs:el())/60000;return el()/60000}
 const curS=()=>S.subjects.find(x=>x.id===S.sel.subj);
 const remSec=mn=>{const s=curS();return s?Math.max(0,(s.goal-prog(s.id)-mn)*60):0};
@@ -1448,7 +1450,7 @@ function loadSubj(to){S.sel.subj=to;S.sel.topic='';S.timer={running:false,start:
 const pzF=ms=>ms<60000?'menos de 1min':fmt(Math.floor(ms/60000));
 const pzMs=id=>(S.paused&&S.paused[id]&&+S.paused[id].ms)||0;
 function pzTake(id){const z=S.paused&&S.paused[id];if(!z||el()>0)return;S.timer.acc=+z.ms||0;S.timer.d0=z.d0||today();const sb=S.subjects.find(x=>x.id===id);if(sb&&S.timer.acc>=(sb.goal-prog(id))*60000)S.timer.hit=true;delete S.paused[id]}
-function runThen(th){pzTake(S.sel.subj);const cs=curS();if(th==='rplay'&&cs&&gDone(cs))return;if(th==='rplay'){ui.sxo=false;const go=S.timer.acc>0;S.timer.running=go;if(go){crPause();S.timer.start=Date.now();if(!S.timer.d0)S.timer.d0=today()}S.sx=true;S.sel.mt=''}else if(th==='rreg'){S.sx='manual';prefill(S.timer.acc);drLoad()}}
+function runThen(th){pzTake(S.sel.subj);const cs=curS();if(th==='rplay'&&cs&&gDone(cs))return;if(th==='rplay'){ui.sxo=false;const go=S.timer.acc>0;S.timer.running=go;if(go){crPause();S.timer.start=Date.now();if(!S.timer.d0)S.timer.d0=today()}S.sx=true;S.sel.mt=''}else if(th==='rreg'){S.sx='manual';prefill(S.timer.acc||regGoalMs());drLoad()}}
 /* Trocar de disciplina: com estudo em andamento a troca é ignorada (o fundo já fica inerte enquanto o modo foco ou o registro estão abertos) */
 const reqSwitch=(to,th)=>{if(!to||S.edit)return;if(to===S.sel.subj){if(th)runThen(th);return}if(studyActive())return;loadSubj(to);if(th)runThen(th)};
 const tipEl=document.createElement?document.createElement('div'):null;
@@ -2427,9 +2429,11 @@ function viewQz(){if(ui.qcad&&qcM(ui.qcad))return qCadView(ui.qcad);ui.qcad=null
 function qCadView(id){const m=qcM(id),o=qGet(id),s=subjAny(m.subj),BK=`<button type="button" class="x cback" data-act="qback" title="Voltar para Questões" aria-label="Voltar para Questões">${BACKI}</button>`;
  if(!o)return `<div class="card"><div class="chead">${BK}<h2 class="snt">${esc(m.nome)}</h2></div><p class="mut">${qCan()?'Buscando o caderno na sua conta…':'O conteúdo deste caderno não está neste aparelho. Entre na sua conta para trazê-lo.'}</p></div>`;
  const ses=m.ses?qSesL(m.subj).find(z=>z.k===m.ses):null,W=o.qs.filter(q=>{const l=qLast(id,q.id);return l&&!l.ok}),z=qSum(id),N=o.qs.length;
- const rows=o.qs.map((q,i)=>{const l=qLast(id,q.id);return `<button type="button" class="qzq" data-act="qgo" data-id="${i}"><span class="qzqn">${i+1}</span><span class="qzqt"><span class="tpcl" title="${esc(q.tp||q.en)}">${esc(q.tp||q.en)}</span></span>${l?(l.ok?`<span class="qzst ok" title="Acertou da última vez" aria-label="acertou">${RCOK}</span>`:`<span class="qzst no" title="Errou da última vez" aria-label="errou">${CLOSEI}</span>`):'<span class="qzst" aria-label="ainda não respondida">—</span>'}</button>`});
+ /* sem tópicos da sessão: agrupa pela cabeça do assunto ("Teoria dos Direitos Fundamentais" - …) quando há 2+ cabeças; senão, pelo assunto inteiro */
+ const TT=qTops(m),HD=TT.length<2?[...new Set(o.qs.map(q=>qTk(qTpSp(q.tp)[0])))]:[],byH=HD.length>1;
+ const rows=o.qs.map((q,i)=>{const l=qLast(id,q.id),sp=qTpSp(q.tp),lb=byH&&sp[1]?sp[1]:(q.tp||q.en);return `<button type="button" class="qzq" data-act="qgo" data-id="${i}"><span class="qzqn">${i+1}</span><span class="qzqt"><span class="tpcl" title="${esc(q.tp||q.en)}">${esc(lb)}</span></span>${l?(l.ok?`<span class="qzst ok" title="Acertou da última vez" aria-label="acertou">${RCOK}</span>`:`<span class="qzst no" title="Errou da última vez" aria-label="errou">${CLOSEI}</span>`):'<span class="qzst" aria-label="ainda não respondida">—</span>'}</button>`});
  /* grupos: tópicos da sessão (2+) ou, sem eles, os assuntos do Gemini (2+); com mais de um, começam recolhidos e abrem ao tocar (ui.qgo), cada um com o seu Mostrar mais */
- const TT=qTops(m),GA=TT.length<2?qSubjOf(o.qs):[],IX=o.qs.map((q,i)=>[q,i]),GR=TT.length>1?TT.map(x=>({k:x.t,lb:x.name,act:'qtopgo',I:IX.filter(([q])=>qTopOf(m,q,TT)===x.t).map(([,i])=>i)})).filter(g=>g.I.length):GA.length>1?GA.map(g=>({k:g.k,lb:g.tp||'Sem assunto',act:'qsubgo',I:IX.filter(([q])=>qTk(q.tp)===g.k).map(([,i])=>i)})):[];
+ const GA=TT.length<2&&!byH?qSubjOf(o.qs):[],IX=o.qs.map((q,i)=>[q,i]),GR=byH?HD.map(k=>{const I=IX.filter(([q])=>qTk(qTpSp(q.tp)[0])===k).map(([,i])=>i);return {k:'h:'+k,lb:qTpSp(o.qs[I[0]].tp)[0]||'Sem assunto',act:'qsubgo',I}}):TT.length>1?TT.map(x=>({k:x.t,lb:x.name,act:'qtopgo',I:IX.filter(([q])=>qTopOf(m,q,TT)===x.t).map(([,i])=>i)})).filter(g=>g.I.length):GA.length>1?GA.map(g=>({k:g.k,lb:g.tp||'Sem assunto',act:'qsubgo',I:IX.filter(([q])=>qTk(q.tp)===g.k).map(([,i])=>i)})):[];
  const gHtml=g=>{const gk=id+'|'+g.k,op=!!(ui.qgo&&ui.qgo.has(gk)),nw=g.I.filter(i=>{const l=qLast(id,o.qs[i].id);return l&&!l.ok}).length,PG=op?pgCut('qzc-'+id+'-'+g.k,g.I.map(i=>rows[i])):null;
   return `<div class="qzg"><div class="qzgh"><button type="button" class="trvgh qzgt" data-act="qgtog" data-id="${esc(gk)}" aria-expanded="${op}"><span class="snt" title="${esc(g.lb)}">${esc(g.lb)}</span><span class="mut qzgn">${g.I.length}${nw?` · <span class="qzgw" title="${nw} ${nw===1?'errada':'erradas'} da última vez">${nw} ✗</span>`:''}</span><span class="x mtog${op?' on':''}" aria-hidden="true">${CHEV}</span></button><button type="button" class="x qzplay" data-act="${g.act}" data-id="${esc(id+':'+g.k)}" title="Resolver as ${g.I.length} de ${esc(g.lb)}" aria-label="Resolver as ${g.I.length} questões de ${esc(g.lb)}">${PLAY}</button></div>${op?`<div class="qzgl">${PG.shown.join('')}${PG.more}</div>`:''}</div>`};
  const P0=GR.length>1?null:pgCut('qzc-'+id,rows),sh=GR.length>1?GR.map(gHtml):P0.shown;
@@ -2498,6 +2502,8 @@ const qSesO=(subj,k)=>k?rqSesAll(subj).find(x=>x.k===k)||null:null;
 const qTopsOfSes=o=>o?rqParts(o).map(t=>{const tp=t.t&&topicById(t.t);return {t:t.t||'',name:tp?tp.name:t.tn||'Sem tópico'}}):[];
 const qTops=m=>m&&m.ses?qTopsOfSes(qSesO(m.subj,m.ses)):[];
 const qTk=tp=>qNorm(tp)||'·';
+/* o Gemini escreve "Tópico - Sub-tópico": a cabeça agrupa e o sub vira o nome da questão dentro do grupo */
+const qTpSp=tp=>{const m=String(tp||'').match(/^(.+?)\s+[-–—]\s+(.+)$/);return m?[m[1].trim(),m[2].trim()]:[String(tp||'').trim(),'']};
 function qGuess(tp,T){if(!T.length)return '';const a=qNorm(tp);if(!a)return T[0].t;const W=x=>new Set(qNorm(x).split(' ').filter(w=>w.length>3).map(w=>w.slice(0,5))),wa=W(tp);let best=T[0].t,bs=0;
  T.forEach(x=>{const b=qNorm(x.name);let sc=a===b?100:b&&(a.includes(b)||b.includes(a))?50:0;W(x.name).forEach(w=>{if(wa.has(w))sc+=10});if(sc>bs){bs=sc;best=x.t}});return best}
 const qTopOf=(m,q,T)=>{T=T||qTops(m);if(T.length<2)return T[0]?T[0].t:'';if(q.st!=null&&T.some(x=>x.t===q.st))return q.st;const v=((m&&m.tm)||{})[qTk(q.tp)];return v!=null&&T.some(x=>x.t===v)?v:qGuess(q.tp,T)};
@@ -3215,7 +3221,7 @@ if(a==='blkadd'){S.blk=S.blk||[];S.blk.push({id:uid(),pos:inCycle().length});set
  if(a==='rqnow'){ui.rqreg=p;ui.rqah=true;ui.rqadv=false}
  if(a==='rqcadgo'){const [c,i,tk]=(t.dataset.id||'').split(':'),{ids}=qPartTop(c,+i,tk||'');if(ids.length){ui.qz={cad:c,ids,i:0,res:{},fix:false,rq:t.dataset.id,rk:t.dataset.rk||''};render()}return}
  if(a==='qgtog'){const k=t.dataset.id||'';ui.qgo=ui.qgo||new Set();ui.qgo.has(k)?ui.qgo.delete(k):ui.qgo.add(k)}
- if(a==='qsubgo'){const id=t.dataset.id||'',c=id.slice(0,id.indexOf(':')),k=id.slice(id.indexOf(':')+1),o=qLoad(c);if(o)qStart(c,o.qs.filter(x=>qTk(x.tp)===k).map(x=>x.id),0);return}
+ if(a==='qsubgo'){const id=t.dataset.id||'',c=id.slice(0,id.indexOf(':')),k=id.slice(id.indexOf(':')+1),o=qLoad(c);if(o)qStart(c,o.qs.filter(x=>k.startsWith('h:')?qTk(qTpSp(x.tp)[0])===k.slice(2):qTk(x.tp)===k).map(x=>x.id),0);return}
  if(a==='qtopgo'){const [c,tk]=(t.dataset.id||'').split(':'),m=qcM(c),o=qLoad(c);if(m&&o){const T=qTops(m);qStart(c,o.qs.filter(x=>qTopOf(m,x,T)===(tk||'')).map(x=>x.id),0)}return}
  if(a==='qpart'){const P=qPartsOf(p),L=P[+q]||[];if(L.length)qStart(p,L,0);return}
  if(a==='qdv')ui.qdv=ui.qdv===p?null:p;
@@ -3384,7 +3390,7 @@ if(a==='rgpick'){if(e.target.closest('button,a,label'))return;rcPick(ui.rcg===p?
  if(a==='rplay'&&!S.edit){const ps=S.subjects.find(x=>x.id===p);if(ps&&gDone(ps)&&!(p===S.sel.subj&&S.timer.running)){render();return}}
  if((a==='rplay'||a==='rreg')&&!S.edit&&S.subjects.some(x=>x.id===p)){
   if(p===S.sel.subj&&a==='rplay'&&S.timer.running){S.timer.acc=el();S.timer.running=false;S.sx=true;ui.sxo=false;S.sel.mt=''}
-  else if(p===S.sel.subj&&a==='rreg'){pzTake(p);S.timer.acc=el();S.timer.running=false;S.sx='manual';prefill(S.timer.acc);drLoad()}
+  else if(p===S.sel.subj&&a==='rreg'){pzTake(p);S.timer.acc=el();S.timer.running=false;S.sx='manual';prefill(S.timer.acc||regGoalMs());drLoad()}
   else reqSwitch(p,a)}
  /* Reiniciar meta (só no estudo; na revisão, refazer é excluir o registro em Editar): a sessão volta a contar do zero e o próximo registro se junta ao anterior */
  if(a==='rreopen'&&!S.edit&&S.type!=='review'){ui.rview=null;const sub=S.subjects.find(x=>x.id===p);if(sub&&gDone(sub)&&ask('rreopen:'+p,t)){const prev=S.sessions.filter(x=>!x.review&&x.subj===p&&x.cycle===S.cycle&&(x.set||1)===(S.set||1)).pop();S.progress[p]=0;if(S.bump)delete S.bump[p];if(prev){S.reopen=S.reopen||{};S.reopen[p]={ses:prev.ses||prev.id,cycle:S.cycle,set:S.set||1}}}}

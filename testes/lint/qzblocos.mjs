@@ -42,5 +42,15 @@ r=await head();ok(r.lb==='Bloco JSON do Gemini'&&r.t===null,'sem sessão e um bl
 await ev(()=>document.querySelector('[data-f=qimp]').requestSubmit());await W(300);
 r=await ev(()=>[...document.querySelectorAll('.qzgh')].map(e=>e.textContent));ok(r.join('|')==='Pronomes3|Crase2','caderno sem sessão: agrupado pelos assuntos '+JSON.stringify(r));
 await ev(()=>document.querySelectorAll('.qzgh [data-act=qsubgo]')[1].click());await W(200);r=await ev(()=>ui.qz&&ui.qz.ids.length);ok(r===2,'▶ no assunto: resolve só as 2 de Crase');await p.keyboard.press('Escape');
+/* assunto "Tópico - Sub-tópico": agrupa pela cabeça; dentro, cada questão mostra o sub */
+await ev(()=>{ui.qcad=null;ui.qgo=null;render()});await x.act('qnew','qx');
+await paste(JSON.stringify([...mkQ('Teoria dos Direitos Fundamentais - Superioridade Normativa',2,0),...mkQ('Teoria dos Direitos Fundamentais - Titularidade',1,2),...mkQ('Características dos Direitos Fundamentais - Relatividade',2,3)]));
+await ev(()=>document.querySelector('[data-f=qimp]').requestSubmit());await W(300);
+r=await ev(()=>[...document.querySelectorAll('.qzgh')].map(e=>e.querySelector('.snt').textContent+'|'+e.querySelector('.qzgn').textContent));
+ok(r.join(',')==='Teoria dos Direitos Fundamentais|3,Características dos Direitos Fundamentais|2','agrupa pela parte antes do " - " '+JSON.stringify(r));
+await ev(()=>document.querySelector('[data-act=qgtog]').click());await W(150);
+r=await ev(()=>[...document.querySelectorAll('.qzg .qzq .tpcl')].map(e=>e.textContent));ok(r.join(',')==='Superioridade Normativa,Superioridade Normativa,Titularidade','dentro do grupo, cada questão mostra só o sub-tópico '+JSON.stringify(r));
+await p.screenshot({path:'saida/qzblocos-cabeca-'+w+'.png',fullPage:true});
+await ev(()=>document.querySelectorAll('.qzgh [data-act=qsubgo]')[0].click());await W(200);ok(await ev(()=>ui.qz&&ui.qz.ids.length===3),'▶ na cabeça: resolve as 3 do grupo');await p.keyboard.press('Escape');
 ok(!errs.length,'sem erros de script '+errs.slice(0,2).join(' | '));
 await b.close();process.exit(bad?1:0);
