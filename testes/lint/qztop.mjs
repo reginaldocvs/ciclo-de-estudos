@@ -55,6 +55,7 @@ await ev(()=>{[...document.querySelectorAll('.qzd .btn')].find(b=>/Voltar à rev
 r=await ev(()=>{const f=document.querySelector('[data-f=rqreg]'),v=n=>f.querySelector(`[name="${n}"]`).value;return {a:v('qa-0-0')+'/'+v('qt-0-0'),b:v('qa-0-1')+'/'+v('qt-0-1'),btn:[...f.querySelectorAll('.actp')].map(e=>(e.querySelector('[data-act=rqcadgo]')||{}).textContent).join('|')}});
 ok(r.a==='8/10'&&r.b==='9/12'&&r.btn==='Refazer|Resolver (12)','de volta: A preenchido com 8/10; B continua com o que foi digitado (9/12) '+JSON.stringify(r));
 await p.screenshot({path:'saida/qztop-resolvido-'+w+'.png'});
+r=await ev(()=>[...document.querySelectorAll('[data-f=rqreg] .actp')].map(e=>(e.querySelector('.racs .qprev')||{}).textContent||''));ok(r.every(x=>x===''),'1ª revisão sem acertos no estudo: sem "antes" '+JSON.stringify(r));
 await ev(()=>document.querySelector('[data-f=rqreg]').requestSubmit());await W(300);
 r=await ev(id=>{const R=S.sessions.filter(x=>String(x.rid||'').startsWith('rq-'));return {R:R.map(x=>x.topic+':'+x.ac+'/'+x.tq+(x.qcad?'*':'')).join(),pd:Object.keys(qcM(id).pd||{}).join(),its:R.map(x=>x.items.length).join()}},cid);
 ok(r.R==='ta:8/10*,tb:9/12'&&r.pd==='0'&&r.its==='1,1','Registrar: um registro por tópico (A ligado ao caderno), aulas no registro, a parte 1 fica feita '+JSON.stringify(r));
