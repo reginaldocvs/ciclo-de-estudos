@@ -2869,6 +2869,7 @@ addEventListener('storage',e=>{if(e.key===KEY&&e.storageArea===localStorage)tabA
    sincronizar, com o aviso e "Usar aqui" (recarrega e assume). O cronômetro de uma janela bloqueada vira pausa ao recarregar. */
 (()=>{const TID=Math.random().toString(36).slice(2),TK='ciclo-tab';let bc=null;try{bc=new BroadcastChannel(TK)}catch(x){}
  const off=()=>{if(window.__ro)return;window.__ro=true;try{if(SY.unsub)SY.unsub()}catch(x){}SY.unsub=null;clearTimeout(SY.timer);
+  /* a camada "Sincronizando…" sai: sem sincronizar ela nunca terminaria, e o reforço de bloqueio dela travava o "Usar aqui" */try{gateHide()}catch(x){}
   const d=document.createElement('div');d.id='tabblock';d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');d.setAttribute('aria-labelledby','tbt');
   d.innerHTML='<div class="tbc"><h2 id="tbt">Aberto em outra janela</h2><p>O Ciclo de Estudos fica ativo em uma janela por vez, para uma não apagar o que a outra registrou.</p><button type="button" class="btn" id="tbuse">Usar aqui</button></div>';
   [...document.body.children].forEach(e=>{e.inert=true});document.body.appendChild(d);d.querySelector('#tbuse').addEventListener('click',()=>location.reload());d.querySelector('#tbuse').focus()};
@@ -2884,7 +2885,7 @@ function gateShow(){if(window.__ro||GT.el)return;const d=document.createElement(
  d.className='sgq';[...document.body.children].forEach(e=>{e.inert=true});document.body.appendChild(d);GT.el=d;
  /* o app fica bloqueado desde já, mas a camada só aparece se a conta demorar mais de 1 s para responder */GT.shw=setTimeout(()=>{if(GT.el)GT.el.classList.remove('sgq')},1000);
  d.querySelector('#sguse').addEventListener('click',gateHide);
- GT.timer=setTimeout(gateSlow,SY.err?0:8000);GT.poll=setInterval(()=>{if(!GT.el)return;[...document.body.children].forEach(e=>{if(e!==GT.el)e.inert=true});if(SY.err)gateSlow()},100)} /* repõe o bloqueio no que o app criar depois */
+ GT.timer=setTimeout(gateSlow,SY.err?0:8000);GT.poll=setInterval(()=>{if(!GT.el||window.__ro)return;[...document.body.children].forEach(e=>{if(e!==GT.el)e.inert=true});if(SY.err)gateSlow()},100)} /* repõe o bloqueio no que o app criar depois */
 function gateSlow(){if(!GT.el)return;GT.el.classList.remove('sgq');GT.el.querySelector('#sgt').textContent='Sem conexão com a sua conta';GT.el.querySelector('#sgp').textContent='Você pode usar mesmo assim: as mudanças vão para a conta quando a internet voltar.';
  GT.el.querySelector('.sgsp').hidden=true;const b=GT.el.querySelector('#sguse');b.hidden=false;b.focus()}
 function gateHide(){clearTimeout(GT.timer);clearTimeout(GT.shw);clearInterval(GT.poll);if(!GT.el)return;GT.el.remove();GT.el=null;if(!window.__ro)[...document.body.children].forEach(e=>{e.inert=false})}
