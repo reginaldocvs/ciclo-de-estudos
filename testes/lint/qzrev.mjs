@@ -54,15 +54,15 @@ r=await ev(id=>({a:qSum(id).a,c:document.querySelector('.qzrr .rqk').textContent
 await ev(()=>document.querySelector('#undo .undob').click());await W(200);ok(await ev(id=>qSum(id).a>0,cid),'Desfazer devolve as respostas');await x.act('qedx');
 /* Editar: com uma revisão feita com o caderno, a sessão fica fixa (sem seletor) e salvar não a muda */
 await study(3);await W(150);await ev(id=>{ui.qcad=id;render()},cid);await x.act('qed',cid);
-r=await ev(()=>{const d=document.querySelector('[data-f=qed]');return {sel:!!d.querySelector('[name=qes]'),t:d.textContent}});ok(!r.sel&&/Ligado à Sessão 1/.test(r.t)&&/1ª revisão já foi feita com este caderno, por isso a sessão não muda/.test(r.t),'parte feita: sessão fixa, com a explicação '+JSON.stringify(r.t.slice(0,160)));
+r=await ev(()=>{const d=document.querySelector('[data-f=qed]');return {sel:!!d.querySelector('.sfb[data-id=qzes]'),t:d.textContent}});ok(!r.sel&&/Ligado à Sessão 1/.test(r.t)&&/1ª revisão já foi feita com este caderno, por isso a sessão não muda/.test(r.t),'parte feita: sessão fixa, com a explicação '+JSON.stringify(r.t.slice(0,160)));
 await p.screenshot({path:'saida/qzrev-editar-'+w+'.png'});
 await ev(()=>document.querySelector('[data-f=qed]').requestSubmit());await W(200);ok(await ev(id=>!!qcM(id).ses&&!!(qcM(id).pd||{})[0],cid),'Salvar com a trava: continua ligado, com a parte feita');
 /* caderno sem revisão feita: troca e desliga livremente; sessão com caderno aparece indisponível */
 const c2=await ev(()=>{const k=rqSesAll('qx')[2].k,id=uid(),P=qParse(JSON.stringify([{numero:1,tipo:'CE',enunciado:'Uma',gabarito:'C'}]));qcL().push({id,subj:'qx',ses:k,nome:'Caderno 2',n:0,ce:0,me:0,d:today()});qSave(id,{qs:P.qs});save();ui.qcad=id;render();return id});
-await x.act('qed',c2);r=await ev(()=>[...document.querySelectorAll('[name=qes] option')].map(o=>o.textContent.slice(0,9)+(o.disabled?'!':'')).join('|'));ok(/Sessão 1.*!/.test(r)&&/Sessão 2 [^!|]*\|/.test(r+'|'),'seletor: a Sessão 1 (com caderno) indisponível '+JSON.stringify(r));
-const k2=await ev(()=>rqSesAll('qx')[1].k);await ev(k=>{const s=document.querySelector('[name=qes]');s.value=k;s.dispatchEvent(new Event('change',{bubbles:true}))},k2);await W(150);
+await x.act('qed',c2);r=(await x.opts('qzes')).map(t=>t.slice(0,9)+(t.endsWith('!')?'!':'')).join('|');ok(/Sessão 1.*!/.test(r)&&/Sessão 2 [^!|]*\|/.test(r+'|'),'seletor: a Sessão 1 (com caderno) indisponível '+JSON.stringify(r));
+const k2=await ev(()=>rqSesAll('qx')[1].k);await x.pick('qzes',k2);
 await ev(()=>document.querySelector('[data-f=qed]').requestSubmit());await W(200);ok(await ev(([id,k])=>qcM(id).ses===k&&!!document.querySelector('#undo .undob'),[c2,k2]),'sem revisão feita: troca de sessão, com Desfazer');
-await x.act('qed',c2);await ev(()=>{const s=document.querySelector('[name=qes]');s.value='';s.dispatchEvent(new Event('change',{bubbles:true}))});await W(150);await ev(()=>document.querySelector('[data-f=qed]').requestSubmit());await W(200);
+await x.act('qed',c2);await x.pick('qzes','');await ev(()=>document.querySelector('[data-f=qed]').requestSubmit());await W(200);
 ok(await ev(id=>!qcM(id).ses&&!document.querySelector('.qzrv'),c2),'desligar: sem sessão e sem Revisões no caderno');
 await ev(id=>{ui.qcad=id;render()},cid);
 /* apagar no Histórico o registro da revisão com o caderno: a parte volta a pendente */

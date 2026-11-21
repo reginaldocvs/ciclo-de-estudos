@@ -34,8 +34,8 @@ ok(!!cloud['users/u1/ciclo/q-'+cid]&&!!cloud['users/u1/ciclo/q-'+cid+'-0']&&!mai
 for(let i=0;i<40&&!(await B.ev(id=>!!qcM(id),cid));i++)await W(250);
 ok(await B.ev(id=>!!qcM(id)&&!localStorage.getItem('ciclo-q-'+id),cid),'B recebe a lista (ainda sem o conteúdo)');
 await toQz(B);await W(200);await B.ev(id=>document.querySelector(`[data-act=qopen][data-id="${id}"]`).click(),cid);
-for(let i=0;i<40&&!(await B.ev(()=>!!document.querySelector('.qzcad .qzq')));i++)await W(250);
-ok(await B.ev(id=>qLoad(id)&&qLoad(id).qs.length===3&&document.querySelectorAll('.qzcad .qzq').length===3,cid),'B abre o caderno: o conteúdo vem da conta');
+for(let i=0;i<40&&!(await B.ev(()=>!!document.querySelector('.qzcad .qzcm')));i++)await W(250);
+ok(await B.ev(id=>qLoad(id)&&qLoad(id).qs.length===3&&/3\squestões/.test((document.querySelector('.qzcad .qzcm')||{}).textContent||''),cid),'B abre o caderno: o conteúdo vem da conta');
 /* B resolve: as respostas voltam para A, sem reenviar o caderno */
 const qw0=qWrites.B;await B.ev(id=>document.querySelector(`[data-act=qall][data-id="${id}"]`).click(),cid);await W(200);
 for(const k of ['E','C','B']){await B.ev(k=>document.querySelector(`.qzd [data-act=qans][data-id="${k}"]`).click(),k);await W(150);await B.ev(()=>document.querySelector('.qzd [data-act=qnext]').click());await W(150)}

@@ -19,9 +19,9 @@ ok(await ev(()=>rqParts(rqSesAll('qx')[0]).length===2),'sessão 1 com dois tópi
 /* importar pela janela: Gemini chama de "Classes de palavras" e "Concordância" */
 await ev(()=>{[...document.querySelectorAll('nav [data-tab=qz]')].find(e=>e.getClientRects().length).click()});await W(200);
 await x.act('qnew','qx');const k1=await ev(()=>rqSesAll('qx')[0].k);
-await ev(k=>{const s=document.querySelector('[data-f=qimp] [name=qse]');s.value=k;s.dispatchEvent(new Event('change',{bubbles:true}))},k1);await W(150);
+await x.pick('qzse',k1);
 await ev(j=>{const t=document.querySelector('[name=qj]');t.value=j;t.dispatchEvent(new Event('input',{bubbles:true}))},JSON.stringify([...mkQ('Classes de palavras',30,0),...mkQ('Concordância',30,30)]));await W(400);
-let r=await ev(()=>[...document.querySelectorAll('#qzmap .qzmr')].map(e=>e.querySelector('.snt').textContent+'→'+e.querySelector('select').selectedOptions[0].textContent));
+let r=await ev(()=>[...document.querySelectorAll('#qzmap .qzmr')].map(e=>e.querySelector('.snt').textContent+'→'+e.querySelector('.sfb').textContent));
 ok(r.length===2&&r[0]==='Classes de palavras (30)→Classes Gramaticais'&&r[1]==='Concordância (30)→Concordância Verbal','importar: cada assunto já vai para o tópico de nome parecido '+JSON.stringify(r));
 await ev(()=>{const d=document.querySelector('.qimpdlg');d.scrollTop=d.scrollHeight});await W(150);await p.screenshot({path:'saida/qztop-importar-'+w+'.png'});
 await ev(()=>document.querySelector('[data-f=qimp]').requestSubmit());await W(300);
@@ -30,11 +30,16 @@ r=await ev(id=>{const m=qcM(id),o=qLoad(id),T=qTops(m);return qPartsOf(id).map(L
 ok(r.join()==='10+10,10+10,10+10','divisão: cada parte com 10 de cada tópico '+JSON.stringify(r));
 /* acrescentar: assunto novo pergunta; o já conhecido não */
 await x.act('qmore',cid);await ev(j=>{const t=document.querySelector('[name=qj]');t.value=j;t.dispatchEvent(new Event('input',{bubbles:true}))},JSON.stringify([...mkQ('Concordância',3,60),...mkQ('Crase',3,63)]));await W(400);
-r=await ev(()=>[...document.querySelectorAll('#qzmap .qzmr .snt')].map(e=>e.textContent));ok(r.length===1&&r[0]==='Crase (3)','acrescentar: só o assunto novo pergunta '+JSON.stringify(r));
-await ev(()=>{const s=document.querySelector('#qzmap select');s.value='tb';s.dispatchEvent(new Event('change',{bubbles:true}));document.querySelector('[data-f=qimp]').requestSubmit()});await W(300);
+r=await ev(()=>({h:document.querySelector('#qzbh .sfb').textContent,m:[...document.querySelectorAll('#qzmap .qzmr')].map(e=>e.querySelector('.snt').textContent+'→'+e.querySelector('.sfb').textContent)}));ok(r.h==='Vários tópicos'&&r.m.join('|')==='Concordância (3)→Concordância Verbal|Crase (3)→Classes Gramaticais','acrescentar: bloco misturado vira "Vários tópicos", o assunto já conhecido segue o caderno '+JSON.stringify(r));
+await x.pick('qtm-crase','tb');await ev(()=>document.querySelector('[data-f=qimp]').requestSubmit());await W(300);
 r=await ev(id=>{const m=qcM(id),o=qLoad(id),T=qTops(m);return T.map(t=>o.qs.filter(q=>qTopOf(m,q,T)===t.t).length)},cid);ok(r.join()==='30,36','Crase escolhida para Concordância Verbal: 30 e 36 '+JSON.stringify(r));
 /* caderno agrupado */
 r=await ev(()=>[...document.querySelectorAll('.qzgh')].map(e=>e.textContent));ok(r.length>=1&&/^Classes Gramaticais30$/.test(r[0]),'caderno: lista agrupada pelo tópico da sessão '+JSON.stringify(r));
+r=await ev(()=>({g:document.querySelectorAll('.qzg').length,q:document.querySelectorAll('.qzcad .qzq').length}));ok(r.g===2&&r.q===0,'dois tópicos: os grupos começam recolhidos '+JSON.stringify(r));
+r=await ev(()=>{const t=document.querySelector('.qzgt'),c=getComputedStyle(t);return {bg:c.backgroundColor,over:document.documentElement.scrollWidth>innerWidth}});ok(r.bg==='rgba(0, 0, 0, 0)'&&!r.over,'título do grupo sem fundo e a página sem rolagem lateral '+JSON.stringify(r));
+await ev(()=>document.querySelector('[data-act=qgtog]').click());await W(150);r=await ev(()=>({q:document.querySelectorAll('.qzcad .qzq').length,more:!!document.querySelector('.qzg [data-act=pgmore]'),exp:document.querySelector('[data-act=qgtog]').getAttribute('aria-expanded')}));
+ok(r.q===6&&r.more&&r.exp==='true','tocar no tópico: abre com 6 questões e o Mostrar mais dele '+JSON.stringify(r));
+await ev(()=>document.querySelector('[data-act=qgtog]').click());await W(150);ok(await ev(()=>document.querySelectorAll('.qzcad .qzq').length===0),'tocar de novo: recolhe');
 r=await ev(()=>document.querySelector('.qzrr .qzrrn .mut').textContent);ok(/\(10 \+ 12\)/.test(r),'Revisões: a parte mostra a divisão por tópico '+JSON.stringify(r));
 /* sessão 2: janela com um bloco por tópico */
 await study(2);await W(150);await ev(()=>{const b=document.querySelector('#undo [data-act=rqreg]');b&&b.click()});await W(300);
@@ -56,12 +61,12 @@ ok(r.R==='ta:8/10*,tb:9/12'&&r.pd==='0'&&r.its==='1,1','Registrar: um registro p
 await ev(id=>{tab='qz';ui.qcad=id;render()},cid);await W(200);
 r=await ev(()=>document.querySelector('.qzrr .rqk').textContent);ok(r==='8/10 ✓','caderno: a 1ª revisão com o acerto do registro do caderno '+JSON.stringify(r));
 /* Editar: Tópicos fixos depois da revisão */
-await x.act('qed',cid);r=await ev(()=>{const d=document.querySelector('[data-f=qed]');return {sel:d.querySelectorAll('[name=qetm]').length,rows:[...d.querySelectorAll('.qzmap .qzmr')].map(e=>e.textContent).join('|')}});
+await x.act('qed',cid);r=await ev(()=>{const d=document.querySelector('[data-f=qed]');return {sel:d.querySelectorAll('.sfb[data-id^=qetm-]').length,rows:[...d.querySelectorAll('.qzmap .qzmr')].map(e=>e.textContent).join('|')}});
 ok(r.sel===0&&/Classes de palavras \(30\)→ Classes Gramaticais/.test(r.rows)&&/Crase \(3\)→ Concordância Verbal/.test(r.rows),'Editar: Tópicos fixos depois da revisão '+JSON.stringify(r));
 await p.screenshot({path:'saida/qztop-editar-'+w+'.png',fullPage:true});await x.act('qedx');
 /* outro caderno sem revisão: Tópicos com escolha, e salvar muda a divisão */
 const c2=await ev(j=>{const k=rqSesAll('qx')[1].k,id=uid(),P=qParse(j);qcL().push({id,subj:'qx',ses:k,nome:'Caderno 2',n:0,ce:0,me:0,d:today()});qSave(id,{qs:P.qs});save();ui.qcad=id;render();return id},JSON.stringify(mkQ('Pronomes',4,0)));
-await x.act('qed',c2);await ev(()=>{const s=document.querySelector('[name=qetm]');s.value='tb';s.dispatchEvent(new Event('change',{bubbles:true}));document.querySelector('[data-f=qed]').requestSubmit()});await W(200);
+await x.act('qed',c2);await x.pick('qetm-pronomes','tb');await ev(()=>document.querySelector('[data-f=qed]').requestSubmit());await W(200);
 r=await ev(id=>{const m=qcM(id),o=qLoad(id);return o.qs.every(q=>qTopOf(m,q)==='tb')},c2);ok(r,'Editar sem revisão: troca o tópico de um assunto');
 /* ▶ por tópico no caderno: resolve só as questões daquele tópico */
 await ev(id=>{ui.qcad=id;render()},cid);await W(150);
@@ -76,7 +81,7 @@ r=await ev(()=>{const L=[...document.querySelectorAll('.qzme .qzo')].map(b=>({k:
 const shown=r.map(o=>o.l).join(''),beta=r.find(o=>o.k==='B');ok(shown==='ABCDE'&&r.map(o=>o.k).join('')!==''&&beta&&beta.t==='beta','letras na tela seguem A–E; o conteúdo vai junto '+JSON.stringify(r.map(o=>o.l+'='+o.t)));
 let mixed=0;for(let i=0;i<6;i++){const ks=await ev(()=>[...document.querySelectorAll('.qzme .qzo')].map(b=>b.dataset.id).join(''));if(ks!=='ABCDE')mixed++;
  const L=await ev(()=>document.querySelector('.qzme .qzo[data-id=B] .qzol').textContent);await p.keyboard.press(L.toLowerCase());await W(120);
- const f=await ev(()=>({ok:ui.qz.res[ui.qz.ids[ui.qz.i]].ok,pq:document.querySelector('.qzfb p').textContent,ae:[...document.querySelectorAll('.qzae p')].map(e=>e.textContent)}));
+ const f=await ev(()=>({ok:ui.qz.res[ui.qz.ids[ui.qz.i]].ok,pq:document.querySelector('.qzfb p').textContent,ae:[...document.querySelectorAll('.qzme .qzo')].filter(b=>b.querySelector('.qzoe')).map(b=>b.querySelector('.qzol').textContent+' '+b.querySelector('.qzoe').textContent)}));
  if(i===0)ok(f.ok&&f.pq.includes('alternativa '+L)&&f.ae.length===4&&f.ae.some(t=>t.includes('a letra '+t[0]+' erra')),'teclado: a letra da tela responde; o comentário cita a letra da tela '+JSON.stringify({L,...f}));
  await ev(()=>document.querySelector('.qzd [data-act=qnext]').click())}
 ok(mixed>=3,'as alternativas mudam de lugar ('+mixed+' de 6 embaralhadas)');

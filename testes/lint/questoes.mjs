@@ -21,8 +21,8 @@ ok(await ev(()=>document.getElementById('mtt').textContent==='Questões'&&!!docu
 /* 2. importar: erros e prévia */
 await ev(()=>document.querySelector('.qzintro [data-act=qnew]').click());await W(300);
 /* a disciplina com mais sessões de estudo (para ligar à sessão) */
-const QS=await ev(()=>qSubs().map(s=>[s.id,rqSesAll(s.id).length]).sort((a,b)=>b[1]-a[1])[0][0]);await ev(id=>{const s=document.querySelector('[name=qs]');s.value=id;s.dispatchEvent(new Event('change',{bubbles:true}))},QS);await W(300);
-const sub=await ev(id=>({sel:document.querySelector('[name=qs]').value,want:id,ses:document.querySelectorAll('[name=qse] option').length}),QS);
+const QS=await ev(()=>qSubs().map(s=>[s.id,rqSesAll(s.id).length]).sort((a,b)=>b[1]-a[1])[0][0]);await x.pick('qzs',QS);await W(150);
+const sub=await ev(id=>({sel:document.querySelector('.sfb[data-id=qzs]').textContent,want:S.subjects.find(s=>s.id===id).name}),QS);sub.ses=(await x.opts('qzse')).length;
 ok(sub.sel===sub.want&&sub.ses>=2,'janela Novo caderno: disciplina e sessões para ligar '+JSON.stringify(sub));
 await paste('[{"numero": 1, "tipo": "CE", "enunciado": "Um item", "gabarito": "C"},\n{"numero": 2, "tipo": "CE", "enunciado": "Outro "item"", "gabarito": "E"}]');
 let r=await pv();ok(r&&/no/.test(r.cls)&&/quebrado perto da questão 2/.test(r.t),'JSON quebrado: avisa perto de qual questão '+JSON.stringify(r));
@@ -31,13 +31,15 @@ const bad2=JSON.stringify([{numero:9,tipo:'ME',enunciado:'Sem gabarito válido',
 await paste('Aviso: faltaram 2 questões.\n```json\n'+QJ+'\n```\n'+bad2+'\nFaltaram X questões. Envie: Mais X');
 r=await pv();ok(r&&/wa/.test(r.cls)&&/^3 questões lidas · 2 Certo\/Errado e 1 múltipla escolha/.test(r.t)&&/2 com problema/.test(r.t)&&/questão 9: o gabarito D não está nas alternativas/.test(r.t),'avisos e cerca ignorados, dois arrays juntos, 2 com problema ficam de fora '+JSON.stringify(r));
 await p.screenshot({path:'saida/questoes-importar-'+w+'.png'});
-const sesK=await ev(()=>{const o=document.querySelectorAll('[name=qse] option')[1];return o?o.value:''});
-await ev(k=>{const s=document.querySelector('[name=qse]');s.value=k;s.dispatchEvent(new Event('change',{bubbles:true}))},sesK);await W(300);
+const sesK=await ev(id=>{const L=qSesL(id);return L[0]?L[0].k:''},QS);
+await x.pick('qzse',sesK);await W(150);
 ok(await ev(()=>/^Sessão \d+ · /.test(document.querySelector('[name=qn]').placeholder)&&/^3 questões lidas/.test(document.querySelector('#qzpv').textContent)),'ligar à sessão: o nome sugerido vem da sessão e o texto colado continua lá');
 await ev(()=>document.querySelector('[data-f=qimp]').requestSubmit());await W(400);
 const cid=await ev(()=>qcL()[0]&&qcL()[0].id);
 r=await ev(id=>{const m=qcM(id);return {n:m.n,ce:m.ce,me:m.me,ses:!!m.ses,open:ui.qcad===id,ls:!!localStorage.getItem('ciclo-q-'+id),inS:JSON.stringify(S).includes('exemplificativo'),pend:qPend().includes(id)}},cid);
 ok(r.n===3&&r.ce===2&&r.me===1&&r.ses&&r.open&&r.ls&&!r.inS,'caderno salvo: 3 questões, ligado à sessão, conteúdo guardado fora dos dados do app '+JSON.stringify(r));
+r=await ev(()=>({g:document.querySelectorAll('.qzcad .qzg').length,q:document.querySelectorAll('.qzcad .qzq').length}));ok(r.g<2||r.q===0,'assuntos variados: os grupos começam recolhidos '+JSON.stringify(r));
+await ev(()=>{let b,n=0;while((b=document.querySelector('.qzcad [data-act=qgtog][aria-expanded=false]'))&&n++<20)b.click()});await W(100);
 ok(await ev(()=>/Sessão \d+/.test(document.querySelector('.qzcad').textContent)&&document.querySelectorAll('.qzcad .qzq').length===3&&!document.querySelector('[data-act=qwrong]')),'tela do caderno: 3 questões, ligação com a sessão, sem "Só as erradas" ainda');
 /* 3. acrescentar: repetidas ficam de fora */
 await x.act('qmore',cid);await paste(QJ);r=await pv();ok(r&&/0 questões lidas/.test(r.t)&&/3 repetidas/.test(r.t),'acrescentar o mesmo bloco: 3 repetidas, nada novo '+JSON.stringify(r));
@@ -45,23 +47,24 @@ const one=JSON.stringify([{...QA[1],numero:4,enunciado:'Uma afirmação nova, s�
 ok(await ev(id=>qcM(id).n===4&&qLoad(id).qs.length===4,cid),'acrescentar uma nova: o caderno passa a 4');
 /* 4. resolver */
 await x.act('qall',cid);await W(300);
-r=await ev(()=>({n:document.querySelector('.qzt .mut').textContent,tag:document.querySelector('.qzt .tag').textContent,ce:document.querySelectorAll('.qzce .qzo').length}));ok(r.n==='1 de 4'&&r.tag==='Rol dos direitos'&&r.ce===2,'resolver: "1 de 4", tópico e Certo/Errado '+JSON.stringify(r));
+r=await ev(()=>({n:document.querySelector('.qzt .qzn').textContent,tag:document.querySelector('.qzmeta .snt').textContent,ce:document.querySelectorAll('.qzce .qzo').length,seg:document.querySelectorAll('.qzpr .qzps').length,cur:document.querySelectorAll('.qzps.cur').length}));ok(r.n==='Questão 1 de 4'&&r.tag==='Rol dos direitos'&&r.ce===2&&r.seg===4&&r.cur===1,'resolver: "Questão 1 de 4", assunto, Certo/Errado e a barra com uma marca por questão '+JSON.stringify(r));
 await x.act('qans','C');r=await ev(()=>({fb:document.querySelector('.qzfb').innerHTML,c:document.querySelector('.qzo[data-id=C]').className,e:document.querySelector('.qzo[data-id=E]').className}));
 ok(/Gabarito: Errado/.test(r.fb)&&/Onde está o erro/.test(r.fb)&&/<b>exemplificativo<\/b>/.test(r.fb)&&/ no/.test(r.c)&&/ ok/.test(r.e),'errou: gabarito, "Onde está o erro" e "O correto é" com negrito; a escolhida em vermelho, a certa em verde');
 await p.screenshot({path:'saida/questoes-resolver-'+w+'.png'});
 await x.act('qans','E');ok(await ev(()=>qaOf(ui.qz.cad,ui.qz.ids[0]).length===1),'depois de responder, não troca a resposta');
 await p.keyboard.press('Enter');await W(200);await p.keyboard.press('c');await W(200);ok(await ev(()=>ui.qz.i===1&&/Você acertou/.test(document.querySelector('.qzfb').textContent)),'teclado: Enter vai à próxima; C responde Certo (acertou)');
 await p.keyboard.press('Enter');await W(200);r=await ev(()=>({me:document.querySelectorAll('.qzme .qzo').length,tb:!!document.querySelector('.qztb')}));ok(r.me===5&&r.tb,'múltipla escolha: 5 alternativas e o texto-base');
-await x.act('qans','A');r=await ev(()=>document.querySelector('.qzfb').textContent);const LB=await ev(()=>document.querySelector('.qzme .qzo[data-id=B] .qzol').textContent);ok(r.includes('Gabarito: '+LB+'.')&&/Por que está certa/.test(r)&&/Não dependem sempre de lei/.test(r)&&!/^B /.test(r),'ME errada: gabarito (a letra da tela da alternativa B), por que está certa e o erro de cada alternativa');
+await x.act('qans','A');r=await ev(()=>document.querySelector('.qzfb').textContent);const LB=await ev(()=>document.querySelector('.qzme .qzo[data-id=B] .qzol').textContent);const AE=await ev(()=>[...document.querySelectorAll('.qzme .qzo')].map(b=>b.dataset.id+':'+((b.querySelector('.qzoe')||{}).textContent||'')));ok(r.includes('Gabarito: '+LB+'.')&&/Por que está certa/.test(r)&&AE.some(t=>/Não dependem sempre de lei/.test(t))&&AE.find(t=>t.startsWith('B:'))==='B:','ME errada: gabarito (a letra da tela da alternativa B), por que está certa, e o erro de cada alternativa embaixo dela (a certa sem comentário) '+JSON.stringify(AE));
+await ev(()=>document.querySelectorAll('.qzpr .qzps')[0].click());await W(200);ok(await ev(()=>ui.qz.i===0&&!!document.querySelector('.qzps.cur.no')),'tocar numa marca da barra leva à questão (a 1ª, errada)');await ev(()=>{ui.qz.i=1;render()});await x.act('qnext');
 await x.act('qnext');await x.act('qans','C');await x.act('qnext');
 r=await ev(()=>({t:document.querySelector('.qzres').textContent,w:document.querySelectorAll('.qzwi').length,retry:!!document.querySelector('[data-act=qretry]')}));ok(/^2 de 4/.test(r.t)&&/50% de acerto/.test(r.t)&&r.w===2&&r.retry,'resultado: 2 de 4 (50%), as 2 erradas listadas, Refazer as erradas '+JSON.stringify(r));
 await x.act('qretry');ok(await ev(()=>ui.qz.ids.length===2&&ui.qz.i===0&&!ui.qz.done),'Refazer as erradas: só as 2');
 /* corrigir gabarito */
 await x.act('qans','C');await x.act('qfix');await x.act('qfixset','C');
 r=await ev(id=>{const q=qLoad(id).qs[0];return {gf:q.gf,ok:ui.qz.res[q.id].ok,last:qLast(id,q.id).ok,pend:qPend().includes(id),txt:document.querySelector('.qzfb').textContent}},cid);
-ok(r.gf==='C'&&r.ok&&r.last&&/gabarito corrigido por você/.test(r.txt),'Gabarito parece errado → Certo: a resposta passa a contar como certa '+JSON.stringify(r));
+ok(r.gf==='C'&&r.ok&&r.last&&/Gabarito corrigido por você/.test(r.txt),'Gabarito parece errado → Certo: a resposta passa a contar como certa '+JSON.stringify(r));
 await p.keyboard.press('Escape');await W(200);ok(await ev(()=>!ui.qz&&!!document.querySelector('.qzcad')),'Esc sai do resolver e volta ao caderno');
-r=await ev(()=>({w:(document.querySelector('[data-act=qwrong]')||{}).textContent||'',ok:document.querySelectorAll('.qzcad .qzst.ok').length,no:document.querySelectorAll('.qzcad .qzst.no').length}));ok(r.w==='Só as erradas (1)'&&r.ok===3&&r.no===1,'caderno: ✓ e ✗ da última vez e "Só as erradas (1)" '+JSON.stringify(r));
+await ev(()=>{let b,n=0;while((b=document.querySelector('.qzcad [data-act=qgtog][aria-expanded=false]'))&&n++<20)b.click()});await W(100);r=await ev(()=>({w:(document.querySelector('[data-act=qwrong]')||{}).textContent||'',ok:document.querySelectorAll('.qzcad .qzst.ok').length,no:document.querySelectorAll('.qzcad .qzst.no').length}));ok(r.w==='Só as erradas (1)'&&r.ok===3&&r.no===1,'caderno: ✓ e ✗ da última vez e "Só as erradas (1)" '+JSON.stringify(r));
 /* 4b. navegação: Pular (antes de responder), Voltar, setas, bandeira só depois de responder, sem resposta no resultado */
 await x.act('qall',cid);await W(200);
 r=await ev(()=>({nx:document.querySelector('.qzd [data-act=qnext]').textContent,pv:!!document.querySelector('.qzd [data-act=qprev]'),fl:!!document.querySelector('.qzd .qzflag')}));ok(r.nx==='Pular'&&!r.pv&&!r.fl,'1ª questão sem responder: "Pular", sem "Voltar" e sem a bandeira (não entrega o gabarito) '+JSON.stringify(r));
@@ -80,7 +83,7 @@ await p.screenshot({path:'saida/questoes-lista-'+w+'.png'});
 /* 6. renomear, excluir e Desfazer */
 r=await ev(id=>{const row=document.querySelector(`[data-act=qopen][data-id="${id}"]`).closest('.qzr'),n=row.querySelector('.qzrb>.snt').getBoundingClientRect(),e=row.querySelector('[data-act=qed]').getBoundingClientRect(),d=row.querySelector('[data-act=qdel]').getBoundingClientRect(),c=y=>(y.top+y.bottom)/2;return {tag:row.querySelector('.qzrm .tag').textContent,alin:Math.abs(c(n)-c(e))<3&&Math.abs(c(n)-c(d))<3,dentro:!document.querySelector('.qzcad')}},cid);
 ok(r.tag==='3/4 certas'&&r.alin&&r.dentro,'lista: placar ao lado do número de questões; lápis e lixeira alinhados com o nome '+JSON.stringify(r));
-await x.act('qed',cid);r=await ev(()=>{const d=document.querySelector('.qimpdlg[aria-label="Editar caderno"]');return d&&{nome:!!d.querySelector('[name=qen]'),ses:!!d.querySelector('[name=qes]'),z:!!d.querySelector('[data-act=qzero]'),t:d.querySelector('.qzedz').textContent}});ok(r&&r.nome&&r.ses&&r.z&&/4 de 4 respondidas · 3 certas/.test(r.t),'Editar: nome, sessão e Zerar respostas '+JSON.stringify(r));
+await x.act('qed',cid);r=await ev(()=>{const d=document.querySelector('.qimpdlg[aria-label="Editar caderno"]');return d&&{nome:!!d.querySelector('[name=qen]'),ses:!!d.querySelector('.sfb[data-id=qzes]'),z:!!d.querySelector('[data-act=qzero]'),t:d.querySelector('.qzedz').textContent}});ok(r&&r.nome&&r.ses&&r.z&&/4 de 4 respondidas · 3 certas/.test(r.t),'Editar: nome, sessão e Zerar respostas '+JSON.stringify(r));
 await p.screenshot({path:'saida/questoes-editar-'+w+'.png'});
 await x.act('qzero',cid);r=await ev(id=>({a:qSum(id).a,open:!!ui.qed,t:document.querySelector('.qzedz').textContent,u:!!document.querySelector('#undo .undob')}),cid);ok(r.a===0&&r.open&&/Nenhuma resposta/.test(r.t)&&r.u,'Zerar respostas: 0 respondidas, o painel fica aberto, com Desfazer '+JSON.stringify(r));
 await ev(()=>document.querySelector('#undo .undob').click());await W(200);ok(await ev(id=>qSum(id).a===4,cid),'Desfazer devolve as respostas');
