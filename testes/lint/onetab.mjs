@@ -3,7 +3,7 @@ const [SHOT,OUT]=process.argv.slice(2);
 const b=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
 const log=[],ok=(x,m)=>log.push((x?'OK   ':'FALHA ')+m),W=ms=>new Promise(r=>setTimeout(r,ms));
 const d=JSON.parse(fs.readFileSync(SHOT+'/data-rv3.json','utf8'));const S0=JSON.parse(d['ciclo-estudos-v2']);S0.timer={running:false,start:0,acc:0};S0.sx=false;d['ciclo-estudos-v2']=JSON.stringify(S0);
-const A=await b.newPage();const ea=[];A.on('pageerror',e=>ea.push(e.message));await A.setViewport({width:1280,height:760,deviceScaleFactor:1.25});await A.goto('http://localhost:8765/');await A.evaluate(d=>{localStorage.clear();for(const k in d)localStorage.setItem(k,d[k])},d);await A.goto('http://localhost:8765/');await W(500);
+const A=await b.newPage();const ea=[];A.on('pageerror',e=>ea.push(e.message));await A.setViewport({width:1280,height:760,deviceScaleFactor:1.25});await A.goto('http://localhost:8765/');await A.evaluate(d=>{localStorage.clear();for(const k in d)localStorage.setItem(k,d[k])},d);await A.goto('http://localhost:8765/');await W(500);await A.evaluate(()=>{S.cdOff=true;save()});
 ok(await A.evaluate(()=>!document.getElementById('tabblock')&&!window.__ro),'Uma aba só: livre');
 // A em foco com cronômetro rodando
 await A.evaluate(()=>(document.querySelector('.nwplay').click(),(()=>{const b=document.querySelector('.fmd [data-act=tstart]');if(S.sx===true&&!S.timer.running&&!el()&&b)b.click()})()));await W(300);await A.evaluate(()=>{S.timer.start=Date.now()-12*60000;save()});

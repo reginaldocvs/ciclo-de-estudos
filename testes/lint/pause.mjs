@@ -5,12 +5,12 @@ const log=[],ok=(x,m)=>log.push((x?'OK   ':'FALHA ')+m);
 for(const W of [1280,390]){
 const d=JSON.parse(fs.readFileSync(SHOT+'/data-rv3.json','utf8'));const S0=JSON.parse(d['ciclo-estudos-v2']);S0.timer={running:false,start:0,acc:0};S0.sx=false;d['ciclo-estudos-v2']=JSON.stringify(S0);
 const p=await b.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));await p.setViewport({width:W,height:820,deviceScaleFactor:1.25});
-await p.goto('http://localhost:8765/');await p.evaluate(d=>{localStorage.clear();for(const k in d)localStorage.setItem(k,d[k])},d);await p.goto('http://localhost:8765/');await new Promise(r=>setTimeout(r,500));
+await p.goto('http://localhost:8765/');await p.evaluate(d=>{localStorage.clear();for(const k in d)localStorage.setItem(k,d[k])},d);await p.goto('http://localhost:8765/');await new Promise(r=>setTimeout(r,500));await p.evaluate(()=>{S.cdOff=true;save()});
 const ev=(f,...a)=>p.evaluate(f,...a),Wt=ms=>new Promise(r=>setTimeout(r,ms));
 // disciplina não concluída
 const id=await ev(()=>actives().find(s=>prog(s.id)<s.goal).id);
 await ev(id=>document.querySelector(`.srow [data-act=rplay][data-id="${id}"]`).click(),id);await Wt(400);
-ok(await ev(()=>S.sx===true&&!S.timer.running&&document.querySelector('.fmst').textContent==='Pronto para iniciar'),W+': Iniciar abre o foco parado, pronto para iniciar');await ev(()=>document.querySelector('.fmd [data-act=tstart]').click());await Wt(200);ok(await ev(()=>S.timer.running),W+': Iniciar no foco começa a contar');
+ok(await ev(()=>S.sx===true&&!S.timer.running&&!!document.querySelector('.fmd .fmpre')),W+': Iniciar abre o foco parado, com as escolhas');await ev(()=>document.querySelector('.fmd [data-act=tstart]').click());await Wt(200);ok(await ev(()=>S.timer.running),W+': Iniciar no foco começa a contar');
 await ev(()=>{S.timer.acc=25*60000+12000;S.timer.start=Date.now();render()});await Wt(200);
 await ev(()=>document.querySelector('[data-act=fmoff]').click());await Wt(400);
 ok(await ev(id=>!S.sx&&!S.timer.running&&el()===0&&pzMs(id)>=25*60000,id),W+': Sair do foco guarda o tempo como pausado');

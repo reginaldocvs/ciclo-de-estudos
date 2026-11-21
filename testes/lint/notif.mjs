@@ -3,7 +3,7 @@ import puppeteer from 'puppeteer-core';import fs from 'fs';const W=ms=>new Promi
 const DATA=fs.readFileSync(process.argv[2],'utf8');let bad=0;const ok=(c,m)=>{console.log((c?'OK    ':'FALHA ')+m);if(!c)bad++};
 const b=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});const p=await b.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));await p.setViewport({width:1280,height:800});
 await p.evaluateOnNewDocument(()=>{window.__notes=[];window.__asks=0;let perm='default';window.Notification=class{constructor(t,o){window.__notes.push(t+' | '+(o&&o.body))}static get permission(){return perm}static requestPermission(){window.__asks++;perm='granted';return Promise.resolve(perm)}}});
-await p.goto('http://localhost:8765/');await p.evaluate(d=>{localStorage.clear();localStorage.setItem('ciclo-estudos-v2',d);localStorage.setItem('ciclo-welcome-skip','1')},DATA);await p.reload();await W(700);
+await p.goto('http://localhost:8765/');await p.evaluate(d=>{localStorage.clear();localStorage.setItem('ciclo-estudos-v2',d);localStorage.setItem('ciclo-welcome-skip','1')},DATA);await p.reload();await W(700);await p.evaluate(()=>{S.cdOff=true;save()});
 const ev=(f,...a)=>p.evaluate(f,...a);
 await ev(()=>(document.querySelector('.nwplay').click(),(()=>{const b=document.querySelector('.fmd [data-act=tstart]');if(S.sx===true&&!S.timer.running&&!el()&&b)b.click()})()));await W(400);
 ok(await ev(()=>S.sx===true&&S.timer.running),'Iniciar abre o modo foco');ok(await ev(()=>!document.querySelector('.fmpip,[data-act=pipon]')),'sem o botão "Destacar cronômetro"');

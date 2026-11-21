@@ -11,9 +11,9 @@ const nts=()=>ev(()=>window.__nt.filter(t=>/além da meta/.test(t)));
 const fmOff=()=>ev(()=>{const e=[...document.querySelectorAll('[data-act=fmoff]')].find(e=>e.offsetParent);if(e)e.click()});
 await ev(()=>document.querySelector('nav [data-tab=ciclo]').click());await W(300);const g=await ev(()=>curS().goal);
 /* 1. ligar na engrenagem */
-await ev(()=>document.querySelector('.nwplay').click());await W(300);await x.act('fmotog');await W(300);
-let r=await ev(()=>{const d=document.querySelector('.fmcfg');return {lb:[...d.querySelectorAll('.fmopt .lb')].map(e=>e.textContent).join(),sw:d.querySelector('[data-act=ovtog]').getAttribute('aria-checked'),rep:!!d.querySelector('[data-act=ovrep]')}});
-ok(r.lb==='Tipo,Meta,Avisar antes,Avisar depois'&&r.sw==='false'&&!r.rep,'engrenagem: "Avisar depois", desligado, sem o botão de repetir '+JSON.stringify(r));
+await ev(()=>document.querySelector('.nwplay').click());await W(300);
+let r=await ev(()=>{const d=document.querySelector('.fmd .fmpre');return {lb:[...d.querySelectorAll('.fmopt .lb')].map(e=>e.textContent).join(),sw:d.querySelector('[data-act=ovtog]').getAttribute('aria-checked'),rep:(b=>!!b&&b.disabled)(d.querySelector('[data-act=ovrep]'))}});
+ok(r.lb==='Tipo,Meta,Avisar antes,Avisar depois'&&r.sw==='false'&&r.rep,'antes de iniciar, na camada: "Avisar depois", desligado (minutos e repetir à vista, apagados) '+JSON.stringify(r));
 await x.act('ovtog');r=await ev(()=>({m:overM(),v:document.querySelector('[data-ovv]').value,rep:document.querySelector('[data-act=ovrep]').getAttribute('aria-pressed')}));
 ok(r.m===10&&r.v==='10'&&r.rep==='false','ligar: 10 min, repetir desligado (uma vez) '+JSON.stringify(r));
 await p.screenshot({path:'saida/overmeta-opcoes-'+w+'.png'});

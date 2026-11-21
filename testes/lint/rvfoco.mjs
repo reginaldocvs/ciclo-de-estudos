@@ -16,9 +16,9 @@ ok(await x.ev(()=>[...document.querySelectorAll('.bkact .btn')].every(b=>b.query
 await x.ev(()=>document.querySelector('.blkc').scrollIntoView({block:'start'}));await W(200);await shot('1-cartao');
 const s1=A[0];
 await x.act('bkgo',s1);await W(1300);
-ok(await x.ev(()=>!!document.querySelector('#modal .rvfd')&&S.rvf&&!S.rvf.run&&document.getElementById('rvft').textContent==='00:00:00'),'Iniciar abre o foco parado');
-await x.act('fmotog');await W(300);ok(await x.ev(()=>S.rvf.goal===45&&document.querySelector('#modal .fmcfg [data-rvfg]').value==='0h45'),'engrenagem: a janela traz a meta do marcador (0h45)');
-ok(await x.ev(()=>!!document.querySelector('#modal .rvfd .fmg .fmgear')&&/de 00:45:00$/.test(document.getElementById('rvfgl').textContent)&&!!document.querySelector('#modal [data-act=rvfreg]')),'antes de iniciar: barra com a meta e a engrenagem, e já com Registrar (dá para revisar sem cronometrar), como no foco do estudo');
+ok(await x.ev(()=>!!document.querySelector('#modal .rvfd')&&S.rvf&&!S.rvf.run&&!!document.querySelector('#modal .rvfd .fmpre')),'Iniciar abre o foco parado, com as escolhas');
+ok(await x.ev(()=>S.rvf.goal===45&&document.querySelector('#modal .fmpre [data-rvfg]').value==='0h45'),'antes de iniciar: a meta do marcador (0h45) na camada');
+ok(await x.ev(()=>!document.querySelector('#modal .rvfd .fmgear')&&!document.querySelector('#modal [data-act=rvfreg]')&&!!document.querySelector('#modal .rvfd .fma [data-act=rvfrs]')),'antes de iniciar: sem engrenagem nem Registrar (registrar sem cronometrar fica no cartão), só Iniciar');
 ok(/Tópico F1/.test(await x.ev(()=>document.querySelector('#modal .rvfd').innerText)),'foco mostra o que revisar');
 await shot('2a-antes');
 await x.fill('#modal [data-rvfg]','20');ok(await x.ev(()=>S.rvf.goal===20&&S.blk[0].goal===45),'mudar a meta vale só para esta revisão');
