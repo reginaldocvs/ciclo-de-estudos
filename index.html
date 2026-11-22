@@ -1180,6 +1180,21 @@ body{text-wrap:pretty}
 .qzs .qzra{margin:0}
 .card.qzs{border-bottom:0}.card.qzs:not(:has(+.qzs)){border-bottom:1px solid var(--m-ov)}.qzs>.qzl .qzr:last-child{border-bottom:1px solid var(--m-ov)}.card.qzs:not(:has(+.qzs))>.qzl .qzr:last-child{border-bottom:0}
 @media (max-width:600px){.card.qzs{grid-template-columns:minmax(0,1fr) auto}.qzs::before{grid-row:1/3}.qzs>.qzh{min-height:0;padding-top:12px}.qzs>.qzsm{grid-column:1;grid-row:2;padding:0 0 12px 38px}.qzs>.qzadd{grid-column:2;grid-row:1/3}.qzs>.qzl{grid-row:3}.qzs .qzr{padding:8px 4px 8px 38px}.qzs .qzrb{flex-direction:column;align-items:flex-start;gap:2px}.qzs .qzr{align-items:flex-start}.qzs .qzra{margin-top:-8px}}
+/* ===== Histórico no edital: dia em faixa, cada registro numa linha (disciplina | tópicos e aulas | tempo, tipo e acerto | ações) ===== */
+.hlist{container-type:inline-size;width:100%!important;max-width:none!important}
+@container (min-width:660px){
+ .hlist .hdg .hday{margin:0 -20px;padding:10px 20px;background:var(--m-c-low);border-top:1px solid var(--m-ov);border-bottom:1px solid var(--m-ov);font-size:.875rem}
+ .hlist .hdg:first-child .hday{padding-top:10px}
+ .hlist .ritem{max-width:none!important;width:auto;display:block;padding:12px 0!important;border-top:0!important;border-bottom:1px solid var(--m-ov)}
+ .hlist .hdg>.ritem:last-child{border-bottom:0}
+ .hlist .ritem>.grow{display:grid;grid-template-columns:minmax(120px,190px) minmax(180px,1fr) minmax(180px,300px) 72px;column-gap:20px;align-items:start}
+ .hlist .ritem .grow>.hic{float:none;grid-column:4;grid-row:1;justify-self:end;height:auto;margin:-8px -4px 0 0}
+ .hlist .ritem .rsub{grid-column:1;grid-row:1;font-weight:700}
+ .hlist .ritem .rtps{grid-column:2;grid-row:1;min-width:0}
+ .hlist .ritem .rmeta{grid-column:3;grid-row:1;margin:0;font-variant-numeric:tabular-nums}
+ .hlist .ritem .grow>:not(.hic):not(.rsub):not(.rtps):not(.rmeta){grid-column:1/-1}
+ .hlist .rit{flex-wrap:wrap;row-gap:2px;justify-content:flex-start}.hlist .ritn{flex:0 0 auto;max-width:100%}.hlist .ritl{display:none}
+}
 /* ===== Ciclo no edital: tabela + painel da sessão ===== */
 .edx{display:flex;flex-direction:column;gap:16px}
 .edp{background:var(--card);border:1px solid var(--m-ov);border-radius:var(--r-2xl);padding:20px}
