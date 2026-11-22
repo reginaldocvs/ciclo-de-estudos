@@ -8,5 +8,5 @@ await x.ev(()=>(()=>{document.querySelector('nav [data-tab=ciclo]').click();docu
 const r=await x.ev(id=>({gone:!S.subjects.some(s=>s.id===id),sel:S.sel.subj,ok:S.subjects.some(s=>s.id===S.sel.subj),cur:(current()||{}).id}),sel.id);
 ok(r.gone,'disciplina excluída');ok(r.ok&&r.sel===r.cur,'seleção passou para a disciplina da vez ('+r.sel+')');
 await x.act('plclose').catch(()=>{});await p.evaluate(()=>[...document.querySelectorAll('[data-tab="ciclo"]')].find(e=>e.getClientRects().length).click());await W(300);
-const nw=await x.ev(()=>(document.querySelector('#app .nwn')||{}).textContent||'');ok(nw&&!nw.includes(sel.name),'cartão Agora mostra outra disciplina: '+nw.trim());
+const nw=await x.ev(()=>(document.querySelector('#app .edpn')||document.querySelector('#app .nwn')||{}).textContent||'');ok(nw&&!nw.includes(sel.name),'cartão Agora mostra outra disciplina: '+nw.trim());
 ok(!errs.length,'sem erros '+errs.join('|'));console.log(bad?'FALHAS: '+bad:'TUDO OK');await b.close();

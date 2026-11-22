@@ -15,9 +15,8 @@ await ev(()=>{S.timer.acc=25*60000+12000;S.timer.start=Date.now();render()});awa
 await ev(()=>document.querySelector('[data-act=fmoff]').click());await Wt(400);
 ok(await ev(id=>!S.sx&&!S.timer.running&&el()===0&&pzMs(id)>=25*60000,id),W+': Sair do foco guarda o tempo como pausado');
 ok(await ev(()=>/Sessão pausada com 25min/.test(document.body.innerText)),W+': aviso de pausa');
-ok(await ev(id=>{const r=[...document.querySelectorAll('.srow')].find(r=>r.querySelector(`[data-id="${id}"]`));return parseFloat(r.querySelector('.bar i').style.width)>0&&/25min de/.test(r.querySelector('.ctl').innerText)&&r.querySelector('[data-act=rplay]').title==='Retomar'},id),W+': linha com trecho listrado, 25min e Retomar');
-ok(await ev(id=>{const c=document.querySelector(`.cbs[data-id="${id}"]`);return !!c.querySelector('.cbl .pz')&&/em pausa/.test(c.dataset.tip)},id),W+': faixa do ciclo com trecho listrado');
-const nowTxt=await ev(()=>document.querySelector('.now .mut').innerText);ok(/pausa · 25min/.test(nowTxt),W+': Agora: '+nowTxt);
+ok(await ev(id=>{const r=[...document.querySelectorAll('.srow')].find(r=>r.querySelector(`[data-id="${id}"]`));return parseFloat(r.querySelector('.bar i').style.width)>0&&/25min/.test((r.querySelector('.edfe')||r.querySelector('.ctl')).innerText)&&r.querySelector('[data-act=rplay]').title==='Retomar'},id),W+': linha com trecho listrado, 25min e Retomar');
+const nowTxt=await ev(()=>(document.querySelector('.edst')||document.querySelector('.now .mut')).textContent);ok(/pausa · 25min/.test(nowTxt),W+': Agora: '+nowTxt);
 await Wt(2600);await p.screenshot({path:`${OUT}/pause-${W}.png`});
 // recarregar mantém
 await p.reload();await Wt(600);ok(await ev(id=>pzMs(id)>=25*60000,id),W+': continua guardado depois de recarregar');

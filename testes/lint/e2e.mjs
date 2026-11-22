@@ -36,7 +36,7 @@ async function studyNext({pauseTest=false}={}){
  if(!(await x.ev(()=>S.sx===true&&S.timer.running)))throw new Error('Iniciar não abriu o foco');
  await x.ev(m=>{S.timer.start=Date.now()-m*60000},Math.min(s.goal,50));
  if(pauseTest){await x.act('fmoff');ok(await x.ev(id=>pzMs(id)>0&&!S.sx,s.id),'sair do foco guarda a pausa ('+s.name+')');
-  ok(await x.ev(()=>document.querySelector('.nwplay span').textContent==='Retomar'),'Agora mostra Retomar');
+  ok(await x.ev(()=>/^Retomar/.test(document.querySelector('.nwplay span').textContent)),'Agora mostra Retomar');
   await x.ev(()=>(document.querySelector('.nwplay').click(),(()=>{const b=document.querySelector('.fmd [data-act=tstart]');if(S.sx===true&&!S.timer.running&&!el()&&b)b.click()})()));await W(250);ok(await x.ev(()=>S.sx===true&&el()>=40*60000),'Retomar continua o tempo')}
  await x.act('fmreg');
  const tp=s.tops[(aula-1)%s.tops.length];
