@@ -1207,6 +1207,9 @@ body{text-wrap:pretty}
 @media (max-width:600px){.stab td,.stab th{padding:10px 6px}.stab td:first-child{white-space:nowrap}}
 /* Configurações: cartões numa coluna de leitura (textos sem linhas de 900px) */
 #app:has(.cfgfm)>.card{max-width:760px}
+/* Botões no edital: cantos de 8px em todo o app (antes eram pílulas, herdadas do Material) */
+.btn,.btn.s,.btn.g,.btn.nwplay,.btn.nwreg,.fma .btn,.cfin .cfact .btn,.c2 .nwact .btn.nwreg{border-radius:8px!important}
+.seg,.seg:first-child,.seg:last-child,.seg.on,.seg.on:hover{border-radius:8px!important}.sidenav button,.tabbar button>svg{border-radius:8px!important}
 /* ===== Ciclo no edital: tabela + painel da sessão ===== */
 .edx{display:flex;flex-direction:column;gap:16px}
 .edp{background:var(--card);border:1px solid var(--m-ov);border-radius:var(--r-2xl);padding:20px}
