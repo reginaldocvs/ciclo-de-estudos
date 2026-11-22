@@ -1195,6 +1195,16 @@ body{text-wrap:pretty}
  .hlist .ritem .grow>:not(.hic):not(.rsub):not(.rtps):not(.rmeta){grid-column:1/-1}
  .hlist .rit{flex-wrap:wrap;row-gap:2px;justify-content:flex-start}.hlist .ritn{flex:0 0 auto;max-width:100%}.hlist .ritl{display:none}
 }
+/* ===== Estatísticas no edital: os quatro números numa faixa só, tabelas com cabeçalho em faixa ===== */
+.stiles{gap:0!important;background:var(--card);border:1px solid var(--m-ov);border-radius:var(--r-2xl);overflow:hidden;margin-bottom:16px}
+.stiles .stile{border:0!important;border-radius:0!important;background:none;padding:16px 20px}
+.stiles .stile+.stile{border-left:1px solid var(--m-ov)!important}
+@media (max-width:700px){.stiles .stile:nth-child(3){border-left:0!important}.stiles .stile:nth-child(n+3){border-top:1px solid var(--m-ov)!important}}
+.stile>.mut:first-child{font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.stile b{font-size:1.75rem;font-weight:700}
+.stab th{background:var(--m-c-high);font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:10px 12px}
+.stab td{padding:12px}
+@media (max-width:600px){.stab td,.stab th{padding:10px 6px}.stab td:first-child{white-space:nowrap}}
 /* ===== Ciclo no edital: tabela + painel da sessão ===== */
 .edx{display:flex;flex-direction:column;gap:16px}
 .edp{background:var(--card);border:1px solid var(--m-ov);border-radius:var(--r-2xl);padding:20px}
