@@ -1205,6 +1205,8 @@ body{text-wrap:pretty}
 .stab th{background:var(--m-c-high);font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:10px 12px}
 .stab td{padding:12px}
 @media (max-width:600px){.stab td,.stab th{padding:10px 6px}.stab td:first-child{white-space:nowrap}}
+/* Configurações: cartões numa coluna de leitura (textos sem linhas de 900px) */
+#app:has(.cfgfm)>.card{max-width:760px}
 /* ===== Ciclo no edital: tabela + painel da sessão ===== */
 .edx{display:flex;flex-direction:column;gap:16px}
 .edp{background:var(--card);border:1px solid var(--m-ov);border-radius:var(--r-2xl);padding:20px}
