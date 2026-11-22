@@ -51,7 +51,7 @@ const tpN={};
 async function study(){await tabTo('ciclo');await blocks();
  const id=await x.ev(()=>{if(S.type==='review'||S.rv)return null;const s=actives().find(s=>!gDone(s));return s?s.id:null});if(!id)return false;
  await x.ev(id=>{const e=[...document.querySelectorAll(`[data-act=rplay][data-id="${id}"]`)].find(e=>e.offsetParent)||document.querySelector(`[data-act=rplay][data-id="${id}"]`);e.click()},id);await W(400);
- if(!await x.ev(()=>FM.on&&(S.timer.running||document.querySelector('.fmst').textContent==='Pronto para iniciar')))bad('estudo: ▶ não abriu o foco');
+ if(!await x.ev(()=>FM.on&&(S.timer.running||!!document.querySelector('.fmd .fmpre'))))bad('estudo: ▶ não abriu o foco');
  await x.ev(()=>{const b=document.querySelector('.fmd [data-act=tstart]');if(!S.timer.running&&b)b.click()});await W(200);
  if(!await x.ev(()=>FM.on&&S.timer.running))bad('estudo: Iniciar no foco não começou a contar');
  const ex=xtra(),m=await runStudyTimer('estudo',ex);if(ex>0)await onceM('foco-estudo-meta');
