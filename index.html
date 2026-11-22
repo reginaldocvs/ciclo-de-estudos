@@ -1160,6 +1160,26 @@ body{text-wrap:pretty}
  .trvc .trvrh>.trvbs{grid-column:6;justify-self:end;margin:0}
  .trvc .trvs>.trvr>.rvits{padding:0 0 12px 42px}
 }
+/* ===== Questões no edital: as disciplinas numa tabela contínua (faixa da disciplina + linhas dos cadernos) ===== */
+.card.qzs{display:grid;grid-template-columns:minmax(0,1fr) auto auto;column-gap:16px;align-items:center;margin:0;padding:0;border-radius:0;border-top:0}
+.card.qzs:not(.qzs+.qzs){border-top:1px solid var(--m-ov);border-radius:var(--r-2xl) var(--r-2xl) 0 0}
+.card.qzs:not(:has(+.qzs)){border-radius:0 0 var(--r-2xl) var(--r-2xl);margin-bottom:16px}
+.card.qzs:not(.qzs+.qzs):not(:has(+.qzs)){border-radius:var(--r-2xl)}
+.qzs>.qzh{grid-column:1;grid-row:1;min-height:48px;padding-left:20px;justify-content:flex-start}
+.qzs>.qzsm{grid-column:2;grid-row:1;font-size:.875rem}
+.qzs>.qzadd{grid-column:3;grid-row:1;margin:0 12px 0 0;white-space:nowrap}
+.qzs>.qzh,.qzs>.qzsm,.qzs>.qzadd{background:none}
+.qzs::before{content:"";grid-column:1/-1;grid-row:1;align-self:stretch;background:var(--m-c-low);border-bottom:1px solid var(--m-ov);z-index:0}
+.qzs>.qzh,.qzs>.qzsm,.qzs>.qzadd{position:relative;z-index:1}
+.card.qzs:not(.qzs+.qzs)::before{border-radius:var(--r-2xl) var(--r-2xl) 0 0}
+.qzs>.qzl{grid-column:1/-1;grid-row:2}
+.qzs .qzr{align-items:center;padding:0 12px 0 40px;min-height:52px;border-top:0;border-bottom:1px solid var(--m-ov)}
+.qzs .qzr:last-child{border-bottom:0}
+.qzs .qzrb{flex-direction:row;align-items:center;justify-content:space-between;gap:16px}
+.qzs .qzrb>.snt{font-weight:600}
+.qzs .qzra{margin:0}
+.card.qzs{border-bottom:0}.card.qzs:not(:has(+.qzs)){border-bottom:1px solid var(--m-ov)}.qzs>.qzl .qzr:last-child{border-bottom:1px solid var(--m-ov)}.card.qzs:not(:has(+.qzs))>.qzl .qzr:last-child{border-bottom:0}
+@media (max-width:600px){.card.qzs{grid-template-columns:minmax(0,1fr) auto}.qzs::before{grid-row:1/3}.qzs>.qzh{min-height:0;padding-top:12px}.qzs>.qzsm{grid-column:1;grid-row:2;padding:0 0 12px 38px}.qzs>.qzadd{grid-column:2;grid-row:1/3}.qzs>.qzl{grid-row:3}.qzs .qzr{padding:8px 4px 8px 38px}.qzs .qzrb{flex-direction:column;align-items:flex-start;gap:2px}.qzs .qzr{align-items:flex-start}.qzs .qzra{margin-top:-8px}}
 /* ===== Ciclo no edital: tabela + painel da sessão ===== */
 .edx{display:flex;flex-direction:column;gap:16px}
 .edp{background:var(--card);border:1px solid var(--m-ov);border-radius:var(--r-2xl);padding:20px}
