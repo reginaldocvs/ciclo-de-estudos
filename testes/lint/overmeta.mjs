@@ -41,11 +41,11 @@ await ev(()=>document.querySelector('.nwplay').click());await W(200);await ev(()
 ok((await nts()).length===0,'desligado: nada');
 await fmOff();await W(300);await ev(()=>{S.paused={};S.timer={running:false,start:0,acc:0};save();render()});
 /* 6. avulso: próprio, e some no Pomodoro */
-await ev(()=>[...document.querySelectorAll('[data-act=cropen]')].find(e=>e.getClientRects().length).click());await W(300);await x.act('crotog');await W(200);
-ok(await ev(()=>[...document.querySelectorAll('.crcfg .fmopt .lb')].map(e=>e.textContent).join()==='Tipo,Meta,Avisar antes,Avisar depois'),'avulso: "Avisar depois" próprio');
+await ev(()=>[...document.querySelectorAll('[data-act=cropen]')].find(e=>e.getClientRects().length).click());await W(300);
+ok(await ev(()=>[...document.querySelectorAll('.crd .fmpre .fmopt .lb')].map(e=>e.textContent).join()==='Tipo,Meta,Avisar antes,Avisar depois'),'avulso: "Avisar depois" próprio');
 await x.act('crovtog');await x.act('crovrep');ok(await ev(()=>S.cr.ow===10&&S.cr.or===true&&!overM()),'avulso: liga em 10, repetir ligado, sem mexer no do estudo');
 await p.screenshot({path:'saida/overmeta-avulso-'+w+'.png'});
-await x.act('crk','pomo');await W(200);ok(await ev(()=>!document.querySelector('.crcfg [data-act=crovtog]')),'Pomodoro: sem "Avisar depois"');await x.act('crk','up');await x.act('crox');
+await x.act('crk','pomo');await W(200);ok(await ev(()=>!document.querySelector('.crd [data-act=crovtog]')),'Pomodoro: sem "Avisar depois"');await x.act('crk','up');
 await x.act('crgo');await ev(()=>{S.cr.start=Date.now()-(25+5)*60000;save()});await W(900);await ev(()=>{S.cr.start=Date.now()-(25+10.3)*60000;save()});await W(900);
 n=await nts();ok(n.length===1&&/^10min além da meta/.test(n[0])&&/Cronômetro/.test(n[0]),'avulso: 10 min além da meta de 25 '+JSON.stringify(n));
 await ev(()=>{S.cr.start=Date.now()-(25+20.3)*60000;save()});await W(900);ok((await nts()).length===2,'avulso com repetir: de novo aos 20 min além');

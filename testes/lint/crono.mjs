@@ -12,7 +12,7 @@ await ev(()=>{window.__nt=[];window.Notification=class{constructor(t,o){window._
 const nS=await ev(()=>S.sessions.length);
 const vbtn=()=>ev(()=>{const e=[...document.querySelectorAll('[data-act=cropen]')].find(e=>e.getClientRects().length);return e?{n:document.querySelectorAll('[data-act=cropen]').length,t:(e.querySelector('.crbt')||{}).textContent||''}:null});
 const openCr=()=>ev(()=>[...document.querySelectorAll('[data-act=cropen]')].find(e=>e.getClientRects().length).click());
-const setT=(f,v)=>ev(([f,v])=>{const i=document.querySelector(`.crcfg [data-crf=${f}]`);i.value=v;i.dispatchEvent(new Event('change',{bubbles:true}))},[f,v]);
+const setT=(f,v)=>ev(([f,v])=>{const i=(document.querySelector(`.crcfg [data-crf=${f}]`)||document.querySelector(`.crd [data-crf=${f}]`));i.value=v;i.dispatchEvent(new Event('change',{bubbles:true}))},[f,v]);
 const back=m=>ev(m=>{S.cr.start=Date.now()-m*60000;S.cr.acc=0;save()},m);
 /* 1. ícone no topo, em todas as abas */
 for(const t of ['ciclo','rev','reg','st','bk']){await ev(t=>document.querySelector(`nav [data-tab="${t}"]`).click(),t);await W(200);const v=await vbtn();if(!v){ok(false,'aba '+t+': sem o ícone do cronômetro');break}}
@@ -20,23 +20,21 @@ ok(!!(await vbtn()),'ícone do cronômetro no topo em todas as abas');
 await ev(()=>document.querySelector('nav [data-tab=ciclo]').click());await W(200);
 /* 2. abre parado, sem Registrar */
 await openCr();await W(300);
-let o=await ev(()=>{const d=document.querySelector('.crd');return d?{st:d.querySelector('.fmst').textContent,reg:!!d.querySelector('[data-act*=reg]'),gear:!!d.querySelector('.fmgear'),rz:!!d.querySelector('.fmrz'),gl:document.getElementById('crgl').textContent,sw:document.documentElement.scrollWidth<=innerWidth}:null});
-ok(o&&o.st==='Pronto para iniciar'&&!o.reg&&o.gear&&!o.rz&&o.gl==='00:00:00 de 00:25:00'&&o.sw,'abre parado, meta de 25min, sem Registrar e sem reiniciar '+JSON.stringify(o));
+let o=await ev(()=>{const d=document.querySelector('.crd');return d?{pre:!!d.querySelector('.fmpre'),reg:!!d.querySelector('[data-act*=reg]'),gear:!!d.querySelector('.fmgear'),rz:!!d.querySelector('.fmrz'),go:!!d.querySelector('[data-act=crgo]'),sw:document.documentElement.scrollWidth<=innerWidth}:null});
+ok(o&&o.pre&&!o.reg&&!o.gear&&!o.rz&&o.go&&o.sw,'abre parado, com as escolhas na tela e Iniciar, sem Registrar, engrenagem nem reiniciar '+JSON.stringify(o));
 /* 3. opções */
-await x.act('crotog');await W(300);
-o=await ev(()=>{const d=document.querySelector('.crcfg');return d?{lb:[...d.querySelectorAll('.fmopt .lb')].map(e=>e.textContent).join(),seg:[...d.querySelectorAll('[data-act=crk]')].map(b=>b.textContent+':'+b.getAttribute('aria-pressed')).join(),sw:d.querySelector('[data-act=crwtog]').getAttribute('aria-checked'),fit:d.scrollWidth<=d.clientWidth+1}:null});
-ok(o&&o.lb==='Tipo,Meta,Avisar antes,Avisar depois'&&o.seg==='Progressivo:true,Regressivo:false,Pomodoro:false'&&o.sw==='false'&&o.fit,'engrenagem: Tipo, Meta e Avisar antes (desligado) '+JSON.stringify(o));
+o=await ev(()=>{const d=document.querySelector('.crd .fmpre');return d?{lb:[...d.querySelectorAll('.fmopt .lb')].map(e=>e.textContent).join(),seg:[...d.querySelectorAll('[data-act=crk]')].map(b=>b.textContent+':'+b.getAttribute('aria-pressed')).join(),sw:d.querySelector('[data-act=crwtog]').getAttribute('aria-checked'),fit:d.scrollWidth<=d.clientWidth+1}:null});
+ok(o&&o.lb==='Tipo,Meta,Avisar antes,Avisar depois'&&o.seg==='Progressivo:true,Regressivo:false,Pomodoro:false'&&o.sw==='false'&&o.fit,'na tela: Tipo, Meta e Avisar antes (desligado) '+JSON.stringify(o));
 await p.screenshot({path:'saida/crono-opcoes-'+w+'.png'});
-await setT('g','0h10');await W(200);ok(await ev(()=>S.cr.g===10&&/de 00:10:00$/.test(document.getElementById('crgl').textContent)),'Meta 0h10: o "de …" muda na hora');
+await setT('g','0h10');await W(200);ok(await ev(()=>S.cr.g===10),'Meta 0h10');
 await x.act('crwtog');ok(await ev(()=>S.cr.w===5),'Avisar antes: liga em 5 min');
 await x.act('crwstep','1');ok(await ev(()=>S.cr.w===6),'+ passa para 6 (de 1 em 1 até 10)');
 await ev(()=>{const i=document.querySelector('[data-crwv]');i.value='30';i.dispatchEvent(new Event('change',{bubbles:true}))});await W(200);ok(await ev(()=>S.cr.w===9),'aviso maior que a meta: fica 1 min antes dela (9)');
 await ev(()=>{const i=document.querySelector('[data-crwv]');i.value='3';i.dispatchEvent(new Event('change',{bubbles:true}))});await W(200);
 ok(await ev(()=>S.warnM===undefined||S.warnM!==3),'o aviso do avulso não mexe no do estudo');
-await p.keyboard.press('Escape');await W(200);ok(await ev(()=>!ui.cro&&!!document.querySelector('.crd')),'Esc fecha só as opções');
 /* 4. regressivo, aviso e meta atingida */
-await x.act('crclk');ok(await ev(()=>S.cr.k==='down'&&document.getElementById('crt').textContent==='00:10:00'),'tocar no relógio: regressivo, mostra o que falta');
-await x.act('crgo');await W(200);ok(await ev(()=>S.cr.run&&!document.querySelector('.crd .fmgear')&&!!document.querySelector('.crd .fmrz')),'Iniciar: conta, engrenagem some, reiniciar aparece');
+await x.act('crk','down');ok(await ev(()=>S.cr.k==='down'),'Regressivo escolhido na tela');
+await x.act('crgo');await W(200);ok(await ev(()=>/^00:(10:00|09:5\d)$/.test(document.getElementById('crt').textContent)),'regressivo: mostra o que falta');ok(await ev(()=>S.cr.run&&!document.querySelector('.crd .fmgear')&&!!document.querySelector('.crd .fmrz')),'Iniciar: conta, engrenagem some, reiniciar aparece');
 await back(5);await W(800);let n=await ev(()=>window.__nt.slice());ok(n.length===0,'faltando 5 min: ainda sem aviso (aviso em 3)');
 await back(7.2);await W(900);n=await ev(()=>window.__nt.slice());ok(n.length===1&&/Faltam 3min para a meta/.test(n[0]),'faltando 3 min: aviso '+JSON.stringify(n));
 await back(10.1);await W(900);n=await ev(()=>window.__nt.slice());ok(n.length===2&&/Meta atingida/.test(n[1])&&/^\+00:00:0\d$/.test(await ev(()=>document.getElementById('crt').textContent)),'meta atingida: avisa e continua contando com "+" '+JSON.stringify(n));
@@ -56,12 +54,12 @@ await ev(()=>document.querySelector('.nwplay').click());await W(300);await ev(()
 ok(await ev(()=>!S.cr.run&&S.timer.running),'começar o estudo pausa o avulso');
 await ev(()=>{const e=[...document.querySelectorAll('[data-act=fmoff]')].find(e=>e.offsetParent);e&&e.click()});await W(300);await ev(()=>{S.paused={};S.timer={running:false,start:0,acc:0};save();render()});
 /* 7. Pomodoro */
-await openCr();await W(300);await x.act('crrz');await x.act('crotog');await x.act('crk','pomo');await W(200);
-o=await ev(()=>({lb:[...document.querySelectorAll('.crcfg .fmopt .lb')].map(e=>e.textContent).join(),ph:document.querySelector('.crd .fmc>.mut').textContent,pular:!!document.querySelector('.crd [data-act=crskip]')}));
-ok(o.lb==='Tipo,Foco,Pausa,Pausa longa,Pausa longa a cada'&&o.ph==='Pomodoro · Foco · 1 de 4'&&o.pular,'Pomodoro: Foco, Pausa, Pausa longa e "a cada"; sem Avisar antes '+JSON.stringify(o));
+await openCr();await W(300);await x.act('crrz');await x.act('crk','pomo');await W(200);
+o=await ev(()=>({lb:[...document.querySelectorAll('.crd .fmopt .lb')].map(e=>e.textContent).join(),ph:document.querySelector('.crd .fmc>.mut').textContent,pular:!!document.querySelector('.crd [data-act=crskip]')}));
+ok(o.lb==='Tipo,Foco,Pausa,Pausa longa,Pausa longa a cada'&&o.ph==='Pomodoro · Foco · 1 de 4'&&!o.pular,'Pomodoro: Foco, Pausa, Pausa longa e "a cada"; sem Avisar antes '+JSON.stringify(o));
 await p.screenshot({path:'saida/crono-pomodoro-'+w+'.png'});
 await setT('pf','0h20');await x.act('crpn','-1');await x.act('crpn','-1');await x.act('crpn','-1');ok(await ev(()=>S.cr.pf===20&&S.cr.pn===2),'tempos editáveis; "a cada" vai até 2 no mínimo');
-await x.act('crox');await ev(()=>{window.__nt=[]});await x.act('crgo');await W(200);ok(await ev(()=>/^00:(20:00|19:59)$/.test(document.getElementById('crt').textContent)),'foco de 20min: o relógio mostra o que falta');
+await ev(()=>{window.__nt=[]});await x.act('crgo');await W(200);ok(await ev(()=>!!document.querySelector('.crd [data-act=crskip]')),'iniciado: aparece Pular');ok(await ev(()=>/^00:(20:00|19:59)$/.test(document.getElementById('crt').textContent)),'foco de 20min: o relógio mostra o que falta');
 await back(20.05);await W(900);o=await ev(()=>({ph:S.cr.ph,lbl:document.querySelector('.crd .fmc>.mut').textContent,n:window.__nt.slice()}));
 ok(o.ph==='p'&&/Pausa/.test(o.lbl)&&o.n.some(t=>/Hora da pausa/.test(t)),'fim do foco: pausa sozinha, com aviso '+JSON.stringify(o));
 await back(5.05);await W(900);o=await ev(()=>({ph:S.cr.ph,lbl:document.querySelector('.crd .fmc>.mut').textContent}));ok(o.ph==='f'&&/Foco · 2 de 2/.test(o.lbl),'fim da pausa: volta ao foco (2 de 2) '+JSON.stringify(o));
