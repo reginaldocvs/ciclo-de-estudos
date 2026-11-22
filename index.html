@@ -3330,7 +3330,7 @@ function edAcBox(E){const recs=S.sessions.filter(x=>(x.ses||x.id)===E.ses&&x.top
   return n?`<div class="actp"><div class="rvtn">${esc(n)}</div>${L.length?acRows(tid,L,l=>Q[tid+'#'+ik(l)],l=>({a:`data-tid="${tid}" data-tik="${esc(ik(l))}"`,t:`data-tid="${tid}" data-tik="${esc(ik(l))}"`})):acRow(v.ac,v.tq,{a:`data-tid="${tid}"`,t:`data-tid="${tid}"`})}</div>`:''}).join('');
  return rows?`<div class="stbox" style="--sc:${col(s)}"><span class="sttab">Acertos na revisão</span><div class="stbody">${rows}</div></div>`:''}
 function studiedBox(E){const recs=S.sessions.filter(x=>(x.ses||x.id)===E.ses&&x.topic);const s=subjAny(E.subj);if(!s||!recs.length)return '';const c=col(s);
- const p=studyTree(recs);
+ const p=studyTree(recs,true);
  return p?`<div class="stbox" style="--sc:${c}"><span class="sttab">O que foi estudado</span><div class="stbody rvlist">${p}</div></div>`:''}
 const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const pd=s=>new Date(s+'T12:00:00');
