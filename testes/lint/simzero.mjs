@@ -49,7 +49,7 @@ if(REP){/* repetições pelo botão Duplicar do Editar ciclo; a ordem fica: P DC
  ok(await ev(()=>actives().length===11&&actives().filter(s=>s.of).length===3&&blkL().length===2),'repetições: 11 posições (3 cópias) e 2 pontos de revisão')}
 const NPOS=await ev(()=>actives().length);
 /* revisões: grupos, tópico e sessões */
-await tabTo('rev');ok(await ev(()=>/desligadas/.test(document.getElementById('app').innerText)),'app novo: revisões desligadas');
+await tabTo('rev');ok(await ev(()=>cyOn()&&rqOn()&&!rgOn()&&!tvOn()&&!srOn()),'app novo: só a revisão por ciclos e a por questões ligadas');
 await x.act('rvadj');for(const k of ['g','t','s'])await ev(k=>{const e=document.querySelector(`[data-act=rvsys][data-id=${k}]`);if(e.getAttribute('aria-checked')!=='true')e.click()},k);await W(300);
 ok(await ev(()=>rgOn()&&tvOn()&&srOn()&&!cyOn()),'ligadas: grupos ('+(await ev(()=>rvInt()+' dias, revisar '+rvWait()+' depois'))+'), tópico e sessões ('+(await ev(()=>srN()+'/'+srY()))+')');
 await shot('ajustes-revisao');await ev(()=>{const c=document.querySelector('#modal [data-act=rvadjx]');c&&c.click()});await W(250);

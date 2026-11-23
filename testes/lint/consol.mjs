@@ -17,10 +17,10 @@ await ev(j=>{rqSesAll('qx').slice(0,2).forEach((o,i)=>{const id=uid(),P=qParse(j
 await ev(()=>{tab='rev';ui.rvt='hoje';render()});await W(200);
 ok(await ev(()=>!!document.querySelector('[data-act=csnew]')),'Revisão › Hoje: "Revisão de consolidação" com Começar');
 await ev(()=>document.querySelector('.csent').scrollIntoView({block:'center'}));await p.screenshot({path:'saida/consol-entrada-'+w+'.png'});
-await x.act('csnew');let r=await ev(()=>({t:document.querySelector('.csdlg h2').textContent,segs:[...document.querySelectorAll('.csdlg [data-act=csper]')].map(e=>e.textContent).join('|'),rows:[...document.querySelectorAll('.csdlg .csdr')].map(e=>e.textContent)}));
-ok(r.t==='Revisão de consolidação'&&r.segs==='Ciclos|Rodada'&&r.rows.length===1&&/Teste Q3 sessões18 questões/.test(r.rows[0]),'janela: período Ciclos/Rodada e o tamanho por disciplina '+JSON.stringify(r));
+await x.act('csnew');let r=await ev(()=>({t:document.querySelector('.csdlg h2').textContent,segs:[...document.querySelectorAll('.csdlg [data-act=csper],.csdlg .sfb[data-id=csr]')].length,de:!!document.querySelector('.csdlg .sfb[data-id=csa]'),rows:[...document.querySelectorAll('.csdlg .csdr')].map(e=>e.textContent)}));
+ok(r.t==='Revisão de consolidação'&&r.segs===0&&r.de&&r.rows.length===1&&/Teste Q.*3 sess\. · 18 quest\./.test(r.rows[0]),'janela: período De/Até (sem rodada com uma rodada só) e o tamanho por disciplina '+JSON.stringify(r));
 await p.screenshot({path:'saida/consol-janela-'+w+'.png'});
-await x.act('csf','pend');r=await ev(()=>document.querySelector('.csdlg .csdr .csdn').textContent);ok(r==='9 questões'||r==='12 questões'||r==='15 questões'||/questões/.test(r),'"Só as que faltam": só as partes que contam '+JSON.stringify(r));
+await x.act('csf','pend');r=await ev(()=>document.querySelector('.csdlg .csdr .csdn').textContent);ok(/^\d+ sess\. · \d+ quest\.$/.test(r),'"Só as que faltam": só as partes que contam '+JSON.stringify(r));
 /* uma tentativa anterior da 1ª revisão da sessão 1 (1 de 3), para o "antes" */
 await ev(()=>{const c=qcL().find(x=>x.ses===rqSesAll('qx')[0].k);S.sessions.push({id:uid(),ses:uid(),rid:'rq-ant',subj:'qx',topic:'t1',min:0,cycle:S.cycle,set:S.set||1,review:true,kind:'aula',items:[],date:addD(today(),-1),ac:1,tq:3,qcad:c.id,qpart:0});save()});
 await x.act('csf','all');await x.act('csgo');await W(300);
@@ -57,8 +57,9 @@ const k0=await ev(k=>{const [c,i]=k.split(':');return [qcL().find(x=>x.id===c).s
 await ev(()=>{window.confirm=()=>true});await x.act('rvcancel');await W(300);
 r=await ev(([k,i])=>({rv:!!S.rv,dn:rqDn(k,i),recs:S.sessions.filter(x=>recTag(x).t==='rev. consolidação').length}),k0);ok(!r.rv&&!r.dn&&r.recs===0,'cancelar: volta ao estudo, desfaz o crédito e os registros '+JSON.stringify(r));
 /* rodada */
-await ev(()=>{tab='rev';ui.rvt='hoje';render()});await x.act('csnew');await x.act('csper','rd');r=await ev(()=>({rd:(document.querySelector('.sfb[data-id=csr]')||{}).textContent,rows:document.querySelectorAll('.csdlg .csdr').length}));ok(/Rodada 1/.test(r.rd||'')&&r.rows===1,'período por rodada '+JSON.stringify(r));
-await x.act('csx');
+await ev(()=>{tab='rev';ui.rvt='hoje';render()});await ev(()=>{S.set=2;save()});await x.act('csnew');r=await ev(()=>({rd:(document.querySelector('.sfb[data-id=csr]')||{}).textContent,rows:document.querySelectorAll('.csdlg .csdr').length}));ok(/Rodada 2 · atual/.test(r.rd||'')&&r.rows===0,'com duas rodadas: escolhe a rodada, começa na atual (sem questões nela) '+JSON.stringify(r));
+await x.act('sdd','csr');await x.act('spick','csr:1');r=await ev(()=>({rd:(document.querySelector('.sfb[data-id=csr]')||{}).textContent,rows:document.querySelectorAll('.csdlg .csdr').length,per:document.querySelector('.csper').textContent}));ok(/Rodada 1/.test(r.rd||'')&&r.rows===1&&/^Rodada 1 inteira/.test(r.per),'rodada 1: os ciclos dela voltam a valer inteiros '+JSON.stringify(r));
+await x.act('csx');await ev(()=>{S.set=1;save()});
 await ev(()=>{tab='rev';ui.rvt='hoje';render()});await W(150);await x.act('info','cons');r=await ev(()=>{const d=document.querySelector('.infodlg');return d?d.textContent:''});ok(/Revisão de consolidação/.test(r)&&/atrasada/.test(r)&&/adiantá-la/.test(r)&&/rev\. consolidação/.test(r),'ⓘ da consolidação explica período, ordem e o que conta');await p.screenshot({path:'saida/consol-info-'+w+'.png'});await x.act('infox');
 ok(!errs.length,'sem erros de script '+errs.slice(0,2).join(' | '));
 await b.close();process.exit(bad?1:0);

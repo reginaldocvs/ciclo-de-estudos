@@ -80,7 +80,7 @@ async function reviewGroup(label){await run(label,async()=>{
 })}
 
 // grupos de 3 dias de estudo, revisão 2 dias depois de fechar
-await run('1a ligar revisões',async()=>{await tab('rev');ok(/desligadas/.test(await x.ev(()=>document.getElementById('app').innerText)),'app novo: revisões desligadas');await x.act('rvadj');await x.act('rvsys','g');await x.act('rvsys','t');ok(await x.ev(()=>rgOn()&&tvOn()),'ligou grupos e por tópico');await x.ev(()=>{ui.rvadj=null;render()})});
+await run('1a ligar revisões',async()=>{await tab('rev');ok(await x.ev(()=>cyOn()&&rqOn()&&!rgOn()&&!tvOn()&&!srOn()),'app novo: só a revisão por ciclos e a por questões ligadas');await x.act('rvadj');await x.act('rvsys','g');await x.act('rvsys','t');ok(await x.ev(()=>rgOn()&&tvOn()),'ligou grupos e por tópico');await x.ev(()=>{ui.rvadj=null;render()})});
 await run('1b ajustes de grupo',async()=>{await tab('rev');await x.act('rvadj');await x.act('rvcfg');await x.fill('#modal input[name=i]','3');await x.fill('#modal input[name=w]','2');await x.submit('#modal form[data-f=rvcfg]');await x.ev(()=>{ui.rvadj=null;render()});
  ok(await x.ev(()=>rvInt()===3&&rvWait()===2),'grupos de 3 dias, revisar 2 dias depois')});
 
