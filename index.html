@@ -1806,9 +1806,9 @@ const edLinks=r=>{const L=[],seen=new Set();(r.items||[]).forEach(i=>{const l=rq
 /* Painel: situação da revisão por questões quando não há o que revisar agora (concluída ou reiniciada): feita neste ciclo, com o placar, ou quando vem a próxima */
 function edRqSt(nw){if(!rqOn()||!nw||S.type==='review')return '';const b=srBase({subj:nw.id});if(!b)return '';
  const R=S.sessions.filter(x=>String(x.rid||'').startsWith('rq-')&&x.cycle===S.cycle&&(x.set||1)===(S.set||1)&&(x.subj===b.id||grp(b.id).includes(x.subj)));
- if(R.length){let a=0,t=0;R.forEach(x=>{if(+x.tq>0){a+=Math.min(+x.ac||0,+x.tq);t+=+x.tq}(x.items||[]).forEach(i=>{if(+i.tq>0){a+=Math.min(+i.ac||0,+i.tq);t+=+i.tq}})});return `<div class="edrq mut"><span class="edrqok">✓</span> Revisão com questões feita${t?` · <b>${a}/${t}</b> (${Math.round(a/t*100)}%)`:''}</div>`}
+ if(R.length){let a=0,t=0;R.forEach(x=>{if(+x.tq>0){a+=Math.min(+x.ac||0,+x.tq);t+=+x.tq}(x.items||[]).forEach(i=>{if(+i.tq>0){a+=Math.min(+i.ac||0,+i.tq);t+=+i.tq}})});return `<div class="edrq mut"><span class="edrqok">✓</span> Revisão por questões feita${t?` · <b>${a}/${t}</b> (${Math.round(a/t*100)}%)`:''}</div>`}
  const I=rqInfo(b.id),N=I.rows.flatMap(r=>r.vz.filter(v=>v.st==='fu').map(v=>v.N)).sort((x,y)=>x-y)[0];
- return N?`<div class="edrq mut">Próxima revisão com questões: na sessão ${N}</div>`:''}
+ return N?`<div class="edrq mut">Próxima revisão por questões: <span class="nw">sessão ${N}</span></div>`:''}
 function edCiclo(A,nw,srH,bkr,rvC){const tv=tvOn(),iv=tv?trvIv():[],TL=tv?trvList():[],byK={};TL.forEach(o=>byK[o.k]=o);
  const cols=iv.length;
  const head=`<div class="edr edh2" ${cols?`style="--rv:repeat(${cols},24px)"`:''} aria-hidden="true"><span>#</span><span>Disciplina / tópico</span><span class="n">Meta</span><span class="n">Feito</span><span>Progresso</span>${iv.map((_,i)=>`<span class="c">${ordN(i+1)}</span>`).join('')}<span>Última</span><span></span></div>`;
