@@ -3146,7 +3146,15 @@ async function syOnMeta(snap){
 /* Falha ao ler a conta: tenta de novo em vez de ficar parado em 'init'. */
 function syRetry(snap){clearTimeout(SY.rtimer);SY.rtimer=setTimeout(()=>{if(SY.lastTs<((snap.data&&snap.data()||{}).ts||Infinity))syOnMeta(snap).catch(()=>syRetry(snap))},8000)}
 /* As regras do Firebase recusaram esta conta: para de tentar e avisa; os dados seguem no navegador. */
-function syDenied(){try{if(SY.unsub)SY.unsub()}catch(x){}SY.unsub=null;clearTimeout(SY.timer);SY.status='denied';render()}
+function syDenied(){try{if(SY.unsub)SY.unsub()}catch(x){}SY.unsub=null;clearTimeout(SY.timer);SY.status='denied';render();syAskAccess()}
+/* Pedido de acesso por e-mail: com o endereço do Apps Script do dono do app (Guia do app, seção 7), a conta recusada manda o seu
+   comprovante de login (token do Firebase); o script confere no Firebase e avisa o dono por e-mail. Uma vez por conta neste aparelho.
+   Vazio = desligado. */
+const ACESSO_URL='https://script.google.com/macros/s/AKfycbzyToxFTVx3d9ZY_0n-3kjs2YK7Ms8uPUI5UWLnIUk7Z7Nb1QLKHoxHhbYdA_XtjQ0a/exec';
+const acessoUrl=()=>typeof window.__acessoUrl==='string'?window.__acessoUrl:ACESSO_URL; /* os testes desligam com window.__acessoUrl='' */
+const acessoK=uid=>'ciclo-pedido:'+uid,acessoFeito=uid=>{try{return !!localStorage.getItem(acessoK(uid))}catch(e){return false}};
+function syAskAccess(){const url=acessoUrl();if(!url)return;let u=null;try{u=firebase.auth().currentUser}catch(e){}if(!u||acessoFeito(u.uid))return;
+ u.getIdToken().then(t=>fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({t})})).then(()=>{try{localStorage.setItem(acessoK(u.uid),String(Date.now()))}catch(e){}render()}).catch(()=>{})}
 function sySub(){try{if(SY.unsub)SY.unsub()}catch(x){}
  try{SY.unsub=syCol().doc('meta').onSnapshot(s=>{syOnMeta(s).catch(()=>syRetry(s))},e=>{if(e&&e.code==='permission-denied'){syDenied();return}SY.status='err';if(e&&/resource-exhausted|quota/.test(String(e.code||'')))SY.quota=true;setTimeout(sySub,SY.quota?600000:15000)})}catch(x){SY.status='off'}}
 async function syInit(){if(OFFLINE)return fbInit();let db=null,uid=null;
@@ -3194,7 +3202,7 @@ function syCard(){const st=syStat();
  const err=SY.err?`<div role="alert" style="color:var(--bad);font-size:.85rem;margin-top:8px">${esc(SY.err)}</div>`:'';
  if(SY.prov==='claude')return '<p class="mut hlp" style="margin:4px 0 0">Tudo o que você registra é salvo automaticamente neste navegador e na sua conta. Você não precisa fazer backup.</p>';
  if(!fbOn())return '<p class="mut hlp" style="margin:4px 0 0">Seus dados ficam salvos neste navegador. A sincronização entre aparelhos ainda não foi configurada.</p>';
- if(SY.user&&SY.status==='denied')return `<p class="mut" style="margin:4px 0 0">A conta <b>${esc(SY.user.email||SY.user.name)}</b> não tem acesso à sincronização. Seus dados continuam salvos neste navegador.</p><div class="fl" style="margin-top:12px"><button class="btn g s" data-act="fblogout">Sair</button></div>`;
+ if(SY.user&&SY.status==='denied')return `<p class="mut" style="margin:4px 0 0">A conta <b>${esc(SY.user.email||SY.user.name)}</b> não tem acesso à sincronização. Seus dados continuam salvos neste navegador.</p>${(()=>{let u=null;try{u=firebase.auth().currentUser}catch(e){}return acessoUrl()&&u&&acessoFeito(u.uid)?'<p class="mut" style="margin:6px 0 0">O responsável pelo app foi avisado do seu pedido de acesso. Quando a sua conta for liberada, a sincronização começa sozinha ao abrir o app.</p>':''})()}<div class="fl" style="margin-top:12px"><button class="btn g s" data-act="fblogout">Sair</button></div>`;
  if(SY.user)return `<p class="mut" style="margin:4px 0 0">Conectado como <b>${esc(SY.user.email||SY.user.name)}</b>. Seus dados sincronizam automaticamente entre os aparelhos em que você entrar.</p><div class="mut" id="systat" role="status" style="font-size:.85rem;margin-top:6px">${st}</div>${err}<div class="fl" style="margin-top:12px"><button class="btn g s" data-act="fblogout">Sair</button></div>`;
  return `<p class="mut hlp" style="margin:4px 0 0">Seus dados ficam salvos neste navegador. Entre com sua conta Google para acessá-los de qualquer computador ou celular.</p>${err}<div class="fl" style="margin-top:12px"><button class="btn" data-act="fblogin">Entrar com Google</button></div>`}
 /* Backup em arquivo: baixa o estado inteiro em .json; restaurar valida como syApply e pode ser desfeito. */

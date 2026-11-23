@@ -5,6 +5,7 @@ export async function open({w=1280,h=800,fresh=true,data=null,off=0,cd=false}={}
  const b=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,protocolTimeout:120000});
  const p=await b.newPage();const errs=[];p.on('pageerror',e=>errs.push('pageerror: '+e.message));p.on('console',m=>{if(m.type()==='error')errs.push('console: '+m.text())});
  await p.evaluateOnNewDocument(()=>{const D=Date,off=()=>+(localStorage.getItem('__fkoff')||0);class F extends D{constructor(...a){if(a.length)super(...a);else super(D.now()+off())}static now(){return D.now()+off()}};window.Date=F});
+ await p.evaluateOnNewDocument(()=>{window.__acessoUrl=''}); /* nenhum teste avisa o script real de pedidos de acesso */
  await p.setViewport({width:w,height:h,deviceScaleFactor:1});
  await p.goto('http://localhost:8765/');if(fresh)await p.evaluate(()=>localStorage.clear());if(data)await p.evaluate(d=>{for(const k in d)localStorage.setItem(k,d[k])},data);await p.goto('http://localhost:8765/');await W(500);if(!cd)await p.evaluate(()=>{try{S.cdOff=true;save()}catch(e){}});
  return {b,p,errs};
