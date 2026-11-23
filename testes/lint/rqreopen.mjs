@@ -19,6 +19,7 @@ r=await btn(P1);ok(r.done&&!r.btn,'1ª posição, já registrada (concluída): s
 let st=await ev(()=>(document.querySelector('.edp .edrq')||{}).textContent||'');ok(/Próxima revisão por questões: sessão 2/.test(st),'concluída: diz quando vem a próxima revisão ('+st+')');
 await ev(id=>{const b=srBase({subj:id});S.sessions.push({id:uid(),ses:uid(),rid:'rq-t1',subj:b.id,topic:null,min:0,cycle:S.cycle,set:S.set||1,review:true,kind:'aula',items:[],date:today(),ac:8,tq:10});save();render()},P1);await W(300);await btn(P1);
 st=await ev(()=>(document.querySelector('.edp .edrq')||{}).textContent||'');ok(/✓ Revisão por questões feita · 8\/10 \(80%\)/.test(st),'feita neste ciclo: ✓ com o placar ('+st+')');
+await ev(()=>document.querySelector('.edp .edrqv').click());await W(400);ok(await ev(()=>!!document.querySelector('.dlg.edlg')&&!!S.edit),'olho abre o registro da revisão');await p.keyboard.press('Escape');await W(300);
 await ev(id=>{const L=S.sessions.filter(x=>x.subj===id&&!x.review&&x.cycle===S.cycle),l=L[L.length-1];S.reopen=S.reopen||{};S.reopen[id]={cycle:S.cycle,ses:l.ses||l.id,set:S.set||1};S.progress[id]=0;save();render()},P1);await W(300);
 r=await btn(P1);ok(!r.done&&!r.btn,'1ª posição reiniciada: some (o próximo registro se junta à mesma sessão 1) '+JSON.stringify(r));
 ok(!errs.length,'sem erros de script '+errs.slice(0,2).join(' | '));
