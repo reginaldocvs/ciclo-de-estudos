@@ -1,7 +1,7 @@
 /* Revisão por sessões: na janela de registro, cada item marcado tem o seu campo de acertos (aula ou questão, com ou sem acerto anterior),
    e o subtítulo conta as marcadas. Uso: node lint/srac.mjs [largura=390] */
 import {open,mk,W} from './lib.mjs';let bad=0;const ok=(c,m)=>{console.log((c?'OK    ':'FALHA ')+m);if(!c)bad++};import fs from 'fs';
-const S0=JSON.parse(fs.readFileSync('dados/exemplo.json','utf8'));S0.timer={running:false,start:0,acc:0};S0.sx=false;S0.sessions=[];S0.progress={};S0.srvPt=[];S0.srv={on:true,n:2,y:3,start:new Date().toISOString().slice(0,10)};
+const S0=JSON.parse(fs.readFileSync('dados/exemplo.json','utf8'));S0.timer={running:false,start:0,acc:0};S0.sx=false;S0.sessions=[];S0.progress={};S0.srvPt=[];S0.srv={on:true,n:2,y:3,start:(d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'))(new Date())};
 const w=+(process.argv[2]||390);{const {b,p,errs}=await open({data:{'ciclo-estudos-v2':JSON.stringify(S0),'ciclo-welcome-skip':'1'},w,h:900});const x=mk(p);
 await x.ev(()=>{const s=current();s.topics.unshift({id:'cg',name:'Classes Gramaticais',done:false,links:[]});const it=(n,q)=>({kind:'aula',name:n,link:'',...(q?{qo:true,title:'Questões',lbl:n}:{})});
  S.sessions.push({id:'a1',ses:'a1',subj:s.id,topic:'cg',min:30,cycle:S.cycle,set:1,review:false,kind:'aula',date:today(),items:[it('Blocos 1-7'),it('Bloco 1',1),it('Bloco 2',1)]});
