@@ -20,5 +20,5 @@ const r=await x.ev(()=>{const e=document.querySelector('#app .bkrow');return {tx
 ok(!/concluído|pulado/.test(r.txt)&&!r.act&&!r.done&&!r.rev&&!r.card,'registros apagados: marcador volta ao normal, sem toque: '+JSON.stringify(r));
 ok(await x.ev(()=>S.sessions.some(x=>x.bkr)),'o registro de revisão continua no histórico');
 // e o bloco volta a valer quando chegar a vez
-await reg(A[0]);await reg(A[1]);ok(await x.ev(()=>!!document.querySelector('#app .blkc')&&/Agora · Revisão de bloco/.test(document.querySelector('#app .blkc').innerText)),'ao chegar a vez de novo, o bloco abre como novo');
+await reg(A[0]);await reg(A[1]);ok(await x.ev(()=>!!document.querySelector('#app .blkc')&&/Agora · Revisão de bloco/.test(document.querySelector('#app .blkc').textContent)),'ao chegar a vez de novo, o bloco abre como novo');
 log.push('erros: '+JSON.stringify(errs));await b.close();console.log(log.join('\n'));

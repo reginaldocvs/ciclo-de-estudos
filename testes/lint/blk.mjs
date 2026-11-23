@@ -4,7 +4,7 @@ const log=[],ok=(c,m)=>log.push((c?'OK   ':'FALHA ')+m);
 const d=JSON.parse(fs.readFileSync('dados/data-rv3.json','utf8'));const S0=JSON.parse(d['ciclo-estudos-v2']);S0.timer={running:false,start:0,acc:0};S0.sx=false;S0.rv=null;S0.mode='study';S0.alt=null;S0.type='regular';S0.progress={};S0.sessions=S0.sessions.filter(x=>x.cycle!==S0.cycle||x.rid||x.review);d['ciclo-estudos-v2']=JSON.stringify(S0);
 const {b,p,errs}=await open({data:d,w,h:900});const x=mk(p);process.on('exit',()=>console.log(log.join(String.fromCharCode(10))));try{
 const shot=n=>p.screenshot({path:`${OUT}/blk-${w}-${n}.png`,fullPage:w<500});
-const app=()=>x.ev(()=>document.getElementById('app').innerText);
+const app=()=>x.ev(()=>(document.querySelector('#app .blkc')||document.getElementById('app')).innerText); /* o cartão do bloco (a tabela ao lado também mostra os tópicos) */
 let k=0;
 const reg=async id=>{await x.act('rreg',id);await x.ev(k=>{const g=S.sel.groups[0];if(!g.rows.length)g.rows.push({id:uid(),kind:"aula",name:"",link:"",q:""});g.nt='Tópico B'+k;g.rows[0].name='Aula B'+k;render()},++k);await x.submit('#modal form[data-f=man]');await W(250)};
 // 1. Editar ciclo: adicionar e arrastar
@@ -26,7 +26,7 @@ const t0=await app();ok(!/Tópico B1/.test(t0)&&/1 tópico · 1 aula/.test(t0),'
 const tg=await x.ev(()=>[...document.querySelectorAll('#app [data-act=bktog]')].map(e=>e.dataset.id));await x.act('bktog',tg[0]);let t1=await app();ok(/Tópico B1/.test(t1)&&!/Tópico B2/.test(t1),'abrir a 1ª mostra só ela');
 await x.act('bktog',tg[1]);t1=await app();ok(!/Tópico B1/.test(t1)&&/Tópico B2/.test(t1),'abrir a 2ª fecha a 1ª');
 ok(!/Revise antes de começar/.test(t1),'sem "Revise antes" na vez do bloco');
-ok(await x.ev(()=>!!document.querySelector('#app .cbk')),'divisor na barra');
+ok(await x.ev(()=>!!document.querySelector('#app .cbk, #app .edt .bkrow')),'divisor na barra');
 ok(await x.ev(()=>!!document.querySelector('#app .bkrow.cur')),'linha do marcador na lista, marcada como agora');
 await shot('2-vez');
 await x.act('bkreg',await x.ev(()=>inCycle()[0].of||inCycle()[0].id));await W(300);await x.submit('#modal form[data-f=bkreg]');await W(300);ok(await x.ev(()=>Object.values(S.blkRev)[0].length===1),'Revisado marca a disciplina');await shot('3-revisado');

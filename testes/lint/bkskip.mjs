@@ -16,7 +16,7 @@ ok((await foot())==='Pular revisão|btn g','sem revisar: Pular revisão (discret
 await breg(A[0]);
 ok(/Revisado/.test(await x.ev(()=>document.querySelector('#app .bkok').innerText)),'selo diz Revisado');
 await breg(A[1]);await breg(A[2]);
-ok(await x.ev(()=>{const c=document.querySelector('#app .blkc');return !!c&&/Revisão de bloco · concluída/.test(c.innerText)&&/^Ir para/.test(c.querySelector('[data-act=bkback]')?.textContent||'')&&!c.querySelector('[data-act=blkend]')}),'última revisada: conclui sozinho, cartão fica com "Ir para"');
+ok(await x.ev(()=>{const c=document.querySelector('#app .blkc');return !!c&&/Revisão de bloco · concluída/.test(c.textContent)&&/^Ir para/.test(c.querySelector('[data-act=bkback]')?.textContent||'')&&!c.querySelector('[data-act=blkend]')}),'última revisada: conclui sozinho, cartão fica com "Ir para"');
 ok(/Revisão concluída/.test(await x.ev(()=>document.body.innerText)),'aviso "Revisão concluída" com Desfazer');
 ok(await x.ev(()=>/concluído/.test(document.querySelector('#app .bkrow').innerText)),'marcador vira concluída');
 await shot('1-concluir');
@@ -30,7 +30,7 @@ let r=await row();ok(/pulado/.test(r.txt)&&r.act==='bkview'&&!r.sel,'marcador "p
 ok(await x.ev(()=>!document.querySelector('#app .blkc')),'cartão volta para a disciplina da vez');
 await x.ev(()=>document.querySelector('#app .bkrow').click());await W(300);
 r=await row();ok(r.sel,'tocar no marcador destaca a linha');
-ok(await x.ev(()=>/Revisão de bloco · pulada/.test(document.querySelector('#app .blkc').innerText)&&!document.querySelector('#app .srow.cur')),'cartão do bloco pulado, sem disciplina destacada');
+ok(await x.ev(()=>/Revisão de bloco · pulada/.test(document.querySelector('#app .blkc').textContent)&&!document.querySelector('#app .srow.cur')),'cartão do bloco pulado, sem disciplina destacada');
 ok(await x.ev(()=>document.querySelectorAll('#app .blkc [data-act=bkgo]').length===2&&!!document.querySelector('#app .blkc .bkok')),'mostra a revisada e as que faltam com Iniciar');
 const back=await x.ev(()=>document.querySelector('#app [data-act=bkback]')?.textContent);ok(/^Ir para/.test(back||''),'botão '+back);
 await shot('2-pulada');
@@ -42,7 +42,7 @@ await x.submit('#modal form[data-f=bkreg]');await W(250);
 ok(/pulado/.test((await row()).txt),'ainda falta uma: continua pulada');
 await breg(A[2]);
 r=await row();ok(/concluído/.test(r.txt),'última revisada: vira concluída sozinha: '+r.txt);
-ok(/Revisão de bloco · concluída/.test(await x.ev(()=>document.querySelector('#app .blkc').innerText)),'cabeçalho vira concluída');
+ok(/Revisão de bloco · concluída/.test(await x.ev(()=>document.querySelector('#app .blkc').textContent)),'cabeçalho vira concluída');
 await shot('3-concluida');
 await x.act('bkunreg',A[2]);ok(/pulado/.test((await row()).txt),'desfazer uma volta a pulada');
 await x.act('bkback');ok(await x.ev(()=>!document.querySelector('#app .blkc')&&!document.querySelector('#app .bkrow.sel')&&!!document.querySelector('#app .srow.cur')),'Voltar devolve o cartão à disciplina da vez');
