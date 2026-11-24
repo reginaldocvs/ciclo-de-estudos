@@ -27,6 +27,8 @@ Cada linha sai `OK` ou `FALHA` com o motivo. Prints e arquivos de saída vão pa
 
 ## Outras ferramentas
 
+- `bash rt.sh <nomes>`: roda só os testes da bateria com esses nomes (ex.: `bash rt.sh qrow leitura`), com os mesmos argumentos do `todos.sh`.
+- `bash super.sh`: super check, a bateria inteira e mais simulações, explorador e auditoria (leva horas; a de dois planos é a `simreal PLANOS=2`).
 - `node lint/explorador.mjs dados/rico.json 300 1,2 saida/explorador`: ações aleatórias com regras de coerência a cada passo.
 - `node lint/simreal.mjs <dados> saida/sim ciclos|grupos [dias] [largura]`: uso realista por semanas. Com `RQ=1`, liga a Revisão por questões: depois de cada estudo registra (com acertos), pula ou deixa para depois, revisa pendentes pelo Para hoje e, no fim, usa Adiantar; confere a regra e a numeração a cada sessão (não usar junto com `SRV=1`).
   `SRV=1` liga a revisão por sessões; `PLANOS=2` cria um 2º plano (o outro sistema de revisão) e alterna os planos a cada dia, conferindo que um não mexe no outro.

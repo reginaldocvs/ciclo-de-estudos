@@ -3,10 +3,9 @@
 .impeccable/
 testes/node_modules/
 testes/saida/
-testes/lint/s1.js
 # Arquivos pessoais (dados, UID, enderecos): nunca publicar
-Guia do app.html
 backups/
 *.pdf
-Tutorial do app.html
-tutorial/
+Kit de recuperação/
+testes/kit/
+Documentos/

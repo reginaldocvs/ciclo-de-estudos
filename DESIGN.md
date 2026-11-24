@@ -256,15 +256,23 @@ Paleta fria e quase monocromática (cinza, branco, tinta), com um ciano de marca
 ### Named Rules
 **The Algarismo Tabular Rule.** Todo tempo, meta, acerto, data e contagem usa algarismos tabulares, para que as colunas alinhem.
 
+**The Nome Nunca Quebra Rule.** O nome de uma disciplina nunca quebra de linha, em nenhuma tela, janela ou lista: fica numa linha só, cortado com reticências, e o nome inteiro vai no title.
+
+**The Sem Palavra Órfã Rule.** Nenhum texto termina com uma palavra sozinha na última linha (text-wrap: pretty no corpo; em colunas estreitas, dar mais largura ao texto).
+
+**The Primeira Linha Rule.** Quando um texto ocupa duas linhas, o que fica ao lado dele (quadradinho, data, ícone, botão, etiqueta) se alinha com a primeira linha, não com o meio.
+
 **The Caixa Alta é Cabeçalho Rule.** Caixa alta espaçada é reservada a cabeçalho de coluna e de seção curta dentro de tabela ou painel; nunca a texto corrido nem a título de página.
 
 ## Layout
 
-Modelo de app com moldura: menu lateral ciano fixo à esquerda (240px expandido, com rótulos; recolhível a 80px, abrindo ao passar o mouse) a partir de 861px; abaixo disso, barra de cima e barra de navegação de baixo, ambas ciano.
+Modelo de app com moldura: menu lateral ciano fixo à esquerda (240px expandido, com rótulos; recolhível a 80px pelo botão ao lado do logo ou por Ctrl+\, sem abrir ao passar o mouse, e a escolha fica guardada no aparelho) a partir de 861px; abaixo disso, barra de cima e barra de navegação de baixo, ambas ciano.
 
 Na aba Ciclo, no computador (a partir de 1121px), a tabela ocupa o centro e o painel da sessão fica fixo na borda direita, de cima a baixo: 300px até 1359px e 340px acima disso. De 1360px em diante o app ocupa a tela toda (menu na borda esquerda); acima de 1800px tabela e painel se centralizam juntos (1456px) no espaço à direita do menu. Abaixo de 1121px o painel empilha em cima da tabela; entre 700px e 1120px ele se divide em duas colunas (sessão | revisão de hoje). As outras abas centralizam o conteúdo em até 1180px à direita do menu; Configurações fica numa coluna de leitura de 760px.
 
 As tabelas respondem ao próprio contêiner, não à janela: no Ciclo some primeiro o Progresso (até 780px de tabela), depois Meta e Última (até 640px); as colunas de revisão ficam. Abaixo de 700px de tela a linha vira lista compacta (número, nome, feito, ações) sem cabeçalho. Revisão e Histórico só viram tabela com 720px e 660px de contêiner.
+
+Itens do mesmo tipo ficam na mesma coluna de uma linha para a outra (etiquetas de acertos, ícones de editar e excluir, botões Iniciar e Registrar), e ações ficam junto do conteúdo, não empurradas para a borda do cartão.
 
 Ritmo: linhas de 52px, cabeçalhos de 44px (40px nas sub-linhas e faixas), padding de cartão de 20px, painel com 32px 28px, intervalo de 16px entre blocos. No celular a sessão da vez vem primeiro, depois o que revisar, depois a faixa do ciclo.
 
@@ -308,7 +316,7 @@ Cantos pequenos e sóbrios, em três degraus por tamanho de peça: 4px nas peça
 - **Focus:** contorno ciano com reforço interno de 1px; hover escurece o contorno para tinta.
 
 ### Navigation
-- **Menu lateral:** coluna ciano de 240px com logo e nome no topo; itens de 56px, ícone de 20px e rótulo, cantos de 8px, rótulos em névoa; ativo com véu branco de 18% e texto branco. Recolhido (80px) mostra só ícones.
+- **Menu lateral:** coluna ciano de 240px com logo e nome no topo; itens de 56px, ícone de 20px e rótulo, cantos de 8px, rótulos em névoa; ativo com véu branco de 18% e texto branco. Recolhido (80px) mostra só ícones, com o nome no title; o botão de recolher fica menor e mais apagado.
 - **Celular:** barra de cima e barra de baixo no mesmo ciano.
 
 ### Tabela do Ciclo (assinatura)
@@ -323,6 +331,18 @@ Linha de situação em caixa alta pequena (Agora · 2 de 7, Estudando agora, Est
 ### Números do cabeçalho
 Hoje, Ciclo e Total no canto superior direito do título: rótulo apagado em 500 sobre o número em 1.5rem/700 tabular, sem caixa e sem fundo, 28px entre eles.
 
+### Janelas
+- **Cabem na tela:** nenhuma janela passa da altura da tela; o conteúdo rola por dentro, e o título fica fixo no alto enquanto os botões rolam junto.
+- **Celular:** até 600px toda janela é um painel que sobe de baixo, de ponta a ponta, com alça e arrastar para fechar (só as boas-vindas e o modo foco ficam de fora).
+- **Uma dentro da outra:** janela aberta a partir de outra tem seta ← no título e Cancelar ao lado de Salvar, e volta para a anterior; X, Esc, toque fora e arrastar fecham tudo. Trocar de uma janela para outra não anima.
+- **Listas de escolha:** abrem em lista própria, mais larga que o campo quando o nome pede, com o nome numa linha só.
+
+### Listas longas
+Toda lista que cresce mostra 6 itens e um "Mostrar mais N" (e "Mostrar menos"), no celular e no computador. A exceção é a lista com caixinha de marcar, que mostra tudo: não dá para marcar o que não se vê.
+
+### Linhas do registro
+Cada tópico registrado tem linhas de **Videoaula** (ícone de câmera), **Leitura** (ícone de livro, com as páginas "p. 12–30" ao lado do título) e **Questões** (acertos de total, com a porcentagem). Os ícones ficam no começo da linha, em tinta apagada; os botões "Videoaula +", "Leitura +" e "Questões +" cabem numa linha só até em 320px.
+
 ### Modo foco
 Tela cheia sobre o chão: disciplina, relógio grande (Timer Display), barra de progresso, ações centralizadas; antes de começar mostra as escolhas e uma contagem de 5 segundos.
 
@@ -333,6 +353,8 @@ Tela cheia sobre o chão: disciplina, relógio grande (Timer Display), barra de 
 - **Do** usar algarismos tabulares em todo número.
 - **Do** esconder colunas por container query, da menos para a mais essencial, mantendo nome e ações.
 - **Do** usar 8px em controles, 10px em cartões e 4px em peças miúdas.
+- **Do** cortar em 6 itens, com "Mostrar mais", toda lista que pode crescer (menos as de marcar).
+- **Do** pôr o nome de disciplina numa linha só, com reticências e title.
 - **Do** marcar revisão com o quadrado de 18px (vazio em cinza, feito cheio de ciano com visto em SVG, contorno ciano para hoje, contorno vermelho para atrasada).
 
 ### Don't:
@@ -342,3 +364,4 @@ Tela cheia sobre o chão: disciplina, relógio grande (Timer Display), barra de 
 - **Don't** voltar às pílulas: botão, aba, busca e filtro têm 8px; só botão de ícone e interruptor são redondos.
 - **Don't** dar fundo de pílula a link de texto no hover; o estado é sublinhado.
 - **Don't** montar painel de cartões de mesmo peso onde cabe uma tabela.
+- **Don't** deixar janela passar da altura da tela nem abrir janela no celular que não seja painel de baixo.
