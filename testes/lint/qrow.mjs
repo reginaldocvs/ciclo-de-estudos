@@ -8,7 +8,7 @@ const A=await x.ev(()=>inCycle().map(s=>s.id));const s=A[1];
 await x.ev(s=>{S.progress[s]=0;render()},s);await x.act('rreg',s);
 ok(await x.ev(()=>!document.querySelector('#modal .x.plus[data-act=addrow]')&&!!document.querySelector('#modal .radd [data-act=addrow]')&&!!document.querySelector('#modal .radd [data-act=addrowq]')),'botões + Aula e + Questões no fim do tópico');
 ok(await x.ev(()=>S.sel.groups[0].rows.length===0&&!document.querySelector('#modal .rowf')),'tópico começa sem linhas');
-ok(await x.ev(()=>[...document.querySelectorAll('#modal .radd .btn')].map(b=>b.textContent).join('|')==='Aula +|Questões +'),'botões "+ Aula" e "+ Questões"');
+ok(await x.ev(()=>[...document.querySelectorAll('#modal .radd .btn')].map(b=>b.textContent).join('|')==='Videoaula +|Leitura +|Questões +'),'botões Videoaula +, Leitura + e Questões +');
 const gid=await x.ev(()=>S.sel.groups[0].id);
 await x.act('addrow',gid);await x.ev(()=>{const g=S.sel.groups[0];g.nt='Crase';g.rows[0].name='Aula 12';render()});
 await x.act('addrowq',gid);
