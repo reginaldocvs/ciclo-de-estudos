@@ -16,7 +16,7 @@ ok(!!P2,'há disciplina repetida no ciclo');
 await reg(P1,30);
 let r=await btn(P2);ok(r.btn&&!r.done,'2ª posição da mesma disciplina: sessão nova, aparece "Revisar com questões" (revisa a 1ª) '+JSON.stringify(r));
 r=await btn(P1);ok(r.done&&!r.btn,'1ª posição, já registrada (concluída): some '+JSON.stringify(r));
-let st=await ev(()=>(document.querySelector('.edp .edrq')||{}).textContent||'');ok(/Próxima revisão por questões: sessão 2/.test(st),'concluída: diz quando vem a próxima revisão ('+st+')');
+let st=await ev(()=>(document.querySelector('.edp .edrq')||{}).textContent||'');ok(/Próxima revisão: sessão 2/.test(st),'concluída: diz quando vem a próxima revisão ('+st+')');
 await ev(id=>{const b=srBase({subj:id});S.sessions.push({id:uid(),ses:uid(),rid:'rq-t1',subj:b.id,topic:null,min:0,cycle:S.cycle,set:S.set||1,review:true,kind:'aula',items:[],date:today(),ac:8,tq:10});save();render()},P1);await W(300);await btn(P1);
 st=await ev(()=>(document.querySelector('.edp .edrq')||{}).textContent||'');ok(/✓ Revisão por questões · 8\/10 \(80%\)/.test(st),'feita neste ciclo: ✓ com o placar ('+st+')');
 ok(await ev(()=>!document.querySelector('.edp .edrqv')),'sem olho na linha do painel');
