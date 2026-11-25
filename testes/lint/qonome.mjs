@@ -8,11 +8,11 @@ const Q='https://quiz.exemplo.com/q.html?v=';
 const id=await x.ev(()=>actives().find(s=>!gDone(s)).id);
 const tab=async t=>{await x.ev(t=>document.querySelector(`nav [data-tab=${t}]`).click(),t);await W(400)};
 const hist=async()=>{await tab('reg');const v=await x.ev(()=>{const t=document.getElementById('app').innerText;const i=t.indexOf('Tópico N');return t.slice(i,i+300)});await tab('ciclo');return v};
-const labels=()=>x.ev(()=>[...document.querySelectorAll('#modal .qlb')].map(e=>e.textContent.trim()).join(','));
+const labels=()=>x.ev(()=>[...document.querySelectorAll('#modal .rowq input[data-rlbl]')].map(e=>(e.value||e.placeholder).trim()).join(','));
 // 1º registro: 3 links; dá nome à 1ª pelo campo
 await x.act('rreg',id);
 await x.ev(Q=>{const g=S.sel.groups[0];g.nt='Tópico N';g.rows=[1,2,3].map(i=>({id:uid(),kind:'aula',name:'',link:'',q:Q+i,qo:true,ac:String(i+4),tq:'10',...(i===1?{open:true}:{})}));render()},Q);await W(300);
-ok(await x.ev(()=>!!document.querySelector('#modal input[data-rlbl]')),'linha aberta mostra o campo "Nome"');
+ok(await x.ev(()=>!!document.querySelector('#modal input[data-rlbl]')),'linha mostra o campo do assunto (nome)');
 const inp=await p.$('#modal input[data-rlbl]');await inp.click();await inp.type('Quiz da aula 2');await W(200);
 await p.screenshot({path:OUT+'/qonome-campo.png'});
 await x.ev(()=>{const r=S.sel.groups[0].rows[0];r.open=false;render()});await W(200);
@@ -37,7 +37,7 @@ const ac=await x.ev(id=>{const t=S.subjects.find(z=>z.id===id).topics.find(t=>t.
 await x.ev(id=>{const e=[...document.querySelectorAll(`[data-act=rview][data-id="${id}"]`)].find(e=>e.offsetParent);e.click()},id);await W(400);
 await x.ev(()=>{const b=[...document.querySelectorAll('#modal button')].find(b=>b.textContent.trim()==='Editar');b.click()});await W(500);
 const opened=await x.ev(()=>{const r=grps().flatMap(g=>g.rows.map(r=>[g,r])).find(([g,r])=>r.qo&&String(r.q||'').endsWith('=1'));if(!r)return false;r[1].open=true;render();return true});await W(300);
-ok(opened&&await x.ev(()=>!!document.querySelector('#modal input[data-rlbl]')),'Editar registro: linha de Questões abre com o campo "Nome"');
+ok(opened&&await x.ev(()=>!!document.querySelector('#modal input[data-rlbl]')),'Editar registro: linha de Questões com o campo do assunto (nome)');
 await x.ev(()=>{const e=document.querySelector('#modal input[data-rlbl]');e.value='Simulado 1';e.dispatchEvent(new Event('input',{bubbles:true}))});await p.screenshot({path:OUT+'/qonome-editar.png'});
 console.log('    botões:',await x.ev(()=>[...document.querySelectorAll('#modal button,#modal form')].map(e=>e.tagName+':'+(e.dataset.act||e.dataset.f||'')+':'+e.textContent.trim().slice(0,15)).filter(t=>/Salvar|FORM|edsave|svedit/i.test(t)).join(' | ')));await x.ev(()=>{const b=[...document.querySelectorAll('#modal button')].find(b=>/^Salvar/.test(b.textContent.trim()));b.click()});await W(500);
 h=await hist();ok(/Simulado 1/.test(h),'nome dado em Editar registro aparece no Histórico');

@@ -23,19 +23,19 @@ const st=()=>ev(()=>{const D=document.querySelector('.csdlg');const rows=[...D.q
  return {rows,tot:(D.querySelector('.cstot')||{}).textContent||'',go:!D.querySelector('[data-act=csgo]').disabled,tops:[...D.querySelectorAll('.cspi .snt')].map(e=>e.textContent),more:(D.querySelector('.cspk .pgm')||{}).textContent||'',hint:!!D.querySelector('.cspk .qzhint'),per:(D.querySelector('.csper')||{}).textContent}});
 const qn=t=>+((t.match(/(\d+) quest/)||[])[1]||-1);
 let r=await st();
-ok(r.rows.length===2&&r.rows.every(o=>o.on)&&qn(r.rows[0].c+r.rows[1].c)>=0&&/Vão entrar 54 questões de 2 disciplinas/.test(r.tot)&&r.go,'abre com as duas disciplinas marcadas, todas as sessões, e o total '+JSON.stringify(r));
+ok(r.rows.length===2&&r.rows.every(o=>o.on)&&qn(r.rows[0].c+r.rows[1].c)>=0&&/Vão entrar 54 questões do app e 30 questões externas de 2 disciplinas/.test(r.tot)&&r.go,'abre com as duas disciplinas marcadas, todas as sessões, e o total '+JSON.stringify(r));
 ok(/^Do Ciclo|^Todos os ciclos|^Só o Ciclo/.test(r.per),'período: frase do que entra '+JSON.stringify(r.per));
 await p.screenshot({path:'saida/consfilt-janela-'+w+'.png'});
 /* desmarcar uma disciplina */
 await ev(()=>document.querySelector('[data-csk=qy]').click());r=await st();
-ok(/Vão entrar 48 questões de 1 disciplina\b/.test(r.tot)&&!r.rows.find(o=>o.n==='Outra Disciplina').on,'desmarcar Outra Disciplina: sai do total '+JSON.stringify(r.tot));
+ok(/Vão entrar 48 questões do app e 30 questões externas de 1 disciplina\b/.test(r.tot)&&!r.rows.find(o=>o.n==='Outra Disciplina').on,'desmarcar Outra Disciplina: sai do total '+JSON.stringify(r.tot));
 /* Tópicos */
 await x.act('csm','qx:top');r=await st();
 ok(r.tops.length===6&&/Mostrar mais/.test(r.more)&&r.hint&&/Nenhuma questão/.test(r.tot)&&!r.go,'Tópicos: 6 tópicos, Mostrar mais, aviso para marcar; nada marcado: contador zero e Iniciar desligado '+JSON.stringify(r));
 await x.act('pgmore','cst-qx');r=await st();ok(r.tops.length===7&&r.tops.indexOf('Tópico Um')===0,'Mostrar mais: os 7 tópicos, um por nome (Um aparece uma vez) '+JSON.stringify(r.tops));
 const um=await ev(()=>document.querySelector('.cspi').textContent);ok(/2 sessões · 12 questões/.test(um),'Tópico Um: 2 sessões e 12 questões '+JSON.stringify(um));
 await ev(()=>document.querySelector('[data-cst="qx|t1"]').click());r=await st();
-ok(/Vão entrar 12 questões de 1 disciplina\b/.test(r.tot)&&r.go&&!r.hint,'marcar Tópico Um: 12 questões, Iniciar ligado '+JSON.stringify(r.tot));
+ok(/Vão entrar 12 questões do app e 20 questões externas de 1 disciplina\b/.test(r.tot)&&r.go&&!r.hint,'marcar Tópico Um: 12 questões, Iniciar ligado '+JSON.stringify(r.tot));
 const geo=await ev(()=>{const D=document.querySelector('.csdlg'),d=D.getBoundingClientRect();return {sw:document.documentElement.scrollWidth,iw:innerWidth,out:[...D.querySelectorAll('*')].filter(e=>{const z=e.getBoundingClientRect();return z.width&&z.right>d.right+1}).length,
  tall:[...D.querySelectorAll('.cspi .snt,.csdh .snt')].filter(e=>e.getBoundingClientRect().height>30).length,cut:[...D.querySelectorAll('.cspi .snt')].some(e=>e.scrollWidth>e.clientWidth&&e.title.length>20),
  box:(()=>{const l=D.querySelector('.cspi'),i=l.querySelector('input').getBoundingClientRect(),n=l.querySelector('.snt').getBoundingClientRect();return Math.abs((i.top+i.height/2)-(n.top+n.height/2))})()}});
@@ -52,9 +52,18 @@ await x.act('csstep','5');await x.act('csstep','5');await x.act('csstep','5');aw
 ok(/Vão entrar 18 questões/.test(r.tot)&&await ev(()=>document.querySelector('[data-csv]').value==='90'),'subir para 90%: entra também o Dois '+JSON.stringify(r.tot));
 await x.act('csacc');
 /* só as resolvidas: 3 questões do caderno da sessão 1 */
-await x.act('csf','done');r=await st();ok(/Vão entrar 3 questões de 1 disciplina\b/.test(r.tot),'Só as resolvidas: só as 3 já respondidas '+JSON.stringify(r.tot));
-await x.act('csf','err');r=await st();ok(/Vão entrar 1 questão de 1 disciplina\b/.test(r.tot),'Só as que errei: 1 '+JSON.stringify(r.tot));
+await x.act('csf','done');r=await st();ok(/Vão entrar 3 questões do app e 30 questões externas de 1 disciplina\b/.test(r.tot),'Só as resolvidas: só as 3 já respondidas '+JSON.stringify(r.tot));
+await x.act('csf','err');r=await st();ok(/Vão entrar 1 questão do app e 30 questões externas de 1 disciplina\b/.test(r.tot),'Só as que errei: 1 do app e as externas com pelo menos um erro (4/10 e 9/10) '+JSON.stringify(r.tot));
+/* a errada do caderno é refeita e acertada: sai da última vez; "Incluir erros anteriores" traz de volta; uma externa corrigida (10/10 depois de 4/10) também */
+ok(await ev(()=>!!document.querySelector('.csdlg [data-act=csea]')&&document.querySelector('.csdlg [data-act=csea]').getAttribute('aria-checked')==='false'),'com "Só as que errei": aparece "Incluir erros anteriores", desligada');
+await ev(()=>{const c1=qcL().find(c=>c.nome==='Caderno 1'),q=qLoad(c1.id).qs[0];S.qa[c1.id][q.id].push({ok:true,d:today()});
+ S.sessions.filter(s=>s.topic==='t1'&&s.items&&s.items[0]).forEach(s=>{s.items[0].ac=10});const s=S.sessions.find(s=>s.topic==='t1'&&s.items&&s.items[0]);
+ S.sessions.push({...s,id:uid(),ses:uid(),items:[{...s.items[0],ac:4,tq:10}],date:addD(today(),-30)});CU=null;save();render()});await W(200);
+r=await st();ok(/Vão entrar 10 questões externas de 1 disciplina\b/.test(r.tot),'última vez: a do caderno e o Tópico Um (agora 10/10) saem '+JSON.stringify(r.tot));
+await x.act('csea');r=await st();ok(/Vão entrar 1 questão do app e 30 questões externas de 1 disciplina\b/.test(r.tot)&&await ev(()=>document.querySelector('.csdlg [data-act=csea]').getAttribute('aria-checked')==='true'),'Incluir erros anteriores: voltam a do caderno e o Tópico Um '+JSON.stringify(r.tot));
+await x.act('csea');
 await x.act('csf','all');
+ok(await ev(()=>!document.querySelector('.csdlg [data-act=csea]')),'com "Todas": a opção some');
 /* começar com Tópicos › Um: a revisão só tem o Um */
 await x.act('csm','qx:top');await x.act('csgo');await W(300);
 r=await ev(()=>({rv:!!(S.rv&&S.rv.cons),sel:S.rv&&S.rv.cons.sel&&S.rv.cons.sel.qx,tks:uniq(consUnits('qx').map(u=>u.tk)),y:consUnits('qy').length,lbl:S.rv&&S.rv.lbl}));

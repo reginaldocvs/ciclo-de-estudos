@@ -327,7 +327,7 @@ Hoje, Ciclo e Total no canto superior direito do título: rótulo apagado em 500
 Toda lista que cresce mostra 6 itens e um "Mostrar mais N" (e "Mostrar menos"), no celular e no computador. A exceção é a lista com caixinha de marcar, que mostra tudo: não dá para marcar o que não se vê.
 
 ### Linhas do registro
-Cada tópico registrado tem linhas de **Videoaula** (ícone de câmera), **Leitura** (ícone de livro, com as páginas "p. 12–30" ao lado do título) e **Questões** (acertos de total, com a porcentagem). Os ícones ficam no começo da linha, em tinta apagada; os botões "Videoaula +", "Leitura +" e "Questões +" cabem numa linha só até em 320px.
+Cada tópico registrado tem linhas de **Videoaula** (ícone de câmera), **Leitura** (ícone de livro, com as páginas "p. 12–30" ao lado do título) e **Questões** (ícone de questões e o assunto no topo, como a videoaula; ao abrir, onde e os acertos de total, com a porcentagem; fechada, "7 de 10" ao lado do assunto). Os ícones ficam no começo da linha, em tinta apagada; os botões "Videoaula +", "Leitura +" e "Questões +" cabem numa linha só até em 320px.
 
 ### Modo foco
 Tela cheia sobre o chão: disciplina, relógio grande (Timer Display), barra de progresso, ações centralizadas; antes de começar mostra as escolhas e uma contagem de 5 segundos.

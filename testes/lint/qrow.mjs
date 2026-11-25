@@ -12,11 +12,12 @@ ok(await x.ev(()=>[...document.querySelectorAll('#modal .radd .btn')].map(b=>b.t
 const gid=await x.ev(()=>S.sel.groups[0].id);
 await x.act('addrow',gid);await x.ev(()=>{const g=S.sel.groups[0];g.nt='Crase';g.rows[0].name='Aula 12';render()});
 await x.act('addrowq',gid);
-const [ra,rq]=await x.ev(()=>S.sel.groups[0].rows.map(r=>r.id));await x.act('rtog',gid+':'+ra);ok(await x.ev(()=>{const R=S.sel.groups[0].rows;return R[0].open&&!R[1].open}),'abrir a aula fecha as questões');await x.act('rtog',gid+':'+rq);ok(await x.ev(()=>{const R=S.sel.groups[0].rows;return !R[0].open&&R[1].open}),'abrir as questões fecha a aula');await x.act('rtog',gid+':'+rq);await x.ev(()=>document.querySelector('#modal .rowq [data-rac]').focus());
+const [ra,rq]=await x.ev(()=>S.sel.groups[0].rows.map(r=>r.id));await x.act('rtog',gid+':'+ra);ok(await x.ev(()=>{const R=S.sel.groups[0].rows;return R[0].open&&!R[1].open}),'abrir a aula fecha as questões');await x.act('rtog',gid+':'+rq);ok(await x.ev(()=>{const R=S.sel.groups[0].rows;return !R[0].open&&R[1].open}),'abrir as questões fecha a aula');
 
-await x.fill('#modal .rowq [data-rac]','8');await x.fill('#modal .rowq [data-rtq]','10');
+ok(await x.ev(rq=>{const h=document.querySelector('#modal .rowq');const b=h&&h.closest('.rgrp').querySelector('.rbody');return !!h.querySelector('input[data-rlbl]')&&/Assunto/.test(h.querySelector('input[data-rlbl]').placeholder)&&!!b&&!!b.querySelector('[data-rq]')&&!!b.querySelector(`[data-rac="${rq}"]`)},rq),'questões como a videoaula: assunto no topo; onde e acertos ao abrir');
+await x.fill(`#modal [data-rac="${rq}"]`,'8');await x.fill(`#modal [data-rtq="${rq}"]`,'10');await x.act('rtog',gid+':'+rq);
 ok(await x.ev(()=>{const G=[...document.querySelectorAll('#modal .rgrp')];return G.length===2&&G.every(g=>!g.classList.contains('open'))}),'linhas fechadas sem fundo');await x.act('rtog',gid+':'+ra);ok(await x.ev(()=>{const G=[...document.querySelectorAll('#modal .rgrp')];return G[0].classList.contains('open')&&!!G[0].querySelector('.rbody')&&getComputedStyle(G[0]).backgroundColor!=='rgba(0, 0, 0, 0)'&&!G[1].classList.contains('open')}),'aula aberta: fundo envolve o nome e os campos');await shot('0-hier');await x.act('rtog',gid+':'+ra);
-ok(/80%/.test(await x.ev(()=>document.querySelector('#modal .rowq .qpct').textContent)),'mostra 80%');
+ok(/8 de 10/.test(await x.ev(()=>(document.querySelector('#modal .rowq .rpg')||{}).textContent||''))&&await x.ev(()=>document.querySelector('#modal .rowq input[data-rlbl]').placeholder.startsWith('Questões')),'fechada e sem assunto: mostra "Questões" e 8 de 10');
 await shot('1-misto');
 await x.ev(()=>{S.sel.mt='0h30';render()});await x.submit('#modal form[data-f=man]');await W(300);
 const its=await x.ev(s=>{const L=S.sessions.filter(x=>pkey(x)===s&&!x.review);const ses=L[L.length-1].ses;return L.filter(x=>x.ses===ses).flatMap(x=>x.items)},s);

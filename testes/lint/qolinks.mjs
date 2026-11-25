@@ -8,7 +8,7 @@ const Q=n=>'https://quiz.exemplo.com/q.html?v='+n;
 const id=await x.ev(()=>actives().find(s=>!gDone(s)).id);
 await x.act('rreg',id);
 await x.ev(base=>{const g=S.sel.groups[0];g.nt='Tópico Q';g.rows=[{id:uid(),kind:'aula',name:'Aula 1',link:'',q:''},...[1,2,3].map(i=>({id:uid(),kind:'aula',name:'',link:'',q:base+i,qo:true,ac:String(i+3),tq:'8'}))];render()},Q(''));
-await W(300);const fv=await x.ev(()=>[...document.querySelectorAll('#modal .qlb')].map(e=>e.textContent.trim()).join(','));ok(fv==='Questões - 1,Questões - 2,Questões - 3','formulário numera ('+fv+')');
+await W(300);const fv=await x.ev(()=>[...document.querySelectorAll('#modal .rowq input[data-rlbl]')].map(e=>(e.value||e.placeholder).trim()).join(','));ok(fv==='Questões - 1,Questões - 2,Questões - 3','formulário numera ('+fv+')');
 await x.fill('#modal input[name=m]','1h30');await x.submit('#modal form[data-f=man]');await W(400);
 const t1=await x.ev(id=>{const s=S.subjects.find(z=>z.id===id),t=s.topics.find(t=>t.name==='Tópico Q');return t.links.map(l=>l.title+'|'+(l.q||''))},id);console.log('    tópico:',JSON.stringify(t1));
 ok(t1.filter(l=>l.startsWith('Questões')).length===3,'3 links de questões viram 3 itens no tópico');
@@ -20,7 +20,7 @@ await x.ev(()=>document.querySelector('nav [data-tab=reg]').click());await W(500
 const ac=await x.ev(id=>{const s=S.subjects.find(z=>z.id===id),t=s.topics.find(t=>t.name==='Tópico Q');return t.links.filter(l=>l.title==='Questões').map(l=>{const r=acLast(t.id,l);return r?r.a+'/'+r.t:'-'})},id).catch(e=>['erro '+e.message]);
 console.log('    acertos:',JSON.stringify(ac));ok(JSON.stringify(ac)==='["4/8","5/8","6/8"]','cada "Questões" guarda os próprios acertos');
 await x.ev(id=>{const s=S.subjects.find(z=>z.id===id);S.progress[id]=0;save();render()},id);await x.act('rreg',id);await x.ev(base=>{const g=S.sel.groups[0];g.nt='Tópico Q';g.rows=[{id:uid(),kind:'aula',name:'',link:'',q:base+'4',qo:true},{id:uid(),kind:'aula',name:'',link:'',q:base+'2',qo:true}];render()},Q(''));await W(300);
-const fv2=await x.ev(()=>[...document.querySelectorAll('#modal .qlb')].map(e=>e.textContent.trim()).join(','));ok(fv2==='Questões - 4,Questões - 2','2ª sessão: link novo vira 4, link repetido mantém o 2 ('+fv2+')');
+const fv2=await x.ev(()=>[...document.querySelectorAll('#modal .rowq input[data-rlbl]')].map(e=>(e.value||e.placeholder).trim()).join(','));ok(fv2==='Questões - 4,Questões - 2','2ª sessão: link novo vira 4, link repetido mantém o 2 ('+fv2+')');
 await x.ev(()=>{const c=document.querySelector('#modal [data-act=xcancel],#modal .x[data-act=rvclose],#modal [data-act=regx]');c&&c.click()});await W(300);await p.reload();await W(700);
 // dados antigos: junta as 3 num item só (como o app antigo) e recarrega; o app separa de novo
 await x.ev(id=>{const s=S.subjects.find(z=>z.id===id),t=s.topics.find(t=>t.name==='Tópico Q');const qs=t.links.filter(l=>l.title==='Questões');t.links=t.links.filter(l=>l.title!=='Questões');t.links.push({...qs[2]});save()},id);
