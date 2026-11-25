@@ -1232,7 +1232,7 @@ body{text-wrap:pretty}
 .edx{display:flex;flex-direction:column;gap:16px}
 .edp{background:var(--card);border:1px solid var(--m-ov);border-radius:var(--r-2xl);padding:20px}
 .edst{font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
-.edpn{font-size:1.75rem;font-weight:800;line-height:1.15;margin:6px 0 0;letter-spacing:-.01em;min-width:0}.edpn{overflow:hidden}.edpn .snt{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media (max-width:600px){.edpn{font-size:1.5rem}}
+.edpn{font-size:1.75rem;font-weight:800;line-height:1.15;margin:6px 0 0;letter-spacing:-.01em;min-width:0}.edpn{overflow:hidden}.edpn .snt{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.edpnd{display:flex;align-items:center;gap:10px}.edpnd .snt{min-width:0}@media (max-width:380px){.edpnd{gap:6px}.edpnd .dot{width:9px;height:9px;border-radius:3px}}@media (max-width:600px){.edpn{font-size:1.5rem}}
 .edtime{margin:14px 0 18px;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;gap:8px}
 #edclk{font-size:4rem;font-weight:700;letter-spacing:-.03em;line-height:1}
 .edtime .mut{font-size:1.125rem;font-weight:600}
@@ -1863,7 +1863,7 @@ function edCiclo(A,nw,srH,bkr,rvC,done,o={}){const TL=tvOn()?trvList():[];
  /* painel: a vez, o tempo, Iniciar, e a revisão de hoje */
  const run=selId()===nw.id&&S.timer.running,ms=edMs(nw),st=run?(o.rev?'Revisando agora':'Estudando agora'):ms?(o.rev?'Revisão em pausa · ':'Estudo em pausa · ')+pzF(ms):prog(nw.id)>=nw.goal?'Sessão concluída ✓':'Agora'+(A.length>1?' · '+(A.indexOf(nw)+1)+' de '+A.length:'');
  const i0=A.indexOf(nw),nx=A.length>1?[...A.slice(i0+1),...A.slice(0,i0)].find(y=>prog(y.id)<y.goal):null,nb=blkL().some(b=>b.pos===i0+1&&!blkIsDone(b));
- const panel=`<aside class="edp" aria-label="${o.rev?'Revisão da vez':'Sessão da vez'}"><div class="edst mut">${st}</div><h2 class="edpn"><span class="snt" title="${esc(nm(nw))}">${esc(nm(nw))}</span></h2><div class="edtime"><span id="edclk" data-b="${shown(nw.id)*60000}">${edHm(shown(nw.id)*60000+ms)}</span><span class="mut"> de ${fmt(nw.goal)}${prog(nw.id)>=nw.goal?' ✓':''}</span></div>${nwBtn(nw,1)}${rqP}${rvC||''}${nb?`<div class="edafter nwnext mut">Depois: <span class="nwbk">${BLKI}<b>Revisão de bloco</b></span></div>`:nx?`<div class="edafter nwnext mut">Depois: <span class="dot" style="background:${col(nx)}"></span><b>${esc(nm(nx))}</b></div>`:''}${rvs}</aside>`;
+ const panel=`<aside class="edp" aria-label="${o.rev?'Revisão da vez':'Sessão da vez'}"><div class="edst mut">${st}</div><h2 class="edpn edpnd"><span class="dot" style="background:${col(nw)}" aria-hidden="true"></span><span class="snt" title="${esc(nm(nw))}">${esc(nm(nw))}</span></h2><div class="edtime"><span id="edclk" data-b="${shown(nw.id)*60000}">${edHm(shown(nw.id)*60000+ms)}</span><span class="mut"> de ${fmt(nw.goal)}${prog(nw.id)>=nw.goal?' ✓':''}</span></div>${nwBtn(nw,1)}${rqP}${rvC||''}${nb?`<div class="edafter nwnext mut">Depois: <span class="nwbk">${BLKI}<b>Revisão de bloco</b></span></div>`:nx?`<div class="edafter nwnext mut">Depois: <span class="dot" style="background:${col(nx)}"></span><b>${esc(nm(nx))}</b></div>`:''}${rvs}</aside>`;
  return wrap(panel)}
 setInterval(()=>{const e=$('edclk');if(!e||!S.timer.running)return;const s=curS();if(s)e.textContent=edHm((+e.dataset.b||0)+el())},1000);
 function viewCiclo(){
