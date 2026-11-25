@@ -1,6 +1,6 @@
 ---
 name: Ciclo de Estudos
-description: O ciclo de estudos lido como o edital verticalizado do concurseiro, uma tabela densa com colunas de marcação.
+description: O ciclo de estudos lido como o edital verticalizado do concurseiro, uma tabela densa e escaneável.
 colors:
   primary: "#00687A"
   on-primary: "#FFFFFF"
@@ -18,7 +18,6 @@ colors:
   on-tonal-wash: "#173840"
   ink: "#15191B"
   muted: "#4E585C"
-  mark-empty: "#AAB4B8"
   field-outline: "#6F797C"
   error: "#BA1A1A"
   success: "#1B6D2F"
@@ -149,15 +148,6 @@ components:
   table-row-current:
     backgroundColor: "{colors.highlighter}"
     textColor: "{colors.on-highlighter}"
-  review-mark:
-    backgroundColor: "transparent"
-    rounded: "{rounded.mark}"
-    size: "18px"
-  review-mark-done:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.on-primary}"
-    rounded: "{rounded.mark}"
-    size: "18px"
   tag:
     backgroundColor: "{colors.track}"
     textColor: "{colors.on-tonal-wash}"
@@ -184,9 +174,9 @@ components:
 
 **Creative North Star: "O Edital Verticalizado"**
 
-O app se lê como a planilha que o concurseiro monta do edital: disciplinas e tópicos numa tabela branca, densa e escaneável, com colunas de marcação para as revisões. Não há painel de cartões de mesmo peso; a tela principal é uma tabela, e o resto do app (Revisão, Questões, Histórico, Estatísticas) repete a mesma gramática: faixa de cabeçalho em caixa alta, linhas de 52px separadas por fio de 1px, números tabulares alinhados.
+O app se lê como a planilha que o concurseiro monta do edital: disciplinas e tópicos numa tabela branca, densa e escaneável. Não há painel de cartões de mesmo peso; a tela principal é uma tabela, e o resto do app (Revisão, Questões, Histórico, Estatísticas) repete a mesma gramática: faixa de cabeçalho em caixa alta, linhas de 52px separadas por fio de 1px, números tabulares alinhados.
 
-A cor é economizada. O ciano do logo domina só a moldura (o menu lateral inteiro, ou a barra de cima e a de baixo no celular) e aparece dentro da página apenas onde há ação ou confirmação: o botão primário, a aba segmentada ativa e as marcas de revisão feitas. O marca-texto limão existe para uma única coisa, a linha da disciplina da vez. As cores das disciplinas ficam presas em quadradinhos de 10px e na barra de progresso.
+A cor é economizada. O ciano do logo domina só a moldura (o menu lateral inteiro, ou a barra de cima e a de baixo no celular) e aparece dentro da página apenas onde há ação ou confirmação: o botão primário e a aba segmentada ativa. O marca-texto limão existe para uma única coisa, a linha da disciplina da vez. As cores das disciplinas ficam presas em quadradinhos de 10px e na barra de progresso.
 
 A página é plana: chão cinza frio, papel branco com fio fino, sem sombras. O tema claro é o padrão; o escuro continua como opção.
 
@@ -195,14 +185,14 @@ A página é plana: chão cinza frio, papel branco com fio fino, sem sombras. O 
 - Ciano só na moldura e na ação; limão só na linha da vez.
 - Fios de 1px no lugar de sombras e de fundos coloridos.
 - Algarismos tabulares em todo tempo, meta, acerto e data.
-- Cantos discretos: 8px nos controles, 10px nos cartões, 4px nas marcas.
+- Cantos discretos: 8px nos controles, 10px nos cartões, 4px nas peças miúdas.
 
 ## Colors
 
 Paleta fria e quase monocromática (cinza, branco, tinta), com um ciano de marca e um único acento limão de marca-texto.
 
 ### Primary
-- **Ciano do Logo** (primary): fundo do menu lateral e das barras do celular, botão primário (Iniciar, Salvar), aba segmentada ativa, marca de revisão feita, foco dos campos e links de texto. Sobre ele, texto branco (on-primary).
+- **Ciano do Logo** (primary): fundo do menu lateral e das barras do celular, botão primário (Iniciar, Salvar), aba segmentada ativa, foco dos campos e links de texto. Sobre ele, texto branco (on-primary).
 - **Ciano de Passagem** (rail-hover): superfície elevada dentro do menu ciano.
 - **Névoa do Menu** (rail-muted): rótulos inativos do menu sobre o ciano.
 
@@ -222,9 +212,8 @@ Paleta fria e quase monocromática (cinza, branco, tinta), com um ciano de marca
 - **Lavado Tonal** (tonal-wash / on-tonal-wash): botão secundário e item ativo de navegação fora do menu ciano.
 - **Tinta** (ink): texto principal e números.
 - **Tinta Apagada** (muted): rótulos, cabeçalhos de coluna, texto de apoio.
-- **Marca Vazia** (mark-empty): contorno da marca de revisão ainda não feita.
 - **Contorno de Campo** (field-outline): borda dos campos em repouso.
-- **Atraso** (error): revisão atrasada (contorno e "!" da marca, link "atrasada"), erros.
+- **Atraso** (error): revisão atrasada (link "atrasada"), erros.
 - **Feito** (success): placar de acertos.
 
 ### Named Rules
@@ -249,7 +238,7 @@ Paleta fria e quase monocromática (cinza, branco, tinta), com um ciano de marca
 - **Panel Subject** (800, 1.75rem, 1.15): nome da disciplina da vez no painel; 1.5rem no celular, 1.4rem no painel de 300px.
 - **Figure** (700, 1.5rem, tabular): os números Hoje, Ciclo e Total no canto do cabeçalho; os quatro números das Estatísticas usam 1.75rem.
 - **Body** (400, 15px, 1.5, 0.01em): texto corrido.
-- **Table Row** (400, 0.9375rem, tabular): linhas de tabela; nome da disciplina em 700, sub-linha de tópico em 0.875rem.
+- **Table Row** (400, 0.9375rem, tabular): linhas de tabela; nome da disciplina em 700.
 - **Table Head** (700, 0.75rem, 0.06em, caixa alta): faixas de cabeçalho e rótulos dos números das Estatísticas.
 - **Label** (600, 0.875rem): botões, abas, rótulos de apoio.
 
@@ -274,7 +263,7 @@ As tabelas respondem ao próprio contêiner, não à janela: no Ciclo some prime
 
 Itens do mesmo tipo ficam na mesma coluna de uma linha para a outra (etiquetas de acertos, ícones de editar e excluir, botões Iniciar e Registrar), e ações ficam junto do conteúdo, não empurradas para a borda do cartão.
 
-Ritmo: linhas de 52px, cabeçalhos de 44px (40px nas sub-linhas e faixas), padding de cartão de 20px, painel com 32px 28px, intervalo de 16px entre blocos. No celular a sessão da vez vem primeiro, depois o que revisar, depois a faixa do ciclo.
+Ritmo: linhas de 52px, cabeçalhos de 44px (40px nas faixas), padding de cartão de 20px, painel com 32px 28px, intervalo de 16px entre blocos. No celular a sessão da vez vem primeiro, depois o que revisar, depois a faixa do ciclo.
 
 ## Elevation & Depth
 
@@ -288,7 +277,7 @@ A página é plana. Cartões, tabelas e o painel têm sombra nenhuma; a separaç
 
 ## Shapes
 
-Cantos pequenos e sóbrios, em três degraus por tamanho de peça: 4px nas peças miúdas (etiquetas, placar de acertos, marcas de revisão, quadradinho da disciplina, barras de progresso da tabela, grifo do nome), 8px em todo controle (botões, abas segmentadas, itens do menu, busca, filtro, campos) e 10px nos cartões, tabelas e pop-ups. Botões só de ícone continuam redondos e o interruptor continua pílula. O painel fixo da direita não tem canto: é uma coluna presa à borda com fio à esquerda.
+Cantos pequenos e sóbrios, em três degraus por tamanho de peça: 4px nas peças miúdas (etiquetas, placar de acertos, quadradinho da disciplina, barras de progresso da tabela, grifo do nome), 8px em todo controle (botões, abas segmentadas, itens do menu, busca, filtro, campos) e 10px nos cartões, tabelas e pop-ups. Botões só de ícone continuam redondos e o interruptor continua pílula. O painel fixo da direita não tem canto: é uma coluna presa à borda com fio à esquerda.
 
 ## Components
 
@@ -320,10 +309,7 @@ Cantos pequenos e sóbrios, em três degraus por tamanho de peça: 4px nas peça
 - **Celular:** barra de cima e barra de baixo no mesmo ciano.
 
 ### Tabela do Ciclo (assinatura)
-Colunas: #, Disciplina / tópico, Meta, Feito, Progresso, uma coluna por revisão (1ª, 2ª … conforme os intervalos configurados, 24px cada), Última, ações. Cabeçalho em faixa band-high de 44px; linhas de 52px com fio entre elas. Sob cada disciplina, sub-linhas de 40px com os tópicos da última sessão (recuo de 20px, aulas em apagado, até três links de aula/questões) e a marca de cada revisão. A linha da vez fica inteira em marca-texto limão.
-
-### Marca de revisão
-Quadrado de 18px, cantos de 4px. Vazia: contorno de 1.5px cinza (mark-empty). Feita: cheia de ciano com visto branco em SVG. Para hoje: contorno e "!" ciano. Atrasada: contorno e "!" vermelho.
+Colunas: #, Disciplina, Meta, Feito, Progresso, Última (data da última sessão daquela posição), ações. Cabeçalho em faixa band-high de 44px; linhas de 52px com fio entre elas. Uma linha por disciplina, sem sub-linhas de tópico: o que foi estudado fica no "Revise antes de começar" do painel, no registro (olho) e no Histórico; as revisões por tópico ficam na aba Revisão e em "Revisão de hoje". A linha da vez fica inteira em marca-texto limão.
 
 ### Painel da sessão
 Linha de situação em caixa alta pequena (Agora · 2 de 7, Estudando agora, Estudo em pausa), nome da disciplina em 1.75rem/800, relógio em 4rem com "de [meta]" ao lado, Iniciar largo, a disciplina seguinte ("Depois:") com seu quadradinho, e a seção "Revisão de hoje" separada por fio, com até duas revisões de tópico e um "+ N".
@@ -355,7 +341,6 @@ Tela cheia sobre o chão: disciplina, relógio grande (Timer Display), barra de 
 - **Do** usar 8px em controles, 10px em cartões e 4px em peças miúdas.
 - **Do** cortar em 6 itens, com "Mostrar mais", toda lista que pode crescer (menos as de marcar).
 - **Do** pôr o nome de disciplina numa linha só, com reticências e title.
-- **Do** marcar revisão com o quadrado de 18px (vazio em cinza, feito cheio de ciano com visto em SVG, contorno ciano para hoje, contorno vermelho para atrasada).
 
 ### Don't:
 - **Don't** usar o limão em nada além da linha da vez.

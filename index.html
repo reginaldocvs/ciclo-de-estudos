@@ -1259,12 +1259,12 @@ body{text-wrap:pretty}
 .edrv .lnk{font-weight:700;color:var(--ink);flex:none;padding:6px 0}
 .edrv .lnk.late{color:var(--bad)}
 .edt{background:var(--card);border:1px solid var(--m-ov);border-radius:var(--r-2xl);overflow:hidden}
-.edt{container-type:inline-size}.edt .edr{display:grid;grid-template-columns:22px minmax(150px,1fr) 48px 56px 96px var(--rv,) 52px 64px;column-gap:10px;align-items:center;padding:0 16px!important;margin:0;min-height:52px;border:0;border-bottom:1px solid var(--m-ov);border-radius:0;background:none;font-variant-numeric:tabular-nums}
+.edt{container-type:inline-size}.edt .edr{display:grid;grid-template-columns:22px minmax(150px,1fr) 48px 56px 96px 52px 64px;column-gap:10px;align-items:center;padding:0 16px!important;margin:0;min-height:52px;border:0;border-bottom:1px solid var(--m-ov);border-radius:0;background:none;font-variant-numeric:tabular-nums}
 .edt .edr:last-child{border-bottom:0}.edt .edr.srow,.edt .edr.srow.cur{border-radius:0!important;transition:none}
-/* tabela estreita: some primeiro o Progresso, depois Meta e Última; as revisões ficam */
-@container (max-width:780px){.edt .edr{grid-template-columns:22px minmax(130px,1fr) 48px 56px var(--rv,) 52px 64px}.edt .edr>.bar,.edt .edh2>span:nth-child(5),.edt .eds>span:nth-child(5){display:none}}
-@container (max-width:640px){.edt .edr{grid-template-columns:22px minmax(120px,1fr) 56px var(--rv,) 64px}.edt .edr>.edme,.edt .edr>.edd,.edt .edh2>span:nth-child(3),.edt .eds>span:nth-child(3),.edt .edh2>span:nth-last-child(2){display:none}}
-.edr .n{text-align:right}.edr .c{display:grid;place-items:center}
+/* tabela estreita: some primeiro o Progresso, depois Meta e Última */
+@container (max-width:780px){.edt .edr{grid-template-columns:22px minmax(130px,1fr) 48px 56px 52px 64px}.edt .edr>.bar,.edt .edh2>span:nth-child(5){display:none}}
+@container (max-width:640px){.edt .edr{grid-template-columns:22px minmax(120px,1fr) 56px 64px}.edt .edr>.edme,.edt .edr>.edd,.edt .edh2>span:nth-child(3),.edt .edh2>span:nth-last-child(2){display:none}}
+.edr .n{text-align:right}
 .edt .edh2{min-height:44px;background:var(--m-c-high);font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
 .edno{color:var(--mut)}
 .ednm{display:flex;align-items:center;gap:10px;min-width:0}
@@ -1272,12 +1272,7 @@ body{text-wrap:pretty}
 .edt{font-size:.9375rem}.ednm .rnt{font-size:.9375rem}.kch.zero,.kch{box-shadow:none!important;background:none!important}.kci svg{display:none}
 .edt .edr.cur{background:var(--hl);color:var(--on-hl,var(--ink))}
 .edt .edr.cur .edno{color:inherit}
-.edt .eds{min-height:40px;font-size:.875rem}
-.edtn{padding-left:20px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.edlk{display:inline-flex;gap:0;margin-left:6px;vertical-align:middle}.edlk .lic{width:28px;height:28px}.edafter .nwbk{display:inline-flex;align-items:center;gap:6px}
-.edmk{width:18px;height:18px;border-radius:4px;border:1.5px solid #AAB4B8;display:inline-grid;place-items:center;font-size:12px;font-weight:800;color:#fff}
-.edmk.ok{background:var(--m-p);border-color:var(--m-p)}
-.edmk.late{border-color:var(--bad);color:var(--bad)}
-.edmk.due{border-color:var(--m-p);color:var(--m-p)}
+.edafter .nwbk{display:inline-flex;align-items:center;gap:6px}
 .edt .edr .bar{height:6px;border-radius:4px;margin:0;background:var(--track)}
 .edr .ctb{display:flex;justify-content:flex-end;gap:2px}
 .edt .bkrow{padding:0 16px;min-height:40px;border-bottom:1px solid var(--m-ov);border-radius:0;margin:0}
@@ -1302,9 +1297,7 @@ body{text-wrap:pretty}
 @media (max-width:700px){
  .edt .edr{grid-template-columns:20px minmax(0,1fr) auto auto!important;column-gap:10px}
  .edt .edr>*{display:none}
- .edt .edr>.edno,.edt .edr>.ednm,.edt .edr>.edtn,.edt .edr>.edfe,.edt .edr>.ctb{display:flex}
- .edt .eds{grid-template-columns:20px minmax(0,1fr) auto!important}
- .edt .eds>.edtn{grid-column:2}
+ .edt .edr>.edno,.edt .edr>.ednm,.edt .edr>.edfe,.edt .edr>.ctb{display:flex}
  .edt .edh2{display:none}
 }
 </style>
@@ -1835,25 +1828,18 @@ function cycleEnd(){const F=cyFin();
    e o painel da sessão à direita (no computador, fixo na altura toda; no celular, em cima). */
 const edHm=ms=>{const m=Math.floor(ms/60000);return Math.floor(m/60)+':'+String(m%60).padStart(2,'0')};
 const edMs=s=>s?(selId()===s.id&&(S.timer.running||el()>0)?el():pzMs(s.id)):0;
-function edMk(o,i){if(!o)return '<span class="edmk"></span>';if(i<o.n)return `<span class="edmk ok" title="${ordN(i+1)} revisão feita em ${sdm(o.h[i])}" aria-label="${ordN(i+1)} revisão feita">${EDCK}</span>`;
- if(i===o.n&&!o.fix&&o.due&&o.due<=today())return `<span class="edmk ${o.late?'late':'due'}" title="${ordN(i+1)} revisão ${o.late?'atrasada há '+o.late+(o.late===1?' dia':' dias'):'para hoje'}" aria-label="${ordN(i+1)} revisão ${o.late?'atrasada':'para hoje'}">!</span>`;
- if(i===o.n&&!o.fix&&o.due)return `<span class="edmk" title="${ordN(i+1)} revisão em ${sdm(o.due)}"></span>`;return '<span class="edmk"></span>'}
-const EDCK='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
-/* links das aulas e das questões de um registro (até 3 ícones), como no antigo "Revise antes" */
-const edLinks=r=>{const L=[],seen=new Set();(r.items||[]).forEach(i=>{const l=rqL(i);if(l.url&&!seen.has(l.url)){seen.add(l.url);L.push(`<a class="lic" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer" title="Abrir aula${l.title?': '+esc(l.title):''}" aria-label="Abrir aula">${AULAI}</a>`)}const qv=String(l.q||'').trim();if(qv&&!seen.has('q'+qv)){seen.add('q'+qv);L.push(`<a class="lic lq" href="${esc(qHref(qv))}" target="_blank" rel="noopener noreferrer" title="Questões: ${esc(qv)}" aria-label="Abrir questões">${QICO}</a>`)}});return L.slice(0,3).join('')};
 /* Painel: situação da revisão por questões quando não há o que revisar agora (concluída ou reiniciada): feita neste ciclo, com o placar, ou quando vem a próxima */
 function edRqSt(nw){if(!rqOn()||!nw||S.type==='review')return '';const b=srBase({subj:nw.id});if(!b)return '';
  const R=S.sessions.filter(x=>String(x.rid||'').startsWith('rq-')&&x.cycle===S.cycle&&(x.set||1)===(S.set||1)&&(x.subj===b.id||grp(b.id).includes(x.subj)));
  if(R.length){let a=0,t=0;R.forEach(x=>{if(+x.tq>0){a+=Math.min(+x.ac||0,+x.tq);t+=+x.tq}(x.items||[]).forEach(i=>{if(+i.tq>0){a+=Math.min(+i.ac||0,+i.tq);t+=+i.tq}})});return `<div class="edrq mut"><span class="edrqt"><span class="edrqok">✓</span> Revisão por questões${t?` · <span class="nw"><b>${a}/${t}</b> (${Math.round(a/t*100)}%)</span>`:' feita'}</span></div>`}
  const I=rqInfo(b.id),N=I.rows.flatMap(r=>r.vz.filter(v=>v.st==='fu').map(v=>v.N)).sort((x,y)=>x-y)[0];
  return N?`<div class="edrq mut">Próxima revisão por questões: <span class="nw">sessão ${N}</span></div>`:''}
-function edCiclo(A,nw,srH,bkr,rvC,done,o={}){const tv=tvOn(),iv=tv?trvIv():[],TL=tv?trvList():[],byK={};TL.forEach(o=>byK[o.k]=o);
- const cols=iv.length;
- const head=`<div class="edr edh2" ${cols?`style="--rv:repeat(${cols},24px)"`:''} aria-hidden="true"><span>#</span><span>Disciplina / tópico</span><span class="n">Meta</span><span class="n">Feito</span><span>Progresso</span>${iv.map((_,i)=>`<span class="c">${ordN(i+1)}</span>`).join('')}<span>Última</span><span></span></div>`;
- const rows=A.map((x,ix)=>{const c=col(x),cur=!o.blk&&hiId()===x.id,l=lastSess(x.id),G=grp(x.id),recs=l?CS().filter(r=>G.includes(r.subj)&&!r.review&&r.topic&&(r.ses||r.id)===(l.ses||l.id)):[],nmx=esc(nm(x));
-  const sub=recs.map(r=>{const t=topicOf(x,r.topic);if(!t)return '';const its=(r.items||[]).map(it=>(it.title||it.name||'').trim()).filter(Boolean),o=byK[trvBase(r.subj)+'|'+r.topic+'|'+r.date],lk=edLinks(r);
-   return `<div class="edr eds" ${cols?`style="--rv:repeat(${cols},24px)"`:''}><span></span><span class="edtn" title="${esc(t.name)}${its.length?' · '+esc(its.join(', ')):''}">${esc(t.name)}${its.length?`<span class="mut"> · ${esc(its.join(', '))}</span>`:''}${lk?`<span class="edlk">${lk}</span>`:''}</span><span></span><span class="n edfe">${r.min>0?fmt(r.min):''}</span><span></span>${iv.map((_,i)=>`<span class="c">${edMk(o,i)}</span>`).join('')}<span class="edd">${sdm(r.date)}</span><span></span></div>`}).join('');
-  return `<div class="edr srow row${cur?' cur':''}" ${cols?`style="--rv:repeat(${cols},24px)"`:''}><span class="edno">${A.length>1?ix+1:''}</span><span class="ednm"><span class="dot" style="background:${c}" aria-hidden="true"></span><button class="rnt rpick" data-act="pickrow" data-id="${x.id}" title="${nmx}" aria-pressed="${cur}">${nmx}</button></span><span class="n edme">${fmt(x.goal)}</span><span class="n edfe">${rowTime(x).split(' de ')[0]}</span><div class="bar"><i style="width:${barW(x)+barP(x)}%;background:${barC(x)}"></i></div>${iv.map(()=>'<span class="c"></span>').join('')}<span class="edd">${l?sdm(l.date):'—'}</span><span class="ctb">${rowCtl(x).replace(/^<span class="rtime">.*?<\/span><\/span>/,'').replace(/<\/span>$/,'')}</span></div>`+sub+bkr(ix+1)}).join('');
+function edCiclo(A,nw,srH,bkr,rvC,done,o={}){const TL=tvOn()?trvList():[];
+ const head=`<div class="edr edh2" aria-hidden="true"><span>#</span><span>Disciplina</span><span class="n">Meta</span><span class="n">Feito</span><span>Progresso</span><span>Última</span><span></span></div>`;
+ /* "Última": data da última sessão da posição (disciplina repetida no ciclo: cada cópia a sua; sessão de id fora da tabela — base, revisão, dado antigo — fica com a primeira) */
+ const rows=A.map((x,ix)=>{const c=col(x),cur=!o.blk&&hiId()===x.id,G=grp(x.id),sib=A.filter(y=>G.includes(y.id)),mine=sib.length>1?r=>r.subj===x.id||(sib[0]===x&&G.includes(r.subj)&&!sib.some(y=>y.id===r.subj)):r=>G.includes(r.subj),
+  l=S.sessions.filter(r=>mine(r)&&!r.review&&r.topic&&!r.tdel).slice(-1)[0],nmx=esc(nm(x));
+  return `<div class="edr srow row${cur?' cur':''}"><span class="edno">${A.length>1?ix+1:''}</span><span class="ednm"><span class="dot" style="background:${c}" aria-hidden="true"></span><button class="rnt rpick" data-act="pickrow" data-id="${x.id}" title="${nmx}" aria-pressed="${cur}">${nmx}</button></span><span class="n edme">${fmt(x.goal)}</span><span class="n edfe">${rowTime(x).split(' de ')[0]}</span><div class="bar"><i style="width:${barW(x)+barP(x)}%;background:${barC(x)}"></i></div><span class="edd">${l?sdm(l.date):'—'}</span><span class="ctb">${rowCtl(x).replace(/^<span class="rtime">.*?<\/span><\/span>/,'').replace(/<\/span>$/,'')}</span></div>`+bkr(ix+1)}).join('');
  /* revisão de hoje (vale também para o ciclo concluído) */
  const RV=[];if(S.rv&&!o.rev)RV.push(`<div class="edrv"><span>Revisão em andamento</span><button class="lnk" data-tab="rev">Continuar</button></div>`);
  else if(!S.rv&&rgOn()){const I=rgInfo(),AV=I.list.filter(o=>o.st==='disponivel'&&rgTopics(o.g).size);if(AV.length){const o=AV.find(o=>o.g.id===rgNext(I))||AV[0];RV.push(`<div class="edrv"><span>${esc(rgLabel(o))}</span><button class="lnk" data-tab="rev">Iniciar</button></div>`)}}
