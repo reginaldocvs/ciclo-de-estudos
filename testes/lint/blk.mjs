@@ -25,7 +25,7 @@ ok(await x.ev(()=>!!document.querySelector('#app .blkc')),'vez do bloco: cartão
 const t0=await app();ok(!/Tópico B1/.test(t0)&&/1 tópico · 1 aula/.test(t0),'disciplinas começam fechadas, com resumo');
 const tg=await x.ev(()=>[...document.querySelectorAll('#app [data-act=bktog]')].map(e=>e.dataset.id));await x.act('bktog',tg[0]);let t1=await app();ok(/Tópico B1/.test(t1)&&!/Tópico B2/.test(t1),'abrir a 1ª mostra só ela');
 await x.act('bktog',tg[1]);t1=await app();ok(!/Tópico B1/.test(t1)&&/Tópico B2/.test(t1),'abrir a 2ª fecha a 1ª');
-ok(!/Revise antes de começar/.test(t1),'sem "Revise antes" na vez do bloco');
+ok(!/Revise antes de começar/i.test(t1),'sem "Revise antes" na vez do bloco');
 ok(await x.ev(()=>!!document.querySelector('#app .cbk, #app .edt .bkrow')),'divisor na barra');
 ok(await x.ev(()=>!!document.querySelector('#app .bkrow.cur')),'linha do marcador na lista, marcada como agora');
 await shot('2-vez');
@@ -35,7 +35,7 @@ ok(await x.ev(()=>!document.querySelector('#app .blkc')&&current().id===inCycle(
 ok(await x.ev(()=>/pulado/.test(document.querySelector('#app .bkrow').innerText)),'1 de 2 revisadas: marcador fica pulada');
 // 3. regra do Revise antes: duplicar a 1ª disciplina logo depois do bloco
 await x.ev(()=>{const s=inCycle()[0];const c={id:'dupx',name:s.name,goal:30,topics:s.topics,of:s.id};const L=inCycle();S.subjects=[L[0],L[1],c,...S.subjects.filter(y=>y!==L[0]&&y!==L[1])];S.sel.subj='dupx';render()});await W(300);
-ok(/Revise antes de começar/.test(await app()),'disciplina repetida depois do bloco: "Revise antes" aparece, como antes');await shot('4-repetida');
+ok(/Revise antes de começar/i.test(await app()),'disciplina repetida depois do bloco: "Revise antes" aparece, como antes');await shot('4-repetida');
 await x.ev(()=>{S.subjects=S.subjects.filter(y=>y.id!=='dupx');const c=current();S.sel.subj=c.id;render()});await W(200);
 // 4. terminar o ciclo com marcador no fim: vez do bloco antes do "Ciclo concluído"
 await x.ev(()=>{S.blk.push({id:'fim',pos:inCycle().length});render()});

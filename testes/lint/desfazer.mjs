@@ -16,7 +16,7 @@ await ev(()=>{const s=current();['Crase','Regência'].forEach((n,i)=>{if(!s.topi
 // 1. estudo pelo foco → outra aba → Desfazer
 await tab('ciclo');const sid=await ev(()=>current().id);
 await ev(()=>(document.querySelector('.nwplay').click(),(()=>{const b=document.querySelector('.fmd [data-act=tstart]');if(S.sx===true&&!S.timer.running&&!el()&&b)b.click()})()));await W(250);await ev(()=>{S.timer.start=Date.now()-30*60000});await x.act('fmreg');await W(300);
-await ev(()=>{const g=S.sel.groups;g.length=0;const z=newG();z.nt='Crase';z.rows=[{id:uid(),kind:'aula',name:'Aula 1',link:'',q:'',ac:'6',tq:'10'}];g.push(z);render()});
+await ev(()=>{const g=S.sel.groups;g.length=0;const z=newG();z.nt='Crase';z.rows=[{id:uid(),kind:'aula',name:'Aula 1',link:'',q:'Apostila p. 1',ac:'6',tq:'10'}];g.push(z);render()});
 const n0=await ev(()=>S.sessions.length);let o;await x.submit('#modal form[data-f=man]');await W(300);
 ok(await ev(n=>S.sessions.length>n&&!S.sx,n0),'estudo pelo foco registrado e o foco fechou');
 /* registro de estudo não tem "Desfazer" (corrige-se pela edição no Histórico); excluir pela edição e desfazer já é conferido no simzero */

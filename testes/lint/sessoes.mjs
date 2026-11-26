@@ -23,7 +23,7 @@ await ev(()=>document.querySelector('[data-act=rvadjx]').click());await W(200);
 ok(await ev(()=>!!document.querySelector('.rvtabs [data-id=sessoes]')),'aba "Sessões" aparece na Revisão');
 // 2. três sessões: disponível; cartão no Ciclo no lugar do "Revise antes"
 await study(0);await goTab('ciclo');
-let c=await ev(()=>{const k=document.querySelector('.srvc');return k?{t:k.innerText,tags:[...k.querySelectorAll('.srn')].map(e=>e.textContent),old:!!document.querySelector('.rvcard')}:null});
+let c=await ev(()=>{const k=document.querySelector('.srvc');return k?{t:k.innerText,tags:[...k.querySelectorAll('.srn')].map(e=>e.textContent),old:!!document.querySelector('.rvcard,.edp .edrb')}:null});
 ok(c&&/3 sessões desde a última revisão · 3 itens/.test(c.t)&&c.tags.join()==='1ª de 2,1ª de 2,1ª de 2'&&!c.old,'Ciclo: cartão "Revise as sessões anteriores" com 3 itens "1ª de 2" e sem o "Revise antes" '+JSON.stringify(c&&{tags:c.tags,old:c.old}));
 ok(await ev(()=>{const k=document.querySelector('.srvc');return /6\/10 · 60%/.test(k.innerText)&&/reforçar · 60%/.test(k.innerText)&&k.querySelectorAll('.srit .ritl').length===3}),'acertos: aula com "6/10 · 60%", tópico com "reforçar · 60%" e uma linha só por aula');
 await p.screenshot({path:`${OUT}/sessoes-${w}-ciclo.png`,fullPage:true});
@@ -47,7 +47,7 @@ let s1=await st();ok(!s1.due&&s1.nw===0&&s1.todo==='Crase:1 Regência verbal:1 C
 ok(await ev(()=>{const R=S.sessions.filter(x=>String(x.rid).startsWith('sr-'));return R.length===3&&Math.round(R.reduce((a,x)=>a+x.min,0))===20&&R.every(x=>x.review)}),'registro de 20 min dividido entre os 3 tópicos, como revisão');
 ok(await ev(()=>/Próxima revisão em 3 sessões/.test(document.querySelector('.srsc').innerText)&&/Última revisão: \d\d\/\d\d · 20min · \d+\/\d+ acertos \(\d+%\)/.test(document.querySelector('.srsc').innerText)),'aba Sessões: "Próxima revisão em 3 sessões" e a última com tempo e acertos '+JSON.stringify(await ev(()=>document.querySelector('.srlast').innerText)));
 /* fora da vez: o Ciclo volta a mostrar o "Revise antes de começar" (o que foi estudado na última sessão) */
-await goTab('ciclo');ok(await ev(()=>!document.querySelector('.srvc')&&!!document.querySelector('.rvcard')&&/Revise antes de começar/.test(document.querySelector('.rvcard').innerText)),'fora da vez da revisão por sessões: o Ciclo mostra o "Revise antes de começar"');
+await goTab('ciclo');ok(await ev(()=>!document.querySelector('.srvc')&&!!document.querySelector('.edp .edrb')&&/Revise antes de começar/i.test(document.querySelector('.edp .edrb').innerText)),'fora da vez da revisão por sessões: o Ciclo mostra o "Revise antes de começar"');
 // 6. mais 3 sessões: lista acumula (antigos "2ª de 2", novos "1ª de 2")
 await study(3);await goTab('ciclo');
 c=await ev(()=>[...document.querySelectorAll('.srvc .srn')].map(e=>e.textContent).sort().join());
@@ -92,7 +92,7 @@ ok(await ev(()=>/rev\. sessões/.test(document.querySelector('main').innerText))
 // 12. desligar: some a aba e o cartão volta a ser o "Revise antes"
 await goTab('rev');await x.act('rvadj');await ev(()=>document.querySelector('[data-act=rvsys][data-id=s]').click());await W(200);await ev(()=>document.querySelector('[data-act=rvadjx]').click());await W(200);
 ok(await ev(()=>!srOn()&&!document.querySelector('.rvtabs [data-id=sessoes]')),'desligada: a aba Sessões some');
-await goTab('ciclo');ok(await ev(()=>!document.querySelector('.srvc')&&!!document.querySelector('.rvcard')),'desligada: volta o "Revise antes de começar"');
+await goTab('ciclo');ok(await ev(()=>!document.querySelector('.srvc')&&!!document.querySelector('.edp .edrb')),'desligada: volta o "Revise antes de começar"');
 // 13. sincronização: revisões feitas em dois aparelhos ficam as duas (com e sem versão em comum)
 ok(await ev(()=>{const P=id=>({id,s:'x',d:today(),ses:[id],its:[]}),o=m3({srvPt:[]},{srvPt:[P('a')]},{srvPt:[P('b')]},true),C={sessions:[],srvPt:[P('b')]};syMerge(C,{sessions:[],srvPt:[P('a'),P('b')]},null);return o.srvPt.length===2&&C.srvPt.length===2}),'sincronização junta as revisões por sessões dos dois aparelhos');
 ok(!(await ev(()=>document.documentElement.scrollWidth>innerWidth)),'sem rolagem para o lado');

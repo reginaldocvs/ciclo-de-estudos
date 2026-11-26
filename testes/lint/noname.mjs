@@ -6,9 +6,9 @@ const d=JSON.parse(fs.readFileSync(SHOT+'/data-rv3.json','utf8'));const S0=JSON.
 const cases=[
  ['só questões (link)',{q:'www.google.com',tq:10,ac:7},'Questões'],
  ['só questões (texto)',{q:'Apostila p. 32'},'Apostila p. 32'],
- ['só acertos',{tq:20,ac:15},'Questões'],
+ ['só acertos (com o link das questões, que passou a ser obrigatório)',{q:'www.qconcursos.com/caderno',tq:20,ac:15},'Questões'],
  ['só anotação',{note:'Revisar'},'Anotação'],
- ['anotação e acertos',{note:'Revisar',tq:5,ac:3},'Questões'],
+ ['anotação e acertos',{note:'Revisar',q:'www.qconcursos.com/caderno2',tq:5,ac:3},'Questões'],
 ];
 const {b,p,errs}=await open({data:d,w:1280,h:820});const x=mk(p);
 for(const [nm,row,exp] of cases){

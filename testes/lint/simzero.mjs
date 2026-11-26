@@ -117,7 +117,7 @@ async function study(){await tabTo('ciclo');await blocks();
  else{await x.act('rreg',s.id);st.manual++}
  const k=tpN[s.base]=(tpN[s.base]||0),two=rnd()<.1;tpN[s.base]+=two?2:1;const T=[s.tops[k%8]].concat(two?[s.tops[(k+1)%8]]:[]);if(two)st.dois++;
  const G=T.map((t,j)=>{const nr=ri(2,4);return {t,rows:[...Array(j?ri(1,2):nr)].map(()=>{const q=rnd()<.4,tq=ri(5,20);aulaN++;return {q,name:q?'':'Aula '+aulaN,tq,ac:ri(Math.floor(tq*.45),tq)}})}});
- await ev(G=>{const gs=S.sel.groups;gs.length=0;G.forEach(g0=>{const g=newG();g.nt=g0.t;g.rows=g0.rows.map(r=>({id:uid(),kind:'aula',name:r.name,link:'',q:'',...(r.q?{qo:true}:{}),ac:String(r.ac),tq:String(r.tq)}));gs.push(g)});render()},G);
+ await ev(G=>{const gs=S.sel.groups;gs.length=0;G.forEach(g0=>{const g=newG();g.nt=g0.t;g.rows=g0.rows.map(r=>({id:uid(),kind:'aula',name:r.name,link:'',q:+r.tq>0?'Apostila '+(r.name||g0.t):'',...(r.q?{qo:true}:{}),ac:String(r.ac),tq:String(r.tq)}));gs.push(g)});render()},G);
  st.itens+=G.reduce((a,g)=>a+g.rows.length,0);st.questoes+=G.reduce((a,g)=>a+g.rows.filter(r=>r.q).length,0);
  if(!foco)await x.fill('#modal input[name=m]',await ev(id=>fmt(Math.max(1,S.subjects.find(s=>s.id===id).goal-prog(id))),s.id));
  await once(foco?'registro-pelo-foco':'registro-manual');

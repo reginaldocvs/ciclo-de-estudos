@@ -3,7 +3,7 @@ const d=JSON.parse(fs.readFileSync('dados/data-rv3.json','utf8'));const S0=JSON.
 const {b,p,errs}=await open({data:d,w:390,h:844});const x=mk(p);const log=[],ok=(c,m)=>log.push((c?'OK   ':'FALHA ')+m);
 await x.ev(()=>{S.blk=[{id:'m1',pos:1}];save();render()});
 const A=await x.ev(()=>inCycle().map(s=>s.id));
-await x.act('rreg',A[0]);await x.ev(()=>{const g=S.sel.groups[0];g.nt='Tópico K';g.rows=[{id:'r1',kind:'aula',name:'Aula K1',link:'PDF p. 3',q:''},{id:'r2',kind:'aula',name:'',link:'',qo:true,ac:'6',tq:'10'}];render()});await x.submit('#modal form[data-f=man]');await W(300);
+await x.act('rreg',A[0]);await x.ev(()=>{const g=S.sel.groups[0];g.nt='Tópico K';g.rows=[{id:'r1',kind:'aula',name:'Aula K1',link:'PDF p. 3',q:''},{id:'r2',kind:'aula',name:'',link:'',qo:true,q:'Apostila p. 6',ac:'6',tq:'10'}];render()});await x.submit('#modal form[data-f=man]');await W(300);
 await x.act('bkreg',A[0]);await x.fill('#modal [data-f=bkreg] input[name=m]','15');await x.submit('#modal form[data-f=bkreg]');await W(300);
 const r=await x.ev(s=>S.sessions.filter(x=>x.bkr&&x.subj===s).map(x=>x.items),A[0]);
 ok(r.length&&r[0].length===2&&r[0][0].name==='Aula K1'&&r[0][0].link==='PDF p. 3'&&r[0][1].qo,'registro de bloco guarda as aulas: '+JSON.stringify(r));

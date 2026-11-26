@@ -312,7 +312,7 @@ Cantos pequenos e sóbrios, em três degraus por tamanho de peça: 4px nas peça
 Colunas: #, Disciplina, Meta, Feito, Progresso, Última (data da última sessão daquela posição), ações. Cabeçalho em faixa band-high de 44px; linhas de 52px com fio entre elas. Uma linha por disciplina, sem sub-linhas de tópico: o que foi estudado fica no "Revise antes de começar" do painel, no registro (olho) e no Histórico; as revisões por tópico ficam na aba Revisão e em "Revisão de hoje". A linha da vez fica inteira em marca-texto limão.
 
 ### Painel da sessão
-Linha de situação em caixa alta pequena (Agora · 2 de 7, Estudando agora, Estudo em pausa), nome da disciplina em 1.75rem/800, relógio em 4rem com "de [meta]" ao lado, Iniciar largo, a disciplina seguinte ("Depois:") com seu quadradinho, e a seção "Revisão de hoje" separada por fio, com até duas revisões de tópico e um "+ N".
+Linha de situação em caixa alta pequena (Agora · 2 de 7, Estudando agora, Estudo em pausa), nome da disciplina em 1.75rem/800 com o quadradinho da cor dela, o bloco "Revise antes de começar" entre fios (título em caixa alta pequena, como "Revisão de hoje", até 2 tópicos e "Mostrar mais"), relógio em 4rem com "de [meta]" ao lado, Iniciar largo, a disciplina seguinte ("Depois:") com seu quadradinho, e a seção "Revisão de hoje" separada por fio, com até duas revisões de tópico e um "+ N". Os cartões de trabalho (marcar o que revisou ou anotar acertos: revisão por sessões, ciclo de revisão e consolidação) ficam acima da tabela, na largura toda; no painel fica só o que fazer agora.
 
 ### Números do cabeçalho
 Hoje, Ciclo e Total no canto superior direito do título: rótulo apagado em 500 sobre o número em 1.5rem/700 tabular, sem caixa e sem fundo, 28px entre eles.

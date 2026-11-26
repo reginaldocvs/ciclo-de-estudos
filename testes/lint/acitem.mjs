@@ -36,7 +36,7 @@ await x.ev(()=>{S.sx=false;S.edit=null;render()});await x.act('rvcancel');await 
 // 4. revisão de bloco: aula estudada com questões → campo por aula; tópico sem questões → campo único
 await x.ev(()=>document.querySelector('nav [data-tab=ciclo]').click());await W(300);
 await x.ev(()=>{S.progress={};S.sessions=S.sessions.filter(x=>x.cycle!==S.cycle||x.rid||x.review);S.blk=[{id:'m',pos:2}];render()});
-for(const i of [0,1]){const id=await x.ev(i=>inCycle()[i].id,i);await x.act('rreg',id);await x.ev(i=>{const g=S.sel.groups[0];if(!g.rows.length)g.rows.push({id:uid(),kind:"aula",name:"",link:"",q:""});g.nt='Tópico B'+i;g.rows[0].name='Aula B'+i;if(i===0){g.rows[0].ac='5';g.rows[0].tq='10'}render()},i);await x.submit('#modal form[data-f=man]');await W(250)}
+for(const i of [0,1]){const id=await x.ev(i=>inCycle()[i].id,i);await x.act('rreg',id);await x.ev(i=>{const g=S.sel.groups[0];if(!g.rows.length)g.rows.push({id:uid(),kind:"aula",name:"",link:"",q:""});g.nt='Tópico B'+i;g.rows[0].name='Aula B'+i;if(i===0){g.rows[0].ac='5';g.rows[0].tq='10';g.rows[0].q='Apostila p. 1'}render()},i);await x.submit('#modal form[data-f=man]');await W(250)}
 const b0=await x.ev(()=>{const s=inCycle()[0];return s.of||s.id}),b1=await x.ev(()=>{const s=inCycle()[1];return s.of||s.id});
 await x.act('bkreg',b0);await W(300);const bf=await x.ev(()=>[...document.querySelectorAll('#modal [data-f=bkreg] [data-qa]')].map(e=>e.name+'='+e.closest('.acrow').querySelector('[data-qt]').value));console.log('   bloco (com questões):',JSON.stringify(bf));
 ok(bf.length===1&&/^qa-\w+-0=10$/.test(bf[0]),'bloco: aula com questões ganha campo próprio, total 10 preenchido');
