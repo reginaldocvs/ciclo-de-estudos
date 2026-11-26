@@ -2751,8 +2751,9 @@ const qaOf=(cid,qid)=>((S.qa||{})[cid]||{})[qid]||[];
 const qLast=(cid,qid)=>{const a=qaOf(cid,qid);return a.length?a[a.length-1]:null};
 function qSum(cid){const o=qLoad(cid),m=qcM(cid);const ids=o?o.qs.map(q=>q.id):[];let a=0,ok=0;ids.forEach(id=>{const l=qLast(cid,id);if(l){a++;if(l.ok)ok++}});return {n:o?ids.length:(m?m.n:0),a,ok}}
 const qGab=q=>q.gf||q.g;
-/* múltipla escolha: a ordem das alternativas muda a cada vez que se resolve (m.mix===false desliga); a letra na tela segue A, B, C… e as citações de letra no comentário acompanham */
-function qPerm(z,q,m){if(q.t!=='ME'||!q.al||(m&&m.mix===false))return null;z.perm=z.perm||{};if(!z.perm[q.id]){const K=Object.keys(q.al);for(let i=K.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[K[i],K[j]]=[K[j],K[i]]}z.perm[q.id]=K}return z.perm[q.id]}
+/* múltipla escolha: a ordem das alternativas muda a cada vez que se resolve (m.mix===false desliga); a letra na tela segue A, B, C… e as citações de letra no comentário acompanham.
+   Questão com comentário do professor (formato 1.2.2) fica na ordem original: o texto dele cita letras ("Gabarito: letra B") e não pode ser traduzido */
+function qPerm(z,q,m){if(q.t!=='ME'||!q.al||(m&&m.mix===false)||(q.c&&q.c.ca))return null;z.perm=z.perm||{};if(!z.perm[q.id]){const K=Object.keys(q.al);for(let i=K.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[K[i],K[j]]=[K[j],K[i]]}z.perm[q.id]=K}return z.perm[q.id]}
 const qDL=(q,P)=>{const L=Object.keys(q.al).sort(),to={},fr={};P.forEach((k,i)=>{to[k]=L[i];fr[L[i]]=k});return {to,fr}};
 const qMx=(t,to)=>to&&t?String(t).replace(/\b(alternativas?|letras?|op[çc][ãa]o|op[çc][õo]es|itens?|item)(\s+)([A-E])\b/gi,(w,a,sp,l)=>a+sp+(to[l.toUpperCase()]||l)):t;
 const qTipoTxt=m=>m.ce&&m.me?'Certo/Errado e múltipla escolha':m.me?'Múltipla escolha':'Certo/Errado';

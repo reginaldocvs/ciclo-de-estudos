@@ -14,9 +14,11 @@ const J=[
  {numero:2,disciplina:'Português',topico:'Crase',tipo:'CE',nivel:'difícil',texto_base:null,comando:'Julgue o item.',enunciado:'Item sem gabarito no arquivo.',alternativas:null,gabarito:null,comentario:C({comentario_do_arquivo:'Comentário do professor da 2.'})},
  {numero:3,disciplina:'Português',topico:'Crase',tipo:'ME',texto_base:null,comando:'Assinale.',enunciado:'Qual é a correta?',alternativas:{A:'um',B:'dois',C:'três'},gabarito:'B',comentario:C({por_que_certa:'Porque sim.'})},
  {numero:4,disciplina:'Português',topico:'Crase',tipo:'ME',texto_base:null,comando:'Assinale.',enunciado:'Qual é a correta?',alternativas:{A:'quatro',B:'cinco',C:'seis'},gabarito:'A',comentario:C()},
- {numero:5,disciplina:'Português',topico:'Crase',tipo:'ME',texto_base:null,comando:'Assinale.',enunciado:'Qual é a correta?',alternativas:{A:'um',B:'dois',C:'três'},gabarito:'B',comentario:C()}];
+ {numero:5,disciplina:'Português',topico:'Crase',tipo:'ME',texto_base:null,comando:'Assinale.',enunciado:'Qual é a correta?',alternativas:{A:'um',B:'dois',C:'três'},gabarito:'B',comentario:C()},
+ {numero:6,disciplina:'Português',topico:'Crase',tipo:'ME',texto_base:null,comando:'Assinale.',enunciado:'Questão do site com comentário do professor.',alternativas:{A:'alfa',B:'beta',C:'gama',D:'delta'},gabarito:'B',comentario:C({comentario_do_arquivo:'Gabarito: letra B. A alternativa C erra ao…'})},
+ {numero:7,disciplina:'Português',topico:'Crase',tipo:'ME',texto_base:null,comando:'Assinale.',enunciado:'Questão gerada, sem comentário do professor.',alternativas:{A:'norte',B:'sul',C:'leste',D:'oeste'},gabarito:'C',comentario:C({por_que_certa:'Porque é leste.',alternativas_erradas:{A:'norte não',B:'sul não',D:'oeste não'}})}];
 const P=await ev(j=>{const P=qPrev({txt:j});return {ok:P.ok,dup:P.dup,bad:P.bad,qs:P.qs.map(q=>({en:q.en,g:q.g,nv:q.nv||null,ca:q.c.ca||null}))}},JSON.stringify(J));
-ok(P.ok===4&&P.dup===1&&!P.bad.length,'importa 4: a ME com o mesmo enunciado e outras alternativas entra; a igual em tudo é repetida '+JSON.stringify({ok:P.ok,dup:P.dup,bad:P.bad}));
+ok(P.ok===6&&P.dup===1&&!P.bad.length,'importa 6: a ME com o mesmo enunciado e outras alternativas entra; a igual em tudo é repetida '+JSON.stringify({ok:P.ok,dup:P.dup,bad:P.bad}));
 ok(P.qs[0].nv==='médio'&&P.qs[0].ca==='Gabarito: Certo.\nA crase ocorre…\nSegunda linha.'&&/\[1\]/.test(P.qs[0].en),'guarda o nível e o comentário do professor; o [1] fica no texto '+JSON.stringify(P.qs[0]));
 ok(P.qs[1].g===null,'gabarito null: entra sem gabarito (pendente)');
 /* caderno e resolver */
@@ -39,6 +41,14 @@ await x.act('qfix');await W(150);await x.act('qfixset','E');await W(300);
 const qa2=await ev(c=>{const o=qLoad(c);return {a:((S.qa||{})[c]||{})[o.qs[1].id]||null,res:ui.qz.res[o.qs[1].id]}},cad);
 r=await scr();ok(qa2.a&&qa2.a.length===1&&qa2.a[0].ok===true&&/Você acertou/.test(r.fb),'informado o gabarito (Errado): a resposta é corrigida e passa a contar '+JSON.stringify(qa2));
 ok(await ev(()=>document.documentElement.scrollWidth<=innerWidth),'sem rolagem para o lado');
+/* 1.2.2: ME com comentário do professor fica na ordem original; ME sem ele continua embaralhando, com a frase da errada na alternativa certa */
+const ordem=en=>ev(([c,en])=>{const o=qLoad(c),i=o.qs.findIndex(q=>q.en===en);ui.qz={cad:c,ids:o.qs.map(q=>q.id),i,res:{},fix:false};render();return [...document.querySelectorAll('.qzd .qzo .qzotx')].map(e=>e.textContent).join(',')},[cad,en]);
+const O6=new Set(),O7=new Set();for(let k=0;k<15;k++){O6.add(await ordem('Questão do site com comentário do professor.'));O7.add(await ordem('Questão gerada, sem comentário do professor.'))}
+ok(O6.size===1&&[...O6][0]==='alfa,beta,gama,delta','com comentário do professor: 15 vezes, sempre na ordem do JSON '+JSON.stringify([...O6]));
+ok(O7.size>1,'sem comentário do professor: a ordem muda entre as vezes ('+O7.size+' ordens em 15)');
+await ev(()=>{const o=qLoad(ui.qz.cad),q=o.qs[ui.qz.i];qAns(qGab(q))});await W(250);
+const ae=await ev(()=>[...document.querySelectorAll('.qzd .qzo')].map(b=>({t:b.querySelector('.qzotx').textContent,e:(b.querySelector('.qzoe')||{}).textContent||''})));
+ok(ae.filter(x=>x.e).length===3&&ae.every(x=>!x.e||x.e===x.t+' não'),'sem comentário do professor: a frase de cada errada fica na própria alternativa, mesmo embaralhada '+JSON.stringify(ae));
 ok(!errs.length,'sem erros de script '+errs.slice(0,2).join(' | '));
 await p.screenshot({path:`saida/qz12-${w}.png`});
 await b.close();process.exit(bad?1:0);
