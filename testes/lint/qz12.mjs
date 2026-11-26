@@ -40,6 +40,11 @@ ok(r.pfo&&/professor da 2/.test(r.pft),'o comentário do professor continua aber
 await x.act('qfix');await W(150);await x.act('qfixset','E');await W(300);
 const qa2=await ev(c=>{const o=qLoad(c);return {a:((S.qa||{})[c]||{})[o.qs[1].id]||null,res:ui.qz.res[o.qs[1].id]}},cad);
 r=await scr();ok(qa2.a&&qa2.a.length===1&&qa2.a[0].ok===true&&/Você acertou/.test(r.fb),'informado o gabarito (Errado): a resposta é corrigida e passa a contar '+JSON.stringify(qa2));
+/* "acertou/errou da última vez": só depois de responder */
+await ev(c=>{const o=qLoad(c);ui.qz={cad:c,ids:o.qs.map(q=>q.id),i:0,res:{},fix:false};render()},cad);await W(250);
+const ul=()=>ev(()=>(document.querySelector('.qzd .qzlast')||{}).textContent||'');
+ok(!(await ul()),'antes de responder: sem "acertou/errou da última vez"');
+await ev(()=>qAns('E'));await W(300);let u=await ul();ok(/Acertou da última vez/.test(u),'depois de responder: "Acertou da última vez" (da vez anterior, não desta) '+JSON.stringify(u));
 ok(await ev(()=>document.documentElement.scrollWidth<=innerWidth),'sem rolagem para o lado');
 /* 1.2.2: ME com comentário do professor fica na ordem original; ME sem ele continua embaralhando, com a frase da errada na alternativa certa */
 const ordem=en=>ev(([c,en])=>{const o=qLoad(c),i=o.qs.findIndex(q=>q.en===en);ui.qz={cad:c,ids:o.qs.map(q=>q.id),i,res:{},fix:false};render();return [...document.querySelectorAll('.qzd .qzo .qzotx')].map(e=>e.textContent).join(',')},[cad,en]);

@@ -2899,7 +2899,8 @@ function qzHtml(){const z=ui.qz,o=qLoad(z.cad),m=qcM(z.cad);if(!o||!m){ui.qz=nul
  const PM=qPerm(z,q,m),DL=PM?qDL(q,PM):null,to=DL&&DL.to,ord=PM||(q.al?Object.keys(q.al):[]);
  const lbl=k=>q.t==='CE'?(k==='C'?'Certo':'Errado'):to?to[k]:k;
  /* da última vez (antes desta resposta) */
- const H=qaOf(z.cad,q.id),prev=r?H[H.length-2]:H[H.length-1];
+ /* "acertou/errou da última vez": só depois de responder (antes, influenciaria a resposta); a resposta de agora já está no histórico, menos a sem gabarito */
+ const H=qaOf(z.cad,q.id),prev=r?(r.ok==null?H[H.length-1]:H[H.length-2]):null;
  const st=k=>r?(!G?(k===r.r?' pk':' off'):k===G?' ok':k===r.r?' no':' off')+(z.just===q.id&&k===G&&r.ok?' pop':''):'';
  const kb=k=>`<kbd class="qzk" aria-hidden="true">${k}</kbd>`;
  const opts=q.t==='CE'?`<div class="qzce">${[['C','Certo',QOKI],['E','Errado',QNOI]].map(([k,t,ic])=>`<button type="button" class="qzo${st(k)}" data-act="qans" data-id="${k}"${r?' aria-disabled="true"':''}${r&&k===r.r?' aria-pressed="true"':''}><span class="qzoi" aria-hidden="true">${ic}</span><span class="qzot">${t}</span>${r?(k===G&&k!==r.r?'<span class="qzgab">Gabarito</span>':''):kb(k)}</button>`).join('')}</div>`:
