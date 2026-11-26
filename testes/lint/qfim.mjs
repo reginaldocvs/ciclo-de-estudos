@@ -31,16 +31,27 @@ ok(r&&/não entregue/.test(r)&&/Gabarito no fim · 2 de 4 respondidas/.test(r),'
 await p.screenshot({path:`saida/qfim-caderno-${w}.png`});
 await ev(()=>document.querySelector('.qzdr [data-act=qzcont]').click());await W(300);r=await scr();
 ok(r&&r.q==='Questão 3'&&r.an===2,'Continuar: volta onde parou, com as 2 respostas '+JSON.stringify(r));
-await x.act('qgoto','3');await W(200);r=await scr();ok(r.nf==='Entregar','na última, o rodapé é "Entregar"');
+await x.act('qgoto','3');await W(200);r=await scr();ok(r.nf==='Entregar'&&!r.ent,'na última, só o "Entregar" do rodapé (o do topo sai) '+JSON.stringify(r));
 await ev(()=>document.querySelector('.qznav [data-act=qzent]').click());await W(250);
-r=await ev(()=>(document.querySelector('.qzentq')||{}).innerText||'');ok(/Entregar agora\?/.test(r)&&/2 questões estão sem resposta/.test(r),'confirmação: avisa as 2 sem resposta '+JSON.stringify(r));
+r=await ev(()=>(document.querySelector('.qzentq')||{}).innerText||'');ok(/2 questões estão sem resposta/.test(r)&&/Continuar resolvendo/.test(r)&&/Entregar assim/.test(r),'confirmação: avisa as 2 sem resposta '+JSON.stringify(r));
+ok(await ev(()=>!document.querySelector('.qzd .qznav')&&!document.querySelector('.qzd .qzentb')),'com a confirmação aberta, o rodapé e o Entregar do topo saem (sem botões repetidos)');await p.screenshot({path:`saida/qfim-entregar-${w}.png`});
 await x.act('qzentx');await W(200);ok(await ev(()=>!document.querySelector('.qzentq')),'Voltar: continua resolvendo');
-await ev(()=>qAns('C'));await W(150);await ev(()=>document.querySelector('.qzentb').click());await W(200);await x.act('qzentok');await W(400);
+await ev(()=>qAns('C'));await W(150);await ev(()=>document.querySelector('.qznav [data-act=qzent]').click());await W(200);await x.act('qzentok');await W(400);
 r=await ev(c=>({res:(document.querySelector('.qzres')||{}).innerText||'',qa:Object.keys((S.qa||{})[c]||{}).length,dr:Object.keys(S.qzp||{}).length}),cad);
 ok(/1 de 2/.test(r.res)&&/sem resposta/.test(r.res)&&/sem gabarito/.test(r.res)&&r.qa===2&&r.dr===0,'entregue: resultado (1 de 2, sem resposta, sem gabarito), as respostas contam, o rascunho some '+JSON.stringify(r));
 await p.screenshot({path:`saida/qfim-resultado-${w}.png`});
-await x.act('qgoto','0');await W(250);r=await ev(()=>(document.querySelector('.qzd .qzfb')||{}).innerText||'');
+r=await ev(()=>({list:!!document.querySelector('.qzd .qzwr'),vr:!!document.querySelector('.qzd [data-act=qzrev]'),pri:(document.querySelector('.qzfa2 .btn:not(.g)')||{}).textContent}));
+ok(!r.list&&r.vr&&r.pri==='Ver respostas','resultado do "no fim": "Ver respostas" no lugar da lista de erradas '+JSON.stringify(r));
+await x.act('qzrev');await W(250);r=await ev(()=>(document.querySelector('.qzd .qzfb')||{}).innerText||'');
 ok(/Você errou/.test(r)&&/Gabarito: Certo/.test(r),'rever depois de entregar: a questão 1 com o gabarito '+JSON.stringify(r.slice(0,60)));
+await x.act('qgoto','3');await W(200);r=await scr();ok(r.nf==='Ver resultado','revendo: na última, "Ver resultado"');
+await x.act('qnext');await W(250);ok(await ev(()=>!!document.querySelector('.qzd .qzres')),'"Ver resultado" volta para a nota');
+await x.act('qzx');await W(200);
+await ev(c=>{const o=qLoad(c);qStart(c,o.qs.slice(0,3).map(q=>q.id),0)},cad);await W(200);
+for(const [i,k] of [[0,'C'],[1,'E'],[2,'C']]){await ev(i=>{ui.qz.i=i;render()},i);await ev(k=>qAns(k),k);await W(120)}
+await ev(()=>document.querySelector('.qznav [data-act=qzent]').click());await W(300);
+r=await ev(()=>({res:(document.querySelector('.qzres')||{}).innerText||'',q:!!document.querySelector('.qzentq')}));
+ok(/3 de 3/.test(r.res)&&!r.q,'todas respondidas: Entregar entrega direto, sem confirmação '+JSON.stringify(r));
 /* próxima bateria do caderno começa em "No fim"; a revisão continua em "A cada questão" */
 await x.act('qzx');await W(250);await x.act('qall',cad);await W(250);r=await scr();ok(r.gm.join()==='A cada questão,No fim*','próxima bateria do caderno já começa em "No fim"');
 const rv=await ev(c=>{const o=qLoad(c);qzOpen({cad:c,ids:o.qs.map(q=>q.id),i:0,res:{},fix:false,rq:c+':0',rk:''});return !!ui.qz.fim},cad);ok(!rv,'revisão por questões: continua "A cada questão" (lembrado à parte)');
