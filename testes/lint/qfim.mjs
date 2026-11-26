@@ -16,7 +16,9 @@ await x.act('qall',cad);await W(300);
 await p.screenshot({path:`saida/qfim-inicio-${w}.png`});let r=await scr();ok(r&&r.gm.join()==='A cada questão*,No fim','começo da bateria: a escolha, com "A cada questão" marcada '+JSON.stringify(r&&r.gm));
 await x.act('qzfim','1');await W(200);r=await scr();
 ok(r.gm.join()==='A cada questão,No fim*'&&await ev(()=>S.qfim&&S.qfim.cad===true),'"No fim" escolhido e lembrado para os cadernos');
-await ev(()=>qAns('C'));await W(250);r=await scr();
+const y0=await ev(()=>document.querySelector('.qzd .qzt').getBoundingClientRect().top);await ev(()=>qAns('C'));await W(250);r=await scr();const y1=await ev(()=>({y:document.querySelector('.qzd .qzt').getBoundingClientRect().top,t:(document.querySelector('.qzd .qzgm')||{}).textContent||''}));
+ok(Math.abs(y1.y-y0)<1&&/^Gabarito no fim/.test(y1.t),'depois de marcar, a tela não pula: no lugar da escolha, "Gabarito no fim" '+JSON.stringify({y0,y1}));
+
 const qa0=await ev(c=>Object.keys((S.qa||{})[c]||{}).length,cad);
 ok(!r.fb&&r.pk.join()==='C'&&r.pr.join()==='C'&&r.an===1&&!r.gm.length&&r.ent&&qa0===0&&r.nf==='Próxima','no fim: marcada sem gabarito nem comentário, não conta ainda; a escolha some; "Entregar" no topo '+JSON.stringify({r,qa0}));
 await p.screenshot({path:`saida/qfim-marcada-${w}.png`});
@@ -60,6 +62,15 @@ await ev(c=>{const o=qLoad(c);ui.qz=null;qStart(c,o.qs.map(q=>q.id),0)},cad);awa
 await x.act('qall',cad);await W(300);
 r=await ev(()=>({dr:Object.keys(S.qzp||{}).length,toast:(document.querySelector('#undo')||{}).innerText||''}));
 ok(r.dr===0&&/descartada/.test(r.toast),'outra bateria descarta a não entregue, com aviso e Desfazer '+JSON.stringify(r));
+/* esqueceu de escolher "a cada questão": Trocar corrige as marcadas e segue a cada questão */
+await ev(c=>{const o=qLoad(c);S.qa={};ui.qz=null;qStart(c,o.qs.map(q=>q.id),0)},cad);await W(200);
+await ev(()=>qAns('E'));await x.act('qnext');await W(150);await ev(()=>qAns('E'));await W(200);
+r=await ev(()=>({t:(document.querySelector('.qzd .qzgm')||{}).innerText||'',b:!!document.querySelector('.qzd [data-act=qzfim0]')}));ok(r.b&&/Gabarito no fim/.test(r.t)&&/Trocar/.test(r.t),'no fim, depois de marcar: "Gabarito no fim · Trocar" '+JSON.stringify(r));
+await x.act('qzfim0');await W(300);
+r=await ev(c=>({fb:(document.querySelector('.qzd .qzfb')||{}).innerText||'',t:(document.querySelector('.qzd .qzgm')||{}).innerText||'',qa:Object.keys((S.qa||{})[c]||{}).length,pref:S.qfim.cad,dr:Object.keys(S.qzp||{}).length,sq:[...document.querySelectorAll('.qzps')].slice(0,2).map(e=>e.className.replace('qzps','').trim())}),cad);
+ok(/Você acertou/.test(r.fb)&&r.t==='Gabarito a cada questão'&&r.qa===2&&r.pref===false&&!r.dr&&/no/.test(r.sq[0]),'Trocar: as 2 marcadas são corrigidas e contam, a atual mostra o gabarito, e "a cada questão" fica lembrado '+JSON.stringify(r));
+await x.act('qnext');await W(150);await ev(()=>qAns('C'));await W(200);ok(/Você acertou/.test(await ev(()=>(document.querySelector('.qzd .qzfb')||{}).innerText||'')),'a seguinte já mostra o gabarito na hora');
+await p.screenshot({path:`saida/qfim-trocar-${w}.png`});
 ok(await ev(()=>document.documentElement.scrollWidth<=innerWidth),'sem rolagem para o lado');
 ok(!errs.length,'sem erros de script '+errs.slice(0,2).join(' | '));
 await b.close();process.exit(bad?1:0);
