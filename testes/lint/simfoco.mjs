@@ -57,7 +57,7 @@ async function study(){await tabTo('ciclo');await blocks();
  const ex=xtra(),m=await runStudyTimer('estudo',ex);if(ex>0)await onceM('foco-estudo-meta');
  await vis('fmreg');await W(300);const k=tpN[id]=(tpN[id]||0)+1,nr=ri(2,3),qrow=rnd()<.5,acs=[...Array(nr)].map(()=>{const tq=ri(5,10);return {tq,ac:ri(Math.ceil(tq/2),tq)}});
  await x.ev((k,nr,qrow,acs)=>{const s=curS(),g=(S.sel.groups||grps())[0],t=Math.ceil(k/2);g.nt=s.name.split(' ')[0]+' · Assunto '+t;g.rows=[];
-  for(let i=0;i<nr;i++){const last=i===nr-1&&qrow;g.rows.push({id:uid(),kind:'aula',name:last?'':'Aula '+((k-1)*3+i+1),link:'',q:'',...(last?{qo:true}:{}),...(i>0||last?{ac:String(acs[i].ac),tq:String(acs[i].tq)}:{})})}render()},k,nr,qrow,acs);
+  for(let i=0;i<nr;i++){const last=i===nr-1&&qrow;g.rows.push({id:uid(),kind:'aula',name:last?'':'Aula '+((k-1)*3+i+1),link:'',q:'',...(last?{qo:true}:{}),...(i>0||last?{ac:String(acs[i].ac),tq:String(acs[i].tq),q:'https://questoes.example/'+k+'-'+i}:{}) /* acertos só com o lugar das questões (regra do registro desde 9ba32dd) */})}render()},k,nr,qrow,acs);
  await onceM('foco-estudo-registro');const n0=await nSes();await x.submit('#modal form[data-f=man]');await W(300);chkMin('estudo',await regMinNew(n0),m);
  if(await x.ev(()=>FM.on||!!S.sx))bad('estudo: foco continua aberto depois de registrar');st.estudo++;await blocks();return true}
 /* revisões por tópico que vencem hoje, pelo foco */
