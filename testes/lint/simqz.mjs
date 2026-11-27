@@ -29,7 +29,25 @@ const RQS=await ev(c=>{S.rq={on:true,iv:[1,4,8],b:{},hold:[]};const m=qcM(c),s=S
  const st=()=>{const t=s.topics[0];S.sel.subj=s.id;S.sel.groups=[{id:uid(),nt:t.name,tid:t.id,rows:[{id:uid(),kind:'aula',name:'Aula '+(S.sessions.length+1),link:''}]}];addSession(30)};st();window.__rqst=st;
  const k=qSesL(s.id)[0];m.ses=k?k.k:null;save();render();return {sid:s.id,cad:c,ses:m.ses}},C.cads[0]);
 ok(!!RQS.ses,'revisão por questões: caderno 1 ligado à sessão '+JSON.stringify(RQS));
-async function rqDay(day){await ev(()=>{try{window.__rqst()}catch(e){}save();render()});await W(150);
+/* regra de "agora" e "atrasada" (desde 2026-11-27): a revisão é feita durante a sessão; registrada a sessão sem ela, fica atrasada.
+   Confere a regra e que a aba Revisão › Questões e a Revisão de hoje dizem o mesmo que a fila */
+const RQV={n:0,late:0,ag:0};
+async function rqLate(day,fase){const r=await ev(async sid=>{const L=rqSes(sid),O=rqOpen(sid,L),D=rqDue(sid),c=L.length-(O.part?1:0),iv=rqIv(),bad=[];
+  D.forEach(z=>z.ks.forEach(i=>{const N=z.m+iv[i],lt=N<=c||(S.rq.hold||[]).some(h=>h.k===z.o.k&&h.i===i);if(lt&&!z.late)bad.push(`sessão ${z.m} ${i+1}ª: devia estar atrasada`)}));
+  if(!O.part&&!O.run&&D.some(z=>!z.late))bad.push('sem sessão em andamento, nada pode estar "agora"');
+  tab='rev';ui.rvt='questoes';render();await new Promise(r=>setTimeout(r,120));
+  const b=srBase({subj:sid}),card=[...document.querySelectorAll('.rqsc')].find(e=>e.textContent.includes(nm(b)));
+  if(card)D.forEach(z=>{const row=[...card.querySelectorAll('.rqsr')].find(r=>r.querySelector('b')&&r.querySelector('b').textContent==='Sessão '+z.m);if(!row)return;z.ks.forEach(i=>{const k=[...row.querySelectorAll('.rqk')][i];if(!k)return;const N=z.m+iv[i],lt=N<=c||(S.rq.hold||[]).some(h=>h.k===z.o.k&&h.i===i),t=k.textContent;if(lt?!/atrasada/.test(t):!/agora/.test(t))bad.push(`aba: sessão ${z.m} ${i+1}ª mostra "${t}"`)})}); /* cada vez com a sua etiqueta: a mesma sessão pode ter uma atrasada e outra de agora */
+  tab='ciclo';render();await new Promise(r=>setTimeout(r,120));
+  const ln=[...document.querySelectorAll('.edrvs .edrvq')].find(e=>e.querySelector('.edrvn').textContent===nm(b)),bt=ln&&ln.closest('.edrv').querySelector('.lnk');
+  if(bt&&D.length&&(D.some(z=>z.late)?bt.textContent!=='atrasada':bt.textContent!=='hoje'))bad.push(`Revisão de hoje: "${bt.textContent}"`);
+  return {n:D.length,late:D.filter(z=>z.late).length,open:O,bad}},RQS.sid);
+ RQV.n+=r.n;RQV.late+=r.late;RQV.ag+=r.n-r.late;ok(!r.bad.length,`dia ${day} (${fase}): revisão por questões ${r.late}/${r.n} atrasadas, aba e Revisão de hoje de acordo `+(r.bad.length?JSON.stringify(r):''));return r}
+async function rqDay(day){
+ /* sessão em andamento: o relógio ligado na posição da disciplina traz as revisões de agora (a meta da posição sobe só durante a conferência, para ela ficar em andamento) */
+ const on=await ev(sid=>{const x=actives().find(x=>(srBase({subj:x.id})||{}).id===sid);if(!x)return null;const g0=x.goal;x.goal=prog(x.id)+60;S.sel.subj=x.id;S.timer={running:true,start:Date.now()-60000,acc:0};render();return {id:x.id,g0}},RQS.sid);
+ if(on){await rqLate(day,'sessão em andamento');await ev(o=>{S.timer={running:false,start:0,acc:0};actives().find(x=>x.id===o.id).goal=o.g0;render()},on)}
+ await ev(()=>{try{window.__rqst()}catch(e){}save();render()});await W(150);await rqLate(day,'sessão registrada');
  const due=await ev(sid=>rqDue(sid).map(z=>({k:z.o.k,i:z.i})),RQS.sid);const mine=due.filter(z=>z.k===RQS.ses);if(!mine.length)return;
  const i=mine[0].i,ck0=await ev(([c,i])=>{const m=qcM(c),T=qTops(m);return `${c}:${i}:${T[0]?T[0].t:''}`},[RQS.cad,i]);
  const prevW=await ev(([c,i])=>{const P=qPartsOf(c);return P.slice(0,i).flat().filter(id=>{const l=qLast(c,id);return l&&!l.ok})},[RQS.cad,i]);
@@ -117,5 +135,5 @@ for(let day=1;day<=ND_;day++){
  console.log(`dia ${day}: ok ${nok}, falhas ${bad}`);
  await adv(86400000);await ev(()=>render());await W(200)}
 const fin=await ev(()=>({cad:qcL().length,sim:qcL().filter(c=>c.sim).length,resp:Object.values(S.qa||{}).reduce((a,o)=>a+Object.values(o).reduce((b,L)=>b+L.length,0),0),linhas:Object.values(S.qh||{}).reduce((a,L)=>a+L.length,0)}));
-console.log('fim: '+JSON.stringify(fin));console.log(bad?`FALHA ${bad} conferências falharam`:`OK    ${nok} conferências`);
+console.log('fim: '+JSON.stringify(fin));console.log('revisão por questões vista: '+JSON.stringify(RQV));if(!RQV.late||!RQV.ag){bad++;console.log('FALHA a simulação não passou por revisões "agora" e "atrasada" '+JSON.stringify(RQV))}console.log(bad?`FALHA ${bad} conferências falharam`:`OK    ${nok} conferências`);
 await p.screenshot({path:'saida/simqz-'+w+'.png',fullPage:true});await b.close();process.exit(bad?1:0);
