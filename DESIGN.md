@@ -329,6 +329,26 @@ Toda lista que cresce mostra 6 itens e um "Mostrar mais N" (e "Mostrar menos"), 
 ### Linhas do registro
 Cada tópico registrado tem linhas de **Videoaula** (ícone de câmera), **Leitura** (ícone de livro, com as páginas "p. 12–30" ao lado do título) e **Questões** (ícone de questões e o assunto no topo, como a videoaula; ao abrir, onde e os acertos de total, com a porcentagem; fechada, "7 de 10" ao lado do assunto). Os ícones ficam no começo da linha, em tinta apagada; os botões "Videoaula +", "Leitura +" e "Questões +" cabem numa linha só até em 320px.
 
+### Blocos de abrir e fechar
+- **Cabeçalho:** a linha inteira abre e fecha; título e contagem à esquerda ("Em revisão (10)"), setinha **cinza na ponta direita**, nunca colada no título. Aberto, um fio de 1px separa o cabeçalho da lista.
+- **De que lado fica a setinha:** num cartão ou numa seção sozinha (Concluídas, Em revisão, os grupos das Revisões futuras, Rodadas), na ponta direita. Numa lista de linhas (tabelas da Revisão › Hoje e Tópicos, árvore do Histórico › Ciclos, blocos, linhas de aula no registro), na primeira coluna, à esquerda: o conteúdo abre recuado embaixo dela e a direita é dos botões.
+- **Ações raras** (Adiantar revisões, Recomeçar contagem) saem do cabeçalho e vão para o pé da lista aberta, como links com o nome inteiro, alinhados à margem, depois de um fio. A ação principal (Iniciar, Registrar) fica visível logo abaixo do título, com a explicação.
+
+### Tabela da Revisão › Hoje
+Toda linha põe cada informação na sua coluna, numa linha só: o tipo de revisão em Tópico ("Revisão por questões"), a disciplina em Disciplina · Estudo, o tamanho em Revisão ("1 sessão", "2 itens") e a situação em Situação ("hoje" ou "atrasada" em vermelho). No celular, sem colunas, a disciplina e o botão ficam na primeira linha e o texto corrido desce para a de baixo, na largura toda.
+
+### Pontos separadores
+Texto em pedaços separados por " · " nunca deixa um ponto sozinho no fim ou no começo da linha: cada pedaço quebra inteiro e o ponto só aparece entre dois pedaços da mesma linha. Vale no app inteiro, sozinho (sepFix depois de cada render), e não mexe em botões, campos, links, etiquetas e pílulas, nomes com reticências nem textos de uma linha só por desenho. Pedaços que precisam ficar juntos ("1 sessão · atrasada") vão num mesmo pedaço.
+
+### Etiquetas de situação
+Nas marcas de revisão, só o que pede ação se destaca: "atrasada" em tom de alerta mais firme (24%, 600). As futuras ("2ª · sessão 6"), pulada e feita continuam pílulas neutras.
+
+### Avisos
+O aviso de baixo (ação concluída, Desfazer, Revisar) usa a largura do próprio texto, até a largura da tela menos 32px; o texto quebra em no máximo duas linhas e o botão nunca quebra.
+
+### Marcador do caderno de erros
+Botão de ícone redondo ao lado da bandeira, na linha da questão, só depois de responder: marcador vazado para guardar, preenchido quando a questão está no caderno de erros (guardada ou automática). Tocar de novo tira.
+
 ### Modo foco
 Tela cheia sobre o chão: disciplina, relógio grande (Timer Display), barra de progresso, ações centralizadas; antes de começar mostra as escolhas e uma contagem de 5 segundos.
 
@@ -341,6 +361,8 @@ Tela cheia sobre o chão: disciplina, relógio grande (Timer Display), barra de 
 - **Do** usar 8px em controles, 10px em cartões e 4px em peças miúdas.
 - **Do** cortar em 6 itens, com "Mostrar mais", toda lista que pode crescer (menos as de marcar).
 - **Do** pôr o nome de disciplina numa linha só, com reticências e title.
+- **Do** dar a todo bloco de abrir e fechar o cabeçalho de linha inteira com a setinha cinza na ponta direita (na tabela, na primeira coluna).
+- **Do** levar ações raras para o pé da lista aberta, como links com o nome inteiro.
 
 ### Don't:
 - **Don't** usar o limão em nada além da linha da vez.
@@ -350,3 +372,5 @@ Tela cheia sobre o chão: disciplina, relógio grande (Timer Display), barra de 
 - **Don't** dar fundo de pílula a link de texto no hover; o estado é sublinhado.
 - **Don't** montar painel de cartões de mesmo peso onde cabe uma tabela.
 - **Don't** deixar janela passar da altura da tela nem abrir janela no celular que não seja painel de baixo.
+- **Don't** colar a setinha no título nem pôr setinhas em lados opostos para o mesmo tipo de bloco.
+- **Don't** deixar ponto separador sozinho no fim ou no começo da linha, nem texto espremido entre o nome e o botão: ele desce para a linha de baixo.

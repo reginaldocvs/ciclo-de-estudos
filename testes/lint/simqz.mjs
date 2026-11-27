@@ -7,7 +7,7 @@
      o resultado nos acertos e as erradas das partes anteriores voltando na seguinte;
    - a cada 3 dias: monta um simulado pela janela (quantidades sorteadas, às vezes com 1 minuto de prova) e faz; às vezes deixa o tempo acabar.
    Confere todo dia: respostas guardadas (até 5 por questão, datas, certo/errado), o resultado de cada bateria no Desempenho (uma linha por bateria, sem duplicar),
-   rascunhos do "no fim" só onde deve, respostas do simulado também na origem, Estatísticas sem contar duas vezes, tela de Questões sem rolagem para o lado e sem erros.
+   rascunhos do "no fim" só onde deve, o caderno de erros (marcador às vezes, entrada automática com 2 erros, saída com 2 acertos, regra rígida), respostas do simulado também na origem, Estatísticas sem contar duas vezes, tela de Questões sem rolagem para o lado e sem erros.
    Uso: node lint/simqz.mjs <dados.json> [dias=14] [largura=390] */
 import {open,mk,W} from './lib.mjs';import fs from 'fs';
 const [F,ND='14',WD='390']=process.argv.slice(2);const w=+WD,ND_=+ND;let bad=0,nok=0;const fails=[];
@@ -80,7 +80,7 @@ async function battery(cad,{fim,quit,fix,cont}){const r0=await recs(cad);
  const st=await ev(()=>ui.qz?{n:ui.qz.ids.length,i:ui.qz.i,fim:!!ui.qz.fim,sel:!!document.querySelector('.qzgm [data-act=qzfim]')}:null);if(!st)return {skip:1};
  if(!cont&&st.sel&&st.fim!==fim){await click(`.qzgm [data-act=qzfim][data-id="${fim?1:0}"]`)}
  const F=await ev(()=>!!ui.qz.fim);let ans=0;
- for(let i=st.i;i<st.n;i++){await ev(i=>{ui.qz.i=i;render()},i);if(rnd()<0.88){await answer();ans++;if(fix&&i===st.i&&!F){await click('.qzd [data-act=qfix]');await ev(()=>{const L=[...document.querySelectorAll('.qzd [data-act=qfixset].g')];if(L.length)L[0].click()});await W(150)}}
+ for(let i=st.i;i<st.n;i++){await ev(i=>{ui.qz.i=i;render()},i);if(rnd()<0.88){await answer();ans++;if(!F&&rnd()<0.08){await click('.qzd [data-act=qerrm]',80);ERV.man++}if(fix&&i===st.i&&!F){await click('.qzd [data-act=qfix]');await ev(()=>{const L=[...document.querySelectorAll('.qzd [data-act=qfixset].g')];if(L.length)L[0].click()});await W(150)}}
   if(quit&&i===st.i+1){await click('[data-act=qzx]',200);return {quit:1,F,ans}}}
  if(F){await ev(()=>{ui.qz.i=ui.qz.ids.length-1;render()});await click('.qznav [data-act=qzent]',200);if(await ev(()=>!!document.querySelector('.qzentq')))await click('[data-act=qzentok]',250)}
  else{await ev(()=>{ui.qz.i=ui.qz.ids.length-1;render()});await click('.qznav [data-act=qnext]',250)}
@@ -105,15 +105,29 @@ async function simulado(day){await ev(()=>{tab='qz';ui.qcad=null;ui.qz=null;rend
  const rs=await ev(()=>({res:!!document.querySelector('.qzd .qzres'),by:document.querySelectorAll('.qsrr').length}));ok(rs.res&&rs.by>=1,`dia ${day}: resultado do simulado com "Por disciplina" `+JSON.stringify(rs));
  await click('[data-act=qzx]',200);ok((await recs(sim))===r0+1,`dia ${day}: uma linha nova no Desempenho do simulado`);
  return sim}
+/* ---------- caderno de erros (desde 2026-11-27) ----------
+   todo dia: o conteúdo é o conjunto das marcadas (guardada ou automática); automática só com 2+ erros e menos de 2 acertos seguidos;
+   fora do caderno só com menos de 2 erros, ou porque saiu (regra rígida: o próximo erro a traz de volta); topo dos Avulsos sem lixeira; fora das Estatísticas */
+const ERV={man:0,auto:0,out:0,back:0,n:0};let errPrev={};
+async function errDay(day){await ev(()=>{tab='qz';ui.qcad=null;ui.qz=null;render()});await W(150);
+ const r=await ev(prev=>{const E=qErr(),m=qErrM(),bad=[],K=Object.keys(E.q).filter(k=>qErrIn(E.q[k]));const o=m&&qLoad(m.id),have=new Set((o?o.qs:[]).map(q=>q.src.join('|')));
+  K.forEach(k=>{const [c]=k.split('|');if(qcM(c)&&qLoad(c)&&!have.has(k))bad.push('marcada fora do caderno: '+k)});have.forEach(k=>{if(!qErrIn(E.q[k]))bad.push('no caderno sem marca: '+k)});
+  Object.entries(E.q).forEach(([k,x])=>{if(x.a&&(x.e||0)<E.n)bad.push('automática com '+x.e+' erros');if(x.a&&(x.h||0)>=E.k)bad.push('automática com '+x.h+' acertos seguidos');if(!x.a&&!x.m&&!x.o&&(x.e||0)>=E.n)bad.push('não entrou com '+x.e+' erros: '+k)});
+  const row=document.querySelector('.qzav .qzr');if(m&&m.n&&!(row&&/^Caderno de erros/.test(row.innerText)&&!row.querySelector('[data-act=qdel]')))bad.push('não está no topo dos Avulsos (sem lixeira)');
+  const st={auto:0,out:0,back:0};Object.entries(E.q).forEach(([k,x])=>{const p=prev[k]||{};if(x.a&&!p.a){st.auto++;if(p.o)st.back++}if(p.a&&!x.a&&x.o)st.out++});
+  return {bad,n:m?m.n:0,st,snap:JSON.parse(JSON.stringify(E.q))}},errPrev);
+ errPrev=r.snap;ERV.auto+=r.st.auto;ERV.out+=r.st.out;ERV.back+=r.st.back;ERV.n=r.n;
+ ok(!r.bad.length,`dia ${day}: caderno de erros com ${r.n} questões `+r.bad.slice(0,3).join(' | '));
+ if(r.n&&rnd()<0.5){const em=await ev(()=>qErrM().id);const b2=await battery(em,{fim:rnd()<0.3});if(!b2.skip)ok(b2.done,`dia ${day}: bateria no caderno de erros termina `+JSON.stringify(b2))}}
 /* ---------- conferências do dia ---------- */
 async function check(day){const R=await ev(()=>{const out=[],td=today();qcL().forEach(m=>{const o=qLoad(m.id);if(!o){out.push('sem conteúdo: '+m.nome);return}const A=(S.qa||{})[m.id]||{},ids=new Set(o.qs.map(q=>q.id));
-  Object.entries(A).forEach(([qid,L])=>{if(!ids.has(qid))out.push(`${m.nome}: resposta de questão que não existe`);if(L.length>5)out.push(`${m.nome}: mais de 5 respostas guardadas`);L.forEach(e=>{if(!e.d||e.d>td)out.push(`${m.nome}: resposta com data ${e.d}`);if(typeof e.ok!=='boolean')out.push(`${m.nome}: resposta sem certo/errado`)})});
+  Object.entries(A).forEach(([qid,L])=>{if(!ids.has(qid)&&!m.err)out.push(`${m.nome}: resposta de questão que não existe`);if(L.length>5)out.push(`${m.nome}: mais de 5 respostas guardadas`);L.forEach(e=>{if(!e.d||e.d>td)out.push(`${m.nome}: resposta com data ${e.d}`);if(typeof e.ok!=='boolean')out.push(`${m.nome}: resposta sem certo/errado`)})});
   const z=qSum(m.id);if(z.a>z.n||z.ok>z.a)out.push(`${m.nome}: soma ${JSON.stringify(z)}`);
   ((S.qh||{})[m.id]||[]).forEach(r=>{if(!(r.a>=1&&r.ok<=r.a&&r.a<=r.n))out.push(`${m.nome}: linha do desempenho ${JSON.stringify(r)}`)});
-  if(m.sim)o.qs.forEach(q=>{const L=(A[q.id]||[]);if(!L.length)return;const e=L[L.length-1],LO=(((S.qa||{})[q.src[0]]||{})[q.src[1]]||[]);if(qcM(q.src[0])&&!LO.some(x=>x.sim&&x.d===e.d&&x.r===e.r)&&LO.length<5)out.push(`${m.nome}: resposta não chegou à origem`)})});
+  if(m.sim||m.err)o.qs.forEach(q=>{const L=(A[q.id]||[]);if(!L.length)return;const e=L[L.length-1],LO=(((S.qa||{})[q.src[0]]||{})[q.src[1]]||[]);if(qcM(q.src[0])&&!LO.some(x=>(m.err?x.er:x.sim)&&x.d===e.d&&x.r===e.r)&&LO.length<5)out.push(`${m.nome}: resposta não chegou à origem`)})});
   Object.keys(S.qzp||{}).forEach(k=>{if(!qcM(k.split('|')[0]))out.push('rascunho de caderno que não existe: '+k)});
-  /* Estatísticas: cada resposta dos avulsos e simulados conta uma vez (a cópia na origem, marcada sim, não conta) */
-  let esp=0;qcL().filter(qIsAv).forEach(m=>{const o=qLoad(m.id),A=(S.qa||{})[m.id]||{};(o?o.qs:[]).forEach(q=>{const s=(q.ss&&S.subjects.find(x=>x.id===q.ss&&!x.of&&!gone(x)))||qAvSubj(q.dis);if(!s)return;(A[q.id]||[]).forEach(e=>{if(e.ok!=null&&!e.sim)esp++})})});
+  /* Estatísticas: cada resposta dos avulsos e simulados conta uma vez (a cópia na origem, marcada sim, não conta); o caderno de erros conta pela origem (marcada er) */
+  let esp=0;qcL().filter(m=>qIsAv(m)&&!m.err).forEach(m=>{const o=qLoad(m.id),A=(S.qa||{})[m.id]||{};(o?o.qs:[]).forEach(q=>{const s=(q.ss&&S.subjects.find(x=>x.id===q.ss&&!x.of&&!gone(x)))||qAvSubj(q.dis);if(!s)return;(A[q.id]||[]).forEach(e=>{if(e.ok!=null&&!e.sim)esp++})})});
   const got=qAvRes('0000-00-00',td).reduce((a,z)=>a+z.t,0);if(got!==esp)out.push(`Estatísticas dos avulsos: ${got} contadas, esperado ${esp}`);
   return out});
  R.forEach(m=>ok(false,`dia ${day}: ${m}`));if(!R.length)nok++;
@@ -131,9 +145,10 @@ for(let day=1;day<=ND_;day++){
   else if(!r.skip){const ag=r.ans>0;ok(r.done&&(ag?r.dr<=1:r.dr===0),`dia ${day}: bateria ${fim?'no fim':'a cada questão'} termina com no máximo uma linha no Desempenho `+JSON.stringify(r))}}
  await rqDay(day);
  if(day%3===0)await simulado(day);
+ await errDay(day);
  await check(day);
  console.log(`dia ${day}: ok ${nok}, falhas ${bad}`);
  await adv(86400000);await ev(()=>render());await W(200)}
 const fin=await ev(()=>({cad:qcL().length,sim:qcL().filter(c=>c.sim).length,resp:Object.values(S.qa||{}).reduce((a,o)=>a+Object.values(o).reduce((b,L)=>b+L.length,0),0),linhas:Object.values(S.qh||{}).reduce((a,L)=>a+L.length,0)}));
-console.log('fim: '+JSON.stringify(fin));console.log('revisão por questões vista: '+JSON.stringify(RQV));if(!RQV.late||!RQV.ag){bad++;console.log('FALHA a simulação não passou por revisões "agora" e "atrasada" '+JSON.stringify(RQV))}console.log(bad?`FALHA ${bad} conferências falharam`:`OK    ${nok} conferências`);
+console.log('fim: '+JSON.stringify(fin));console.log('revisão por questões vista: '+JSON.stringify(RQV));console.log('caderno de erros visto: '+JSON.stringify(ERV));if(!ERV.auto||!ERV.out||!ERV.man){bad++;console.log('FALHA a simulação não passou por entrada automática, saída e marcador '+JSON.stringify(ERV))}if(!RQV.late||!RQV.ag){bad++;console.log('FALHA a simulação não passou por revisões "agora" e "atrasada" '+JSON.stringify(RQV))}console.log(bad?`FALHA ${bad} conferências falharam`:`OK    ${nok} conferências`);
 await p.screenshot({path:'saida/simqz-'+w+'.png',fullPage:true});await b.close();process.exit(bad?1:0);

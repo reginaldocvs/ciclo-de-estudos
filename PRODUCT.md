@@ -39,7 +39,7 @@ Não é um cronômetro genérico nem um planner com grade de horários. Combina 
 - **Ciclo:** cronômetro por disciplina, modo foco em tela cheia, metas de tempo, blocos duplicados, reordenação, registro manual e desfazer/refazer.
 - **Planos:** vários planos, cada um com disciplinas, tópicos e rodadas; edição de disciplina com rascunho (Salvar/Cancelar).
 - **Revisão:** os sistemas ligados em Ajustes de revisão (por ciclos, por questões, por grupos de N dias válidos disponíveis após W dias corridos, por tópico, por sessões), mais a revisão de consolidação e a de bloco; visão de hoje e calendário de revisões.
-- **Questões:** cadernos de questões importados, resolvidos no app, com acertos por tópico.
+- **Questões:** cadernos de questões importados, resolvidos no app, com acertos por tópico; avulsos, simulados (com tempo de prova) e o **caderno de erros**, que junta de todos os cadernos as questões guardadas pelo marcador e as erradas N vezes (saem com K acertos seguidos; regra rígida: quem sai volta no próximo erro), com filtros por disciplina, tópico, como entrou e nível.
 - **Histórico:** duas visões, Registros (lista por dia, com busca e filtros) e Ciclos (o que foi estudado em cada ciclo).
 - **Terminologia fixa:** ciclo, rodada, plano, disciplina, tópico, videoaula, leitura, questões, sessão, grupo de revisão, dias válidos de estudo, dias corridos.
 - **Distribuição (decidido):** o app precisa ser acessível de qualquer computador e **de graça** (hospedagem estática gratuita). Os dados de estudo devem acompanhar o usuário entre computadores e celular.
