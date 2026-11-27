@@ -6,6 +6,8 @@ const [F,WD]=process.argv.slice(2);const w=+(WD||320);let bad=0;
 const S0=JSON.parse(fs.readFileSync(F,'utf8'));S0.timer={running:false,start:0,acc:0};S0.sx=false;S0.paused={};
 const {b,p,errs}=await open({data:{'ciclo-estudos-v2':JSON.stringify(S0),'ciclo-welcome-skip':'1'},w,h:900});const x=mk(p);const ev=(f,...a)=>x.ev(f,...a);
 const scan=lugar=>ev(lugar=>{const out=[],seen=new Set();
+ /* regra dos pontos (sepl): o começo do texto não pode ficar na faixa cortada */
+ document.querySelectorAll('.sepl').forEach(el=>{if(!el.getClientRects().length)return;const f=el.firstElementChild;if(!f)return;const tn=[...f.childNodes].find(n=>n.nodeType===3&&n.nodeValue.trim())||f;const r=document.createRange();r.selectNodeContents(tn);const R=r.getClientRects()[0];if(!R)return;const cut=el.getBoundingClientRect().left+parseFloat(getComputedStyle(el).fontSize)*.8-1;if(R.left<cut){const k='sepl:'+(el.textContent||'').slice(0,40);if(!seen.has(k)){seen.add(k);out.push({lugar,txt:k,corte:Math.round(cut-R.left)})}}});
  document.querySelectorAll('#app .btn, #modal .btn').forEach(bt=>{if(!bt.getClientRects().length)return;const br=bt.getBoundingClientRect();if(br.width<1)return;
   let row=bt.parentElement;for(let k=0;k<3&&row;k++){const cs=getComputedStyle(row);if(/flex|grid/.test(cs.display))break;row=row.parentElement}if(!row)return;const rr=row.getBoundingClientRect();
   row.querySelectorAll('p,div,span').forEach(t=>{if(t.contains(bt)||t.closest('button,.btn'))return;if([...t.children].some(c=>/^(block|flex|grid)$/.test(getComputedStyle(c).display)))return;
@@ -21,5 +23,5 @@ const deep=async(t,sub)=>{await go(t,sub);const L=await ev(O=>{const r=[],c={};d
  for(const [a,id] of L){const okc=await ev(([a,id])=>{const e=[...document.querySelectorAll(`[data-act="${a}"]`)].find(e=>(e.dataset.id||null)===id&&e.getClientRects().length);if(!e)return false;e.click();return true},[a,id]);if(!okc)continue;await W(300);
   R.push(...await scan(t+(sub?'/'+sub:'')+' › '+a+(id?':'+id:'')));for(let k=0;k<3;k++){await p.keyboard.press('Escape');await W(80)}await ev(()=>{ui.qz=null;ui.qcad=null;render()});await go(t,sub)}};
 for(const t of tabs){await deep(t);if(t==='rev'){const subs=await ev(()=>[...document.querySelectorAll('[data-act=rvt]')].map(e=>e.dataset.id));for(const s of subs)await deep('rev',s)}}
-R.forEach(o=>{bad++;console.log('FALHA texto espremido ao lado de botão '+JSON.stringify(o))});console.log(bad?`${bad} casos`:'OK    nenhum texto espremido ao lado de botão');
+R.forEach(o=>{bad++;console.log('FALHA '+(String(o.txt).startsWith('sepl:')?'começo do texto cortado (regra dos pontos) ':'texto espremido ao lado de botão ')+JSON.stringify(o))});console.log(bad?`${bad} casos`:'OK    nenhum texto espremido ao lado de botão');
 if(errs.length){bad++;console.log('FALHA erros de script: '+errs.slice(0,2).join(' | '))}await b.close();process.exit(bad?1:0);
