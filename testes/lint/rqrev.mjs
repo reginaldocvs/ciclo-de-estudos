@@ -38,10 +38,10 @@ await ev(()=>document.querySelector('nav [data-tab=rev]').click());await W(300);
 ok(await ev(()=>{const r=[...document.querySelectorAll('.rvtoday .trvr')].find(e=>/Revisão por questões/.test(e.textContent));return !!r&&/2 sessões/.test(r.textContent)&&!!r.querySelector('[data-act=rqreg]')}),'Para hoje: "Revisão por questões · 2 sessões" com Revisar');
 await ev(()=>[...document.querySelectorAll('.rvtoday [data-act=rqreg]')][0].click());await W(300);ok(await ev(()=>!!document.querySelector('[data-f=rqreg]')),'Revisar abre a janela');
 await p.keyboard.press('Escape');await W(200);ok(await ev(()=>!document.querySelector('[data-f=rqreg]')&&rqDue('rqx').length===2),'Esc fecha e continua pendente');
-/* 4. sessão 8 com pendentes: 7, 4 e as atrasadas 6 e 3 → Pular */
+/* 4. sessão 8 registrada com pendentes: a revisão é feita durante a sessão, então terminada a sessão todas ficam atrasadas (a 7 e a 4 da sessão 8, a 6 e a 3 da 7) → Pular */
 await ev(()=>document.querySelector('nav [data-tab=ciclo]').click());await W(200);await study('rqx',8);await W(300);
-d=await ev(()=>rqDue('rqx').map(z=>z.m+':'+(z.i+1)+(z.late?'L':'')).join(' '));ok(d==='7:1 6:1L 4:2 3:2L','sessão 8: a 7 e a 4, mais as atrasadas 6 e 3 '+d);
-ok(await ev(()=>document.querySelectorAll('.rqh .late').length===2),'atrasadas marcadas na janela');
+d=await ev(()=>rqDue('rqx').map(z=>z.m+':'+(z.i+1)+(z.late?'L':'')).join(' '));ok(d==='7:1L 6:1L 4:2L 3:2L','sessão 8 registrada: a 7, a 6, a 4 e a 3, todas atrasadas '+d);
+ok(await ev(()=>document.querySelectorAll('.rqh .late').length===4),'atrasadas marcadas na janela');
 const nR=await ev(()=>S.sessions.length);await x.act('rqskip');await W(200);ok(await ev(n=>rqDue('rqx').length===0&&S.sessions.length===n,nR),'Pular: conta como feita, sem registro');
 /* 5. regra completa até a 3ª e saída: sessão 9 → 8, 5 e 1; sessão 13 → 12, 9 e 5 */
 await study('rqx',9);await W(200);ok(await due()==='8:1 5:2 1:3','sessão 9: 8 (1ª), 5 (2ª) e 1 (3ª)');
@@ -60,7 +60,7 @@ await ev(()=>document.querySelector('nav [data-tab=rev]').click());await W(200);
 await x.act('rqst','0:-1');ok(await ev(()=>ui.rqiv.join()==='1,4,8'),'− não passa de 1');
 await x.act('rqst','1:-1');await x.act('rqst','1:-1');await x.act('rqst','1:-1');ok(await ev(()=>ui.rqiv.join()==='1,2,8'),'− para no número de cima + 1 (ordem crescente)');
 await x.act('rqadd');ok(await ev(()=>ui.rqiv.join()==='1,2,8,16'),'Adicionar: o dobro da última (16)');
-ok(await ev(()=>/Ao terminar a sessão 18, você revisa a 17, a 16, a 10 e a 2\./.test(document.querySelector('.rvsum').textContent)),'resumo com o exemplo');
+ok(await ev(()=>/Durante a sessão 17, você revisa a 16, a 15, a 9 e a 1\./.test(document.querySelector('.rvsum').textContent)),'resumo com o exemplo');
 await p.screenshot({path:'saida/rqrev-ajuste-'+w+'.png'});
 await x.act('rqdel');await x.act('rqdef');ok(await ev(()=>ui.rqiv.join()==='1,4,8'),'tirar a última e Voltar ao padrão');
 await x.act('rqst','2:1');await x.act('rqsave');await W(200);ok(await ev(()=>rqIv().join()==='1,4,9'&&rqDue('rqx').length===0&&ui.rvadj),'Salvar: 1 · 4 · 9, sem atrasadas, volta aos Ajustes');
@@ -71,8 +71,8 @@ ok(await ev(()=>{const T=[...document.querySelectorAll('[data-act=rvt]')].map(b=
 await x.act('rvt','questoes');await W(300);
 let tb=await ev(()=>{const c=[...document.querySelectorAll('.rqsc')].find(c=>/Teste RQ/.test(c.textContent));if(!c)return null;const rows=[...c.querySelectorAll('.rqsr')];const row=m=>{const r=rows.find(r=>new RegExp('^Sessão '+m+' ').test(r.querySelector('b').parentElement.textContent));return r?[...r.querySelectorAll('.rqk')].map(k=>k.textContent).join('|'):null};return {hd:c.querySelector('.bks2').textContent,nx:c.querySelector('.rqnx').textContent,rv:!!c.querySelector('[data-act=rqreg]'),s15:row(15),s14:row(14),s5:row(5)}});
 ok(tb&&/^15 sessões · 2 sessões para revisar$/.test(tb.hd)&&tb.rv,'cartão: 15 sessões, 2 para revisar (a 3ª da sessão 6 já tinha sido pulada), com Revisar '+JSON.stringify(tb&&tb.hd));
-ok(tb&&tb.nx==='Ao terminar a sessão 16, você revisa a 15, a 12 e a 7.','próxima sessão: o que vem ao terminar a 16 '+JSON.stringify(tb&&tb.nx));
-ok(tb&&tb.s15==='1ª · sessão 16|2ª · sessão 19|3ª · sessão 24'&&tb.s14==='1ª agora|2ª · sessão 18|3ª · sessão 23','marcas por vez: em que sessão vem e agora '+JSON.stringify(tb&&[tb.s15,tb.s14]));
+ok(tb&&tb.nx==='Durante a sessão 16, você revisa a 15, a 12 e a 7.','próxima sessão: o que vem durante a 16 '+JSON.stringify(tb&&tb.nx));
+ok(tb&&tb.s15==='1ª · sessão 16|2ª · sessão 19|3ª · sessão 24'&&tb.s14==='1ª atrasada|2ª · sessão 18|3ª · sessão 23','marcas por vez: em que sessão vem e atrasada (a sessão 15 terminou sem a revisão da 14) '+JSON.stringify(tb&&[tb.s15,tb.s14]));
 await p.screenshot({path:'saida/rqrev-aba-'+w+'.png',fullPage:true});
 await ev(()=>{S.subjects.find(s=>s.id==='rqx').topics[0].name='1 - Direitos e garantias fundamentais: direitos e deveres individuais e coletivos; direito à vida, à liberdade, à igualdade, à segurança e à propriedade; direitos sociais; nacionalidade';render()});await W(200);
 ok(await ev(()=>{const c=[...document.querySelectorAll('.rqsc')].find(c=>/Teste RQ/.test(c.textContent)),r=c.querySelector('.rqsr'),T=[...r.querySelectorAll('.rqk')].map(e=>Math.round(e.getBoundingClientRect().top));return new Set(T).size===1}),'tópico de nome longo: as marcas continuam numa linha só');
@@ -83,10 +83,10 @@ const pid=await ev(()=>S.plan),nP=await ev(()=>rqDue('rqx').length);await x.act(
 ok(await ev(n=>(S.set||1)===2&&rqOn()&&rqIv().join()==='1,4,9'&&rqSes('rqx').length===15&&rqDue('rqx').length===n,nP),'nova rodada: continua ligada, com a mesma regra, as 15 sessões e as pendentes');
 await study('rqx',16);await W(300);
 let r2=await ev(()=>({n:rqSes('rqx').length,due:rqDue('rqx').map(z=>z.m+':'+(z.i+1)+(z.late?'L':'')).join(' '),open:!!document.querySelector('[data-f=rqreg]')}));
-ok(r2.n===16&&r2.open&&/^15:1 14:1L 12:2 11:2L 7:3$/.test(r2.due),'1ª sessão da rodada 2 é a sessão 16: revisa a 15, a 12 e a 7, mais as pendentes da rodada 1 '+JSON.stringify(r2));
+ok(r2.n===16&&r2.open&&/^15:1L 14:1L 12:2L 11:2L 7:3L$/.test(r2.due),'1ª sessão da rodada 2 é a sessão 16 (registrada): a 15, a 12 e a 7 e as pendentes da rodada 1, todas atrasadas '+JSON.stringify(r2));
 await x.act('rqregx');await ev(()=>document.querySelector('nav [data-tab=rev]').click());await W(200);await x.act('rvt','questoes');await W(300);
 let ch=await ev(()=>{const c=[...document.querySelectorAll('.rqsc')].find(c=>/Teste RQ/.test(c.textContent));const rows=[...c.querySelectorAll('.rqsr')];const g=m=>{const r=rows.find(r=>r.querySelector('b').textContent==='Sessão '+m);return r?[...r.querySelectorAll('.rqk')].map(k=>k.textContent+(k.classList.contains('late')?'!':'')).join('|'):null};return {s15:g(15),s14:g(14)}});
-ok(ch.s15&&ch.s15.startsWith('1ª agora|')&&ch.s14&&ch.s14.startsWith('1ª atrasada!|')&&!/pendente/.test(JSON.stringify(ch)),'aba: "1ª agora" (cor normal) para o que chegou e "1ª atrasada" (cor de atraso) para o que ficou '+JSON.stringify(ch));
+ok(ch.s15&&ch.s15.startsWith('1ª atrasada!|')&&ch.s14&&ch.s14.startsWith('1ª atrasada!|')&&!/pendente/.test(JSON.stringify(ch)),'aba: sessão registrada sem a revisão, "1ª atrasada" (cor de atraso) '+JSON.stringify(ch));
 await p.screenshot({path:'saida/rqrev-agora-'+w+'.png',fullPage:true});
 await ev(()=>[...document.querySelectorAll('.rqsc')].find(c=>/Teste RQ/.test(c.textContent)).querySelector('[data-act=rqreg]').click());await W(300);
 await ev(()=>{const f=document.querySelector('[data-f=rqreg]');f.querySelector('[name="qa-0-0"]').value='5';f.querySelector('[name="qt-0-0"]').value='8';f.requestSubmit()});await W(300);

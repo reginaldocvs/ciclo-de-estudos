@@ -12,8 +12,8 @@ let r=await info('qzinfo','questoes');ok(r&&r.t==='Questões'&&/Gemini/.test(r.h
 /* Revisão por questões */
 await ev(()=>{S.rq={on:true,iv:[1,4,8],b:{},hold:[]};save();tab='rev';ui.rvt='questoes';render()});await W(200);
 ok(await ev(()=>!!document.querySelector('.rvrule [data-act=info][data-id=rq]')),'Revisão › Questões: ⓘ ao lado da regra');
-r=await info('rq','rq');ok(r&&/volta para revisão 1, 4 e 8 sessões depois dela/.test(r.h)&&/a sessão 1 é revisada ao terminar as sessões 2, 5 e 9/.test(r.h)&&/3 vezes \(1ª, 2ª e 3ª\)/.test(r.h)&&/links da aula e das questões/.test(r.h)&&/Adiantar/.test(r.h),'Sobre Revisão por questões '+JSON.stringify(r&&r.h.slice(0,120)));
-r=await info('rvdias');ok(r&&/por <b>|por sessões|por questões/.test(r.h)&&/Por questões: cada sessão de uma disciplina volta para revisão 1, 4 e 8 sessões depois dela/.test(r.h)&&/ao terminar as sessões 2, 5 e 9/.test(r.h)&&/Questões mostra/.test(r.h),'Como funciona a revisão: fala da revisão por questões ligada '+JSON.stringify(r&&r.h.slice(0,160)));
+r=await info('rq','rq');ok(r&&/volta para revisão 1, 4 e 8 sessões depois dela/.test(r.h)&&/a sessão 1 é revisada durante as sessões 2, 5 e 9/.test(r.h)&&/3 vezes \(1ª, 2ª e 3ª\)/.test(r.h)&&/links da aula e das questões/.test(r.h)&&/Adiantar/.test(r.h),'Sobre Revisão por questões '+JSON.stringify(r&&r.h.slice(0,120)));
+r=await info('rvdias');ok(r&&/por <b>|por sessões|por questões/.test(r.h)&&/Por questões: cada sessão de uma disciplina volta para revisão 1, 4 e 8 sessões depois dela/.test(r.h)&&/durante as sessões 2, 5 e 9/.test(r.h)&&/Questões mostra/.test(r.h),'Como funciona a revisão: fala da revisão por questões ligada '+JSON.stringify(r&&r.h.slice(0,160)));
 /* Revisão por sessões */
 await ev(()=>{S.rq.on=false;S.srv={on:true,n:3,y:2,start:today()};save();tab='rev';ui.rvt='sessoes';render()});await W(200);
 ok(await ev(()=>!!document.querySelector('.rvrule [data-act=info][data-id=srv]')),'Revisão › Sessões: ⓘ ao lado da regra');
