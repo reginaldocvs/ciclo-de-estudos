@@ -1259,6 +1259,7 @@ body{text-wrap:pretty}
 .edrb{margin:14px 0 4px;padding:12px 0 2px;border-top:1px solid var(--m-ov);border-bottom:1px solid var(--m-ov)}.edrb .rvlist{gap:8px}.edrb .pgm{margin:2px 0 6px}
 .edrv{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:40px;font-size:.9375rem}
 .edrvn{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.edrvq{display:flex;align-items:center;gap:6px;min-width:0}.edrvq svg{flex:none;color:var(--mut)}.edrvd{flex:none;white-space:nowrap}
 .edrv .lnk{font-weight:700;color:var(--ink);flex:none;padding:6px 0}
 .edrv .lnk.late{color:var(--bad)}
 .edt{background:var(--card);border:1px solid var(--m-ov);border-radius:var(--r-2xl);overflow:hidden}
@@ -1863,7 +1864,7 @@ function edCiclo(A,nw,srH,bkr,rvC,done,o={}){const TL=tvOn()?trvList():[];
  if(TD.length>2)RV.push(`<div class="edrv"><span>+ ${TD.length-2} ${TD.length-2===1?'revisão':'revisões'} de tópico</span><button class="lnk" data-tab="rev">Ver</button></div>`);
  /* revisão por questões pendente das disciplinas (registrou sem revisar): lembra aqui até ser feita */
  if(!o.rev&&rqOn()){const QD=rqSubs().filter(s=>s.id!==rqSk).map(s=>({s,D:rqDue(s.id)})).filter(x=>x.D.length).map(x=>({...x,lt:x.D.some(z=>z.late)})).sort((a,b)=>b.lt-a.lt);
-  QD.slice(0,2).forEach(({s,lt})=>{const n=esc(nm(s));RV.push(`<div class="edrv"><span class="edrvn" title="${n} · questões">${n} · questões</span><button class="lnk${lt?' late':''}" data-act="rqreg" data-id="${s.id}" aria-label="Revisar com questões: ${n}">${lt?'atrasada':'hoje'}</button></div>`)});
+  QD.slice(0,2).forEach(({s,D,lt})=>{const n=esc(nm(s)),z=D[0],dt=`sessão ${z.m} · ${ordN(z.i+1)}${D.length>1?' +'+(D.length-1):''}`;RV.push(`<div class="edrv"><span class="edrvq" title="${n} · questões · ${dt}">${QICO}<span class="edrvn">${n}</span><span class="edrvd">· ${dt}</span></span><button class="lnk${lt?' late':''}" data-act="rqreg" data-id="${s.id}" aria-label="Revisar com questões: ${n}">${lt?'atrasada':'hoje'}</button></div>`)});
   if(QD.length>2)RV.push(`<div class="edrv"><span>+ ${QD.length-2} ${QD.length-2===1?'revisão':'revisões'} por questões</span><button class="lnk" data-tab="rev">Ver</button></div>`)}
  const rvs=`<div class="edrvs"><h3>Revisão de hoje</h3>${RV.length?RV.join(''):'<p class="mut">Nada para revisar hoje.</p>'}</div>`;
  const wrap=panel=>`<div class="edx">${panel}<div class="edm">${srH}<div class="edt" role="table" aria-label="${o.rev?'Disciplinas da revisão':'Disciplinas do ciclo'}">${head}${bkr(0)}${rows}</div><div class="edfoot">${o.rev&&!done&&rvAny()?'<button class="btn g s" data-act="rvnow">Concluir agora</button>':''}${o.rev?'<button class="btn g s" data-act="rvcancel">Cancelar revisão</button>':''}<button class="btn g s" data-act="edopen">${o.rev?'Editar revisão':'Editar ciclo'}</button></div>${o.rev&&ui.rvnq&&!done?rvNowQ():''}</div></div>`;
