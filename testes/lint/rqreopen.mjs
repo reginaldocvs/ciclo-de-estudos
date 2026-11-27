@@ -17,6 +17,14 @@ await reg(P1,30);
 let r=await btn(P2);ok(r.btn&&!r.done,'2ª posição da mesma disciplina: sessão nova, aparece "Revisar com questões" (revisa a 1ª) '+JSON.stringify(r));
 r=await btn(P1);ok(r.done&&!r.btn,'1ª posição, já registrada (concluída): some '+JSON.stringify(r));
 let st=await ev(()=>(document.querySelector('.edp .edrq')||{}).textContent||'');ok(/Próxima revisão: sessão 2/.test(st),'concluída: diz quando vem a próxima revisão ('+st+')');
+/* as duas posições concluídas: o Revisar fica na sessão que trouxe a revisão (a 2ª), dizendo o que revisa; a 1ª (a revisada) só diz quando */
+await reg(P2,30);r=await btn(P2);st=await ev(()=>[...document.querySelectorAll('.edp .edrq')].map(e=>e.textContent).join(' | '));
+ok(r.done&&r.btn&&/Revisão: agora · sessão 1 · 1ª/.test(st)&&/Próxima revisão desta sessão: sessão 3/.test(st),'2ª posição concluída: Revisar com "sessão 1 · 1ª" e a próxima desta sessão ('+st+')');
+ok(await ev(()=>!/sessão 1 · 1ª/.test(document.querySelector('.edrvs').textContent)),'com o Revisar no painel, a Revisão de hoje não repete a disciplina');
+r=await btn(P1);st=await ev(()=>(document.querySelector('.edp .edrq')||{}).textContent||'');
+ok(!r.btn&&/1ª revisão: agora, na sessão 2/.test(st),'1ª posição (a revisada): sem botão, diz "1ª revisão: agora, na sessão 2" ('+st+')');
+ok(await ev(()=>/sessão 1 · 1ª/.test(document.querySelector('.edrvs').textContent)),'sem o Revisar no painel, a Revisão de hoje lembra a revisão');
+await ev(id=>{S.sessions=S.sessions.filter(x=>x.subj!==id);S.progress[id]=0;save();render()},P2);await W(300);
 await ev(id=>{const b=srBase({subj:id});S.sessions.push({id:uid(),ses:uid(),rid:'rq-t1',subj:b.id,topic:null,min:0,cycle:S.cycle,set:S.set||1,review:true,kind:'aula',items:[],date:today(),ac:8,tq:10});save();render()},P1);await W(300);await btn(P1);
 st=await ev(()=>(document.querySelector('.edp .edrq')||{}).textContent||'');ok(/✓ Revisão por questões · 8\/10 \(80%\)/.test(st),'feita neste ciclo: ✓ com o placar ('+st+')');
 ok(await ev(()=>!document.querySelector('.edp .edrqv')),'sem olho na linha do painel');
