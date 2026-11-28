@@ -86,7 +86,7 @@ async function rqDuring(id){if(!RQ||rnd()>.35)return;const has=await x.ev(()=>{c
  if(!z||!/durante a sessão/.test(z.sub)||z.tempo){ok(false,'rq: janela do Agora sem "durante a sessão" ou com tempo '+JSON.stringify(z));return}
  await once('rq-agora');st.rqDur=(st.rqDur||0)+1;const r=rnd();
  if(r<.75){await x.ev(()=>{const f=document.querySelector('[data-f=rqreg]');f.querySelectorAll('input[name^=qa-]').forEach(i=>{const t=f.querySelector('[name="'+i.name.replace('qa-','qt-')+'"]');t.value=+t.value||10;i.value=Math.ceil(+t.value*.7)})});await x.submit('#modal form[data-f=rqreg]');await W(250);st.rqReg++;
-  if(await x.ev(b=>rqDue(b,true).length,b))ok(false,'rq: registrar no Agora deixou pendente para esta sessão')}
+  if(await x.ev(b=>rqDue(b,true).filter(z=>!z.late).length,b))ok(false,'rq: registrar no Agora deixou pendente para esta sessão') /* as atrasadas ficam para a Revisão de hoje (desde 2026-11-28) */}
  else await x.act('rqregx')}
 /* uma sessão de estudo: 1 tópico (novo a cada 2 sessões da disciplina) com 2 a 3 aulas/questões */
 const tpN={};
