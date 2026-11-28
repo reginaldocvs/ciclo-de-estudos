@@ -20,7 +20,7 @@ await ev(id=>{qcM(id).dist='ord'},cid);r=await parts();ok(r.every(z=>z.n===15&&z
 await ev(id=>{delete qcM(id).dist},cid);
 /* sessão 2: a 1ª revisão da sessão 1 chega; a janela tem o caderno */
 await study(2);await W(150);await ev(()=>{const b=document.querySelector('#undo [data-act=rqreg]');b&&b.click()});await W(300);
-r=await ev(()=>{const c=document.querySelector('[data-f=rqreg] .rqcad');return c?c.textContent:null});ok(r&&/Caderno · 15 questões/.test(r)&&/Resolver \(15\)/.test(r),'janela da revisão: "Caderno · 15 questões" e "Resolver (15)" '+JSON.stringify(r));
+r=await ev(()=>{const c=document.querySelector('[data-f=rqreg] .rqcad');return c?c.textContent:null});ok(r&&/Caderno\s*·?\s*15 desta revisão/.test(r)&&/Resolver/.test(r)&&await ev(()=>(document.querySelector('[data-f=rqreg] .rqcad .qsin')||{}).value==='15'),'janela da revisão: "Caderno · 15 desta revisão", o número 15 e Resolver '+JSON.stringify(r));
 await p.screenshot({path:'saida/qzrev-janela-'+w+'.png'});
 await ev(()=>document.querySelector('[data-f=rqreg] [data-act=rqcadgo]').click());await W(300);
 r=await ev(()=>({rq:!!ui.qz.rq,n:ui.qz.ids.length,top:document.elementFromPoint(innerWidth/2,innerHeight/2)?.closest('.qzd')!==null}));ok(r.rq&&r.n===15&&r.top,'Resolver: abre a parte 1 (15) por cima da janela '+JSON.stringify(r));

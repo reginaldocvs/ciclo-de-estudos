@@ -44,7 +44,7 @@ r=await ev(()=>document.querySelector('.qzrr .qzrrn .mut').textContent);ok(/\(10
 /* sessão 2: janela com um bloco por tópico */
 await study(2);await W(150);await ev(()=>{const b=document.querySelector('#undo [data-act=rqreg]');b&&b.click()});await W(300);
 r=await ev(()=>[...document.querySelectorAll('[data-f=rqreg] .actp')].map(e=>({n:e.querySelector('.rvtn').textContent,aulas:e.querySelectorAll('.rqit').length,link:!!e.querySelector('.rqit a[href*="exemplo.test/a"]'),ql:!!e.querySelector('.rqit a[href*="questoes-a"]'),old:/%/.test(e.querySelector('.rqit')?.textContent||''),btn:(e.querySelector('[data-act=rqcadgo]')||{}).textContent||'',ac:e.querySelectorAll('input[name^=qa-]').length})));
-ok(r.length===2&&r[0].n==='Classes Gramaticais'&&r[0].aulas===1&&r[0].link&&r[0].ql&&!r[0].old&&r[0].btn==='Resolver (10)'&&r[1].btn==='Resolver (12)'&&r.every(t=>t.ac===1),'janela: um bloco por tópico, aula com link da aula e das questões, sem acerto antigo, Resolver do tópico e um campo de acertos '+JSON.stringify(r));
+ok(r.length===2&&r[0].n==='Classes Gramaticais'&&r[0].aulas===1&&r[0].link&&r[0].ql&&!r[0].old&&r[0].btn==='Resolver'&&r[1].btn==='Resolver'&&await ev(()=>[...document.querySelectorAll('[data-f=rqreg] .rqcad .qsin')].map(e=>e.value).join()==='10,12')&&r.every(t=>t.ac===1),'janela: um bloco por tópico, aula com link da aula e das questões, sem acerto antigo, Resolver do tópico e um campo de acertos '+JSON.stringify(r));
 await p.screenshot({path:'saida/qztop-janela-'+w+'.png'});
 /* digita à mão no tópico B; resolve o A pelo app */
 await ev(()=>{const f=document.querySelector('[data-f=rqreg]');for(const [n,v] of [['qa-0-1','9'],['qt-0-1','12']]){const i=f.querySelector(`[name="${n}"]`);i.value=v;i.dispatchEvent(new Event('input',{bubbles:true}))}});
@@ -53,7 +53,7 @@ r=await ev(()=>{const o=qLoad(ui.qz.cad),m=qcM(ui.qz.cad),T=qTops(m);return {n:u
 for(let i=0;i<10;i++){await ev(i=>{const o=qLoad(ui.qz.cad),q=o.qs.find(x=>x.id===ui.qz.ids[ui.qz.i]),g=qGab(q);qAns(i<2?(g==='C'?'E':'C'):g)},i);await ev(()=>document.querySelector('.qzd [data-act=qnext]').click())}
 await ev(()=>{[...document.querySelectorAll('.qzd .btn')].find(b=>/Voltar à revisão/.test(b.textContent)).click()});await W(300);
 r=await ev(()=>{const f=document.querySelector('[data-f=rqreg]'),v=n=>f.querySelector(`[name="${n}"]`).value;return {a:v('qa-0-0')+'/'+v('qt-0-0'),b:v('qa-0-1')+'/'+v('qt-0-1'),btn:[...f.querySelectorAll('.actp')].map(e=>(e.querySelector('[data-act=rqcadgo]')||{}).textContent).join('|')}});
-ok(r.a==='8/10'&&r.b==='9/12'&&r.btn==='Refazer|Resolver (12)','de volta: A preenchido com 8/10; B continua com o que foi digitado (9/12) '+JSON.stringify(r));
+ok(r.a==='8/10'&&r.b==='9/12'&&r.btn==='Refazer|Resolver','de volta: A preenchido com 8/10; B continua com o que foi digitado (9/12) '+JSON.stringify(r));
 await p.screenshot({path:'saida/qztop-resolvido-'+w+'.png'});
 r=await ev(()=>[...document.querySelectorAll('[data-f=rqreg] .actp')].map(e=>(e.querySelector('.racs .qprev')||{}).textContent||''));ok(r.every(x=>x===''),'1ª revisão sem acertos no estudo: sem "antes" '+JSON.stringify(r));
 await ev(()=>document.querySelector('[data-f=rqreg]').requestSubmit());await W(300);

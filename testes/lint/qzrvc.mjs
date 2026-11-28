@@ -21,7 +21,7 @@ const D=await ev(j=>{const s=qSubs()[0];S.cyrv={on:true,n:2,last:0};S.cycle=3;S.
 await ev(()=>{document.querySelector('nav [data-tab=rev]').click()});await W(300);
 await ev(sid=>{S.sel.subj=sid;render()},D.sid);await W(250);
 const card=()=>ev(()=>{const c=document.querySelector('.rvqcard');return c?{t:c.innerText.replace(/\s+/g,' '),u:[...c.querySelectorAll('[data-act=rvqgo].qzplay')].map(e=>e.dataset.id),n:c.querySelectorAll('.cstp').length}:null});
-let r=await card();ok(r&&/Questões do caderno de/.test(r.t)&&r.n===1&&/7 questões/.test(r.t),'ciclo de revisão: cartão "Questões do caderno", só a sessão do período (7 questões) '+JSON.stringify(r&&r.t.slice(0,160)));
+let r=await card();ok(r&&/Questões do caderno de/.test(r.t)&&r.u.length===1&&/0 de 1 sessão feita · 7 questões/.test(r.t),'ciclo de revisão: cartão "Questões do caderno", só a sessão do período (7 questões) '+JSON.stringify(r&&r.t.slice(0,160)));
 const ids=()=>ev(()=>{const U=rvqUnits(S.sel.subj);return U.length?U[0].ids:[]});
 await x.pick('rvqf','err');await W(200);let L=await ids();ok(L.length===1&&L[0]===D.q[0],'Só as que errei: 1 (a q1)');
 await x.pick('rvqf','pend');await W(200);L=await ids();ok(L.length===5&&!L.includes(D.q[0])&&!L.includes(D.q[1]),'Só as que faltam: as 5 nunca feitas');

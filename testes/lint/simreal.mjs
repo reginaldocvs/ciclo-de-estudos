@@ -100,11 +100,24 @@ async function study(){await tabTo('ciclo');await blocks();
  if(!shotOnce.has('registro-estudo')){shotOnce.add('registro-estudo');await shot('registro-estudo')}
  await x.submit('#modal form[data-f=man]');await W(250);st.estudo++;await rqAfter(id);await blocks();return true}
 /* revisões por tópico que vencem hoje */
+/* caderno na revisão por tópico (desde 2026-11-27): liga um caderno de teste à sessão de estudo de algumas revisões; na janela Registrar, às vezes muda
+   o número (− / +), resolve, confere o placar e, ao registrar, o registro (qtipo 't') e a fatia fixa; confere que a revisão por questões não mudou */
+const TQV={cad:0,res:0,reg:0};
+async function tqSim(k){const r=await x.ev(k=>{const o=trvList().find(o=>o.k===k);if(!o)return null;const b=o.s.of||o.s.id,K=S.sessions.filter(x=>!x.review&&!x.rid&&!x.trv&&x.topic===o.tp.id&&x.date===o.sd&&trvBase(x.subj)===b).map(x=>x.ses||x.id);
+  let made=0;if(K[0]&&!qCadOf(K[0])&&Math.random()<.5){const qs=Array.from({length:15},(_,i)=>({id:uid(),n:i+1,dis:'',tp:i%2?'A':'B',t:'CE',tb:null,cm:'',en:'Sim tópico '+k+' '+i,al:null,g:'C',c:{}}));const cid=uid();qcL().push({id:cid,subj:b,ses:K[0],nome:'Sim tópico',n:15,ce:15,me:0,d:today()});qSave(cid,{qs});made=1;save();render()}
+  const U=trvQ(o);return {made,u:U.length,i:o.n,q:U[0]?qPartsOf(U[0].cid,'q').map(L=>L.length).join():''}},k);
+ if(!r)return;TQV.cad+=r.made;if(!r.u)return;const f=await x.ev(()=>!!document.querySelector('#modal .tqcad [data-act=tqgo]'));ok(f,'revisão por tópico: a janela Registrar tem a linha do caderno');if(!f||Math.random()<.3)return;
+ const d=ri(-1,2);for(let j=0;j<Math.abs(d);j++){await x.ev(dd=>{const e=document.querySelector(`#modal .tqcad [data-act=qns][data-d="${dd}"]`);e&&!e.disabled&&e.click()},d<0?-1:1);await W(80)}
+ await x.ev(()=>document.querySelector('#modal .tqcad [data-act=tqgo]').click());await W(250);const n=await x.ev(()=>ui.qz?ui.qz.ids.length:0);
+ for(let i=0;i<n;i++){await x.ev(()=>qAns(Math.random()<.7?'C':'E'));await W(30);await x.ev(()=>document.querySelector('.qznav [data-act=qnext]')?.click());await W(40)}
+ await x.ev(()=>{ui.qz=null;render()});await W(250);const sc=await x.ev(()=>/✓ \d+\/\d+/.test((document.querySelector('#modal .tqcad')||{}).textContent||''));ok(sc,'revisão por tópico: placar do caderno na janela');TQV.res++;return {k,i:r.i,q:r.q}}
+async function tqAfter(t){if(!t)return;const c=await x.ev(t=>{const R=S.sessions.filter(x=>x.qtipo==='t'&&x.trv===t.k&&x.qpart===t.i);const m=R[0]&&qcM(R[0].qcad);return {n:R.length,fz:!!(m&&((m.pdt||{}).t||{})[t.i]),q:m?qPartsOf(m.id,'q').map(L=>L.length).join():''}},t);
+ ok(c.n===1&&c.fz&&c.q===t.q,'revisão por tópico: registro do caderno, fatia fixa, e a divisão da revisão por questões igual '+JSON.stringify(c));TQV.reg++}
 async function topicReviews(){for(let i=0;i<30;i++){const k=await x.ev(()=>{const d=trvDue();return d[0]?d[0].k:null});if(!k)return;
  await tabTo('rev');await x.ev(()=>{const b=document.querySelector('[data-act=rvt][data-id=topicos]');b&&b.click()});await W(250);
  await once('revisao-topicos');
- /* a lista corta em 6 e agrupa por disciplina: abre tudo para achar o item */await x.ev(()=>{ui.pg={...(ui.pg||{}),trvdue:99};render()});await W(150);await x.act('trvok',k);await x.fill('#modal input[name=m]','0h'+ri(15,25));const c=await fillAc();st.acTop+=c;if(c&&!shotOnce.has('topico-registro')){shotOnce.add('topico-registro');await shot('topico-registro')}
- await x.submit('#modal form[data-f=trvok]');await W(250);st.topicos++;
+ /* a lista corta em 6 e agrupa por disciplina: abre tudo para achar o item */await x.ev(()=>{ui.pg={...(ui.pg||{}),trvdue:99};render()});await W(150);await x.act('trvok',k);await x.fill('#modal input[name=m]','0h'+ri(15,25));const tq=await tqSim(k);const c=await fillAc();st.acTop+=c;if(c&&!shotOnce.has('topico-registro')){shotOnce.add('topico-registro');await shot('topico-registro')}
+ await x.submit('#modal form[data-f=trvok]');await W(250);st.topicos++;await tqAfter(tq);
  if(await x.ev(k=>trvDue().some(o=>o.k===k),k)){ok(false,'revisão de tópico registrada continua vencida: '+k);return}}}
 /* revisão por ciclos: marca as aulas de cada disciplina e registra na meta, 2 por dia */
 /* questões do caderno no ciclo de revisão (desde 2026-11-27): no começo, liga um caderno de teste à 1ª sessão de cada disciplina do período (se ela não tiver);
@@ -218,7 +231,7 @@ if(RQ){const c=await x.ev(()=>{const B=rqSubs(),cnt=b=>new Set(S.sessions.filter
  if(c.adv){await x.ev(id=>{ui.open.add('rqs:'+id);render()},c.adv);await W(200);await x.ev(id=>{const e=document.querySelector(`[data-act=rqadv][data-id="${id}"]`);e&&e.click()},c.adv);await W(300);
   const n0=await x.ev(id=>rqInfo(id).rows.filter(r=>r.vz.some(v=>v.st==='fu')).length,c.adv);await shot('questoes-adiantar');await x.submit('#modal form[data-f=rqreg]');await W(300);
   const z=await x.ev(id=>({pend:rqDue(id).length,open:!!document.querySelector('[data-f=rqreg]')}),c.adv);ok(!z.pend&&!z.open,'rq: Adiantar registrou tudo ('+n0+' sessões com revisões futuras) '+JSON.stringify(z))}}
-ok(st.topicos>0,'fez '+st.topicos+' revisões por tópico ('+st.acTop+' com acertos por aula)');ok(fim.late===0,'nenhuma revisão por tópico atrasada');
+ok(st.topicos>0,'fez '+st.topicos+' revisões por tópico ('+st.acTop+' com acertos por aula)');ok(TQV.cad>0&&TQV.reg>0,'caderno na revisão por tópico: '+JSON.stringify(TQV));ok(fim.late===0,'nenhuma revisão por tópico atrasada');
 await tabTo('reg');await once('historico');await x.ev(()=>{const b=[...document.querySelectorAll('#app button')].find(b=>b.offsetParent&&b.textContent.trim()==='Ciclos');b&&b.click()});await W(300);await shot('historico-ciclos');
 await tabTo('st');await once('estatisticas');await shot('estatisticas-pagina',true);
 await tabTo('rev');await x.ev(()=>{const b=document.querySelector('[data-act=rvcalm]');b&&b.click()});await W(400);await shot('calendario');
